@@ -1,0 +1,273 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Extra Material &mdash; Spinning Up  documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../_static/openai_icon.ico"/>
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/modify.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html">
+          
+
+          
+            
+            <img src="../_static/spinning-up-logo2.png" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">User Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../user/introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/algorithms.html">Algorithms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/running.html">Running Experiments</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/saving_and_loading.html">Experiment Outputs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/plotting.html">Plotting Results</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Introduction to RL</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="rl_intro.html">Part 1: Key Concepts in RL</a></li>
+<li class="toctree-l1"><a class="reference internal" href="rl_intro2.html">Part 2: Kinds of RL Algorithms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="rl_intro3.html">Part 3: Intro to Policy Optimization</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Resources</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="spinningup.html">Spinning Up as a Deep RL Researcher</a></li>
+<li class="toctree-l1"><a class="reference internal" href="keypapers.html">Key Papers in Deep RL</a></li>
+<li class="toctree-l1"><a class="reference internal" href="exercises.html">Exercises</a></li>
+<li class="toctree-l1"><a class="reference internal" href="bench.html">Benchmarks for Spinning Up Implementations</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Algorithms Docs</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../algorithms/vpg.html">Vanilla Policy Gradient</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../algorithms/trpo.html">Trust Region Policy Optimization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../algorithms/ppo.html">Proximal Policy Optimization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../algorithms/ddpg.html">Deep Deterministic Policy Gradient</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../algorithms/td3.html">Twin Delayed DDPG</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../algorithms/sac.html">Soft Actor-Critic</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Utilities Docs</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../utils/logger.html">Logger</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../utils/plotter.html">Plotter</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../utils/mpi.html">MPI Tools</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../utils/run_utils.html">Run Utils</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Etc.</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../etc/acknowledgements.html">Acknowledgements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../etc/author.html">About the Author</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Spinning Up</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+      <li>Extra Material</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/spinningup/extra_pg_proof2.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="extra-material">
+<h1>Extra Material<a class="headerlink" href="#extra-material" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="proof-for-using-q-function-in-policy-gradient-formula">
+<h2>Proof for Using Q-Function in Policy Gradient Formula<a class="headerlink" href="#proof-for-using-q-function-in-policy-gradient-formula" title="Permalink to this headline">¶</a></h2>
+<p>In this section, we will show that</p>
+<div class="math">
+<p><img src="../_images/math/b1164921ddb07ec2003aba9ac6d499a832b9b5f6.svg" alt="\nabla_{\theta} J(\pi_{\theta}) &amp;= \underE{\tau \sim \pi_{\theta}}{\sum_{t=0}^{T} \Big( \nabla_{\theta} \log \pi_{\theta}(a_t |s_t) \Big) Q^{\pi_{\theta}}(s_t, a_t)},"/></p>
+</div><p>for the finite-horizon undiscounted return setting. (An analagous result holds in the infinite-horizon discounted case using basically the same proof.)</p>
+<p>The proof of this claim depends on the <a class="reference external" href="https://en.wikipedia.org/wiki/Law_of_total_expectation">law of iterated expectations</a>. First, let&#8217;s rewrite the expression for the policy gradient, starting from the reward-to-go form (using the notation <img class="math" src="../_images/math/e12f4dc21fc50cfa6f270076dbbde6f6df6efe53.svg" alt="\hat{R}_t = \sum_{t'=t}^T R(s_t, a_t, s_{t+1})"/> to help shorten things):</p>
+<div class="math">
+<p><img src="../_images/math/2ccaf4961846859678edc52610e799f9ef05d229.svg" alt="\nabla_{\theta} J(\pi_{\theta}) &amp;= \underE{\tau \sim \pi_{\theta}}{\sum_{t=0}^{T} \nabla_{\theta} \log \pi_{\theta}(a_t |s_t) \hat{R}_t} \\
+&amp;= \sum_{t=0}^{T} \underE{\tau \sim \pi_{\theta}}{\nabla_{\theta} \log \pi_{\theta}(a_t |s_t) \hat{R}_t}"/></p>
+</div><p>Define <img class="math" src="../_images/math/5f0c4166002cb67867eeee49d44f05dbdfef017e.svg" alt="\tau_{:t} = (s_0, a_0, ..., s_t, a_t)"/> as the trajectory up to time <img class="math" src="../_images/math/53e1d388a3a49063e3444d86c79fd887cc3d5b6c.svg" alt="t"/>, and <img class="math" src="../_images/math/7767ecf42c0431f1f30a4edefae5805c9f40b738.svg" alt="\tau_{t:}"/> as the remainder of the trajectory after that. By the law of iterated expectations, we can break up the preceding expression into:</p>
+<div class="math">
+<p><img src="../_images/math/d71f9f9f493acb3b0c0c87859a5b893349909d97.svg" alt="\nabla_{\theta} J(\pi_{\theta}) &amp;= \sum_{t=0}^{T} \underE{\tau_{:t} \sim \pi_{\theta}}{ \underE{\tau_{t:} \sim \pi_{\theta}}{ \left. \nabla_{\theta} \log \pi_{\theta}(a_t |s_t) \hat{R}_t \right| \tau_{:t}}}"/></p>
+</div><p>The grad-log-prob is constant with respect to the inner expectation (because it depends on <img class="math" src="../_images/math/8b415ee5fdf45796473d9a05615664c67e20af3d.svg" alt="s_t"/> and <img class="math" src="../_images/math/8ddb1f258c0be380f1821db82450a8c1ed8bf138.svg" alt="a_t"/>, which the inner expectation conditions on as fixed in <img class="math" src="../_images/math/2ad98b64c5727dc7023f55503c9b3e66409872c2.svg" alt="\tau_{:t}"/>), so it can be pulled out, leaving:</p>
+<div class="math">
+<p><img src="../_images/math/e1516b8959dc4e3a534d4a4a8850103527322569.svg" alt="\nabla_{\theta} J(\pi_{\theta}) &amp;= \sum_{t=0}^{T} \underE{\tau_{:t} \sim \pi_{\theta}}{ \nabla_{\theta} \log \pi_{\theta}(a_t |s_t) \underE{\tau_{t:} \sim \pi_{\theta}}{ \left. \hat{R}_t \right| \tau_{:t}}}"/></p>
+</div><p>In Markov Decision Processes, the future only depends on the most recent state and action. As a result, the inner expectation&#8212;which expects over the future, conditioned on the entirety of the past (everything up to time <img class="math" src="../_images/math/53e1d388a3a49063e3444d86c79fd887cc3d5b6c.svg" alt="t"/>)&#8212;is equal to the same expectation if it only conditioned on the last timestep (just <img class="math" src="../_images/math/241446e0ac1c5e6b99d18f8f9a3b70fdc12a67fe.svg" alt="(s_t,a_t)"/>):</p>
+<div class="math">
+<p><img src="../_images/math/d69d4c8f3897893e60dee67a33772451c32bee5c.svg" alt="\underE{\tau_{t:} \sim \pi_{\theta}}{ \left. \hat{R}_t \right| \tau_{:t}} = \underE{\tau_{t:} \sim \pi_{\theta}}{ \left. \hat{R}_t \right| s_t, a_t},"/></p>
+</div><p>which is the <em>definition</em> of <img class="math" src="../_images/math/e2542cd5fa4955cefa12bdb7064c2a24d49e8fa1.svg" alt="Q^{\pi_{\theta}}(s_t, a_t)"/>: the expected return, starting from state <img class="math" src="../_images/math/8b415ee5fdf45796473d9a05615664c67e20af3d.svg" alt="s_t"/> and action <img class="math" src="../_images/math/8ddb1f258c0be380f1821db82450a8c1ed8bf138.svg" alt="a_t"/>, when acting on-policy for the rest of the trajectory.</p>
+<p>The result follows immediately.</p>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, OpenAI.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+
+  
+
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

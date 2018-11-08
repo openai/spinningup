@@ -1,0 +1,369 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>MPI Tools &mdash; Spinning Up  documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../_static/openai_icon.ico"/>
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/modify.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Run Utils" href="run_utils.html" />
+    <link rel="prev" title="Plotter" href="plotter.html" /> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html">
+          
+
+          
+            
+            <img src="../_static/spinning-up-logo2.png" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">User Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../user/introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/algorithms.html">Algorithms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/running.html">Running Experiments</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/saving_and_loading.html">Experiment Outputs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/plotting.html">Plotting Results</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Introduction to RL</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../spinningup/rl_intro.html">Part 1: Key Concepts in RL</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../spinningup/rl_intro2.html">Part 2: Kinds of RL Algorithms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../spinningup/rl_intro3.html">Part 3: Intro to Policy Optimization</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Resources</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../spinningup/spinningup.html">Spinning Up as a Deep RL Researcher</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../spinningup/keypapers.html">Key Papers in Deep RL</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../spinningup/exercises.html">Exercises</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../spinningup/bench.html">Benchmarks for Spinning Up Implementations</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Algorithms Docs</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../algorithms/vpg.html">Vanilla Policy Gradient</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../algorithms/trpo.html">Trust Region Policy Optimization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../algorithms/ppo.html">Proximal Policy Optimization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../algorithms/ddpg.html">Deep Deterministic Policy Gradient</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../algorithms/td3.html">Twin Delayed DDPG</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../algorithms/sac.html">Soft Actor-Critic</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Utilities Docs</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="logger.html">Logger</a></li>
+<li class="toctree-l1"><a class="reference internal" href="plotter.html">Plotter</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">MPI Tools</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#module-spinup.utils.mpi_tools">Core MPI Utilities</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#mpi-tensorflow-utilities">MPI + Tensorflow Utilities</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="run_utils.html">Run Utils</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Etc.</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../etc/acknowledgements.html">Acknowledgements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../etc/author.html">About the Author</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Spinning Up</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+      <li>MPI Tools</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/utils/mpi.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="mpi-tools">
+<h1><a class="toc-backref" href="#id1">MPI Tools</a><a class="headerlink" href="#mpi-tools" title="Permalink to this headline">¶</a></h1>
+<div class="contents topic" id="table-of-contents">
+<p class="topic-title first">Table of Contents</p>
+<ul class="simple">
+<li><a class="reference internal" href="#mpi-tools" id="id1">MPI Tools</a><ul>
+<li><a class="reference internal" href="#module-spinup.utils.mpi_tools" id="id2">Core MPI Utilities</a></li>
+<li><a class="reference internal" href="#mpi-tensorflow-utilities" id="id3">MPI + Tensorflow Utilities</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="section" id="module-spinup.utils.mpi_tools">
+<span id="core-mpi-utilities"></span><h2><a class="toc-backref" href="#id2">Core MPI Utilities</a><a class="headerlink" href="#module-spinup.utils.mpi_tools" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="spinup.utils.mpi_tools.mpi_avg">
+<code class="descclassname">spinup.utils.mpi_tools.</code><code class="descname">mpi_avg</code><span class="sig-paren">(</span><em>x</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/spinup/utils/mpi_tools.html#mpi_avg"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinup.utils.mpi_tools.mpi_avg" title="Permalink to this definition">¶</a></dt>
+<dd><p>Average a scalar or vector over MPI processes.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="spinup.utils.mpi_tools.mpi_fork">
+<code class="descclassname">spinup.utils.mpi_tools.</code><code class="descname">mpi_fork</code><span class="sig-paren">(</span><em>n</em>, <em>bind_to_core=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/spinup/utils/mpi_tools.html#mpi_fork"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinup.utils.mpi_tools.mpi_fork" title="Permalink to this definition">¶</a></dt>
+<dd><p>Re-launches the current script with workers linked by MPI.</p>
+<p>Also, terminates the original process that launched it.</p>
+<p>Taken almost without modification from the Baselines function of the
+<a class="reference external" href="https://github.com/openai/baselines/blob/master/baselines/common/mpi_fork.py">same name</a>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>n</strong> (<em>int</em>) &#8211; Number of process to split into.</li>
+<li><strong>bind_to_core</strong> (<em>bool</em>) &#8211; Bind each MPI process to a core.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="spinup.utils.mpi_tools.mpi_statistics_scalar">
+<code class="descclassname">spinup.utils.mpi_tools.</code><code class="descname">mpi_statistics_scalar</code><span class="sig-paren">(</span><em>x</em>, <em>with_min_and_max=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/spinup/utils/mpi_tools.html#mpi_statistics_scalar"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinup.utils.mpi_tools.mpi_statistics_scalar" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get mean/std and optional min/max of scalar x across MPI processes.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>x</strong> &#8211; An array containing samples of the scalar to produce statistics
+for.</li>
+<li><strong>with_min_and_max</strong> (<em>bool</em>) &#8211; If true, return min and max of x in
+addition to mean and std.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="spinup.utils.mpi_tools.num_procs">
+<code class="descclassname">spinup.utils.mpi_tools.</code><code class="descname">num_procs</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/spinup/utils/mpi_tools.html#num_procs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinup.utils.mpi_tools.num_procs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Count active MPI processes.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="spinup.utils.mpi_tools.proc_id">
+<code class="descclassname">spinup.utils.mpi_tools.</code><code class="descname">proc_id</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/spinup/utils/mpi_tools.html#proc_id"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinup.utils.mpi_tools.proc_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get rank of calling process.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="mpi-tensorflow-utilities">
+<h2><a class="toc-backref" href="#id3">MPI + Tensorflow Utilities</a><a class="headerlink" href="#mpi-tensorflow-utilities" title="Permalink to this headline">¶</a></h2>
+<p>The <code class="docutils literal"><span class="pre">spinup.utils.mpi_tf</span></code> contains a a few tools to make it easy to use the AdamOptimizer across many MPI processes. This is a bit hacky&#8212;if you&#8217;re looking for something more sophisticated and general-purpose, consider <a class="reference external" href="https://github.com/uber/horovod">horovod</a>.</p>
+<span class="target" id="module-spinup.utils.mpi_tf"></span><dl class="class">
+<dt id="spinup.utils.mpi_tf.MpiAdamOptimizer">
+<em class="property">class </em><code class="descclassname">spinup.utils.mpi_tf.</code><code class="descname">MpiAdamOptimizer</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/spinup/utils/mpi_tf.html#MpiAdamOptimizer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinup.utils.mpi_tf.MpiAdamOptimizer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adam optimizer that averages gradients across MPI processes.</p>
+<p>The compute_gradients method is taken from Baselines <a class="reference external" href="https://github.com/openai/baselines/blob/master/baselines/common/mpi_adam_optimizer.py">MpiAdamOptimizer</a>.
+For documentation on method arguments, see the Tensorflow docs page for
+the base <a class="reference external" href="https://www.tensorflow.org/api_docs/python/tf/train/AdamOptimizer">AdamOptimizer</a>.</p>
+<dl class="method">
+<dt id="spinup.utils.mpi_tf.MpiAdamOptimizer.apply_gradients">
+<code class="descname">apply_gradients</code><span class="sig-paren">(</span><em>grads_and_vars</em>, <em>global_step=None</em>, <em>name=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/spinup/utils/mpi_tf.html#MpiAdamOptimizer.apply_gradients"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinup.utils.mpi_tf.MpiAdamOptimizer.apply_gradients" title="Permalink to this definition">¶</a></dt>
+<dd><p>Same as normal apply_gradients, except sync params after update.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="spinup.utils.mpi_tf.MpiAdamOptimizer.compute_gradients">
+<code class="descname">compute_gradients</code><span class="sig-paren">(</span><em>loss</em>, <em>var_list</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/spinup/utils/mpi_tf.html#MpiAdamOptimizer.compute_gradients"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinup.utils.mpi_tf.MpiAdamOptimizer.compute_gradients" title="Permalink to this definition">¶</a></dt>
+<dd><p>Same as normal compute_gradients, except average grads over processes.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="spinup.utils.mpi_tf.sync_all_params">
+<code class="descclassname">spinup.utils.mpi_tf.</code><code class="descname">sync_all_params</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/spinup/utils/mpi_tf.html#sync_all_params"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinup.utils.mpi_tf.sync_all_params" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sync all tf variables across MPI processes.</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="run_utils.html" class="btn btn-neutral float-right" title="Run Utils" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="plotter.html" class="btn btn-neutral" title="Plotter" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, OpenAI.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+
+  
+
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,361 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Solution to Exercise 2.2 &mdash; Spinning Up  documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../_static/openai_icon.ico"/>
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/modify.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html">
+          
+
+          
+            
+            <img src="../_static/spinning-up-logo2.png" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">User Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../user/introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/algorithms.html">Algorithms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/running.html">Running Experiments</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/saving_and_loading.html">Experiment Outputs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/plotting.html">Plotting Results</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Introduction to RL</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="rl_intro.html">Part 1: Key Concepts in RL</a></li>
+<li class="toctree-l1"><a class="reference internal" href="rl_intro2.html">Part 2: Kinds of RL Algorithms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="rl_intro3.html">Part 3: Intro to Policy Optimization</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Resources</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="spinningup.html">Spinning Up as a Deep RL Researcher</a></li>
+<li class="toctree-l1"><a class="reference internal" href="keypapers.html">Key Papers in Deep RL</a></li>
+<li class="toctree-l1"><a class="reference internal" href="exercises.html">Exercises</a></li>
+<li class="toctree-l1"><a class="reference internal" href="bench.html">Benchmarks for Spinning Up Implementations</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Algorithms Docs</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../algorithms/vpg.html">Vanilla Policy Gradient</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../algorithms/trpo.html">Trust Region Policy Optimization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../algorithms/ppo.html">Proximal Policy Optimization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../algorithms/ddpg.html">Deep Deterministic Policy Gradient</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../algorithms/td3.html">Twin Delayed DDPG</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../algorithms/sac.html">Soft Actor-Critic</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Utilities Docs</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../utils/logger.html">Logger</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../utils/plotter.html">Plotter</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../utils/mpi.html">MPI Tools</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../utils/run_utils.html">Run Utils</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Etc.</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../etc/acknowledgements.html">Acknowledgements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../etc/author.html">About the Author</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Spinning Up</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+      <li>Solution to Exercise 2.2</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/spinningup/exercise2_2_soln.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="solution-to-exercise-2-2">
+<h1>Solution to Exercise 2.2<a class="headerlink" href="#solution-to-exercise-2-2" title="Permalink to this headline">¶</a></h1>
+<div class="figure align-center" id="id1">
+<img alt="../_images/ex2-2_ddpg_bug.svg" src="../_images/ex2-2_ddpg_bug.svg" /><p class="caption"><span class="caption-text">Learning curves for DDPG in HalfCheetah-v2 for bugged and non-bugged actor-critic implementations, averaged over three random seeds.</span></p>
+</div>
+<div class="section" id="the-bug-in-the-code">
+<h2>The Bug in the Code<a class="headerlink" href="#the-bug-in-the-code" title="Permalink to this headline">¶</a></h2>
+<p>The only difference between the correct actor-critic code,</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Actor-Critic</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="k">def</span> <span class="nf">mlp_actor_critic</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">hidden_sizes</span><span class="o">=</span><span class="p">(</span><span class="mi">400</span><span class="p">,</span><span class="mi">300</span><span class="p">),</span> <span class="n">activation</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span><span class="p">,</span>
+                     <span class="n">output_activation</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">tanh</span><span class="p">,</span> <span class="n">action_space</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="n">act_dim</span> <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="o">.</span><span class="n">as_list</span><span class="p">()[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">act_limit</span> <span class="o">=</span> <span class="n">action_space</span><span class="o">.</span><span class="n">high</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">with</span> <span class="n">tf</span><span class="o">.</span><span class="n">variable_scope</span><span class="p">(</span><span class="s1">&#39;pi&#39;</span><span class="p">):</span>
+        <span class="n">pi</span> <span class="o">=</span> <span class="n">act_limit</span> <span class="o">*</span> <span class="n">mlp</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="nb">list</span><span class="p">(</span><span class="n">hidden_sizes</span><span class="p">)</span><span class="o">+</span><span class="p">[</span><span class="n">act_dim</span><span class="p">],</span> <span class="n">activation</span><span class="p">,</span> <span class="n">output_activation</span><span class="p">)</span>
+    <span class="k">with</span> <span class="n">tf</span><span class="o">.</span><span class="n">variable_scope</span><span class="p">(</span><span class="s1">&#39;q&#39;</span><span class="p">):</span>
+<span class="hll">        <span class="n">q</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">mlp</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">x</span><span class="p">,</span><span class="n">a</span><span class="p">],</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">),</span> <span class="nb">list</span><span class="p">(</span><span class="n">hidden_sizes</span><span class="p">)</span><span class="o">+</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">activation</span><span class="p">,</span> <span class="bp">None</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</span>    <span class="k">with</span> <span class="n">tf</span><span class="o">.</span><span class="n">variable_scope</span><span class="p">(</span><span class="s1">&#39;q&#39;</span><span class="p">,</span> <span class="n">reuse</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+<span class="hll">        <span class="n">q_pi</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">mlp</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">x</span><span class="p">,</span><span class="n">pi</span><span class="p">],</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">),</span> <span class="nb">list</span><span class="p">(</span><span class="n">hidden_sizes</span><span class="p">)</span><span class="o">+</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">activation</span><span class="p">,</span> <span class="bp">None</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</span>    <span class="k">return</span> <span class="n">pi</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">q_pi</span>
+</pre></div>
+</div>
+<p>and the bugged actor-critic code,</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Bugged Actor-Critic</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="k">def</span> <span class="nf">bugged_mlp_actor_critic</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">hidden_sizes</span><span class="o">=</span><span class="p">(</span><span class="mi">400</span><span class="p">,</span><span class="mi">300</span><span class="p">),</span> <span class="n">activation</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span><span class="p">,</span>
+                            <span class="n">output_activation</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">tanh</span><span class="p">,</span> <span class="n">action_space</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="n">act_dim</span> <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="o">.</span><span class="n">as_list</span><span class="p">()[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">act_limit</span> <span class="o">=</span> <span class="n">action_space</span><span class="o">.</span><span class="n">high</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">with</span> <span class="n">tf</span><span class="o">.</span><span class="n">variable_scope</span><span class="p">(</span><span class="s1">&#39;pi&#39;</span><span class="p">):</span>
+        <span class="n">pi</span> <span class="o">=</span> <span class="n">act_limit</span> <span class="o">*</span> <span class="n">mlp</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="nb">list</span><span class="p">(</span><span class="n">hidden_sizes</span><span class="p">)</span><span class="o">+</span><span class="p">[</span><span class="n">act_dim</span><span class="p">],</span> <span class="n">activation</span><span class="p">,</span> <span class="n">output_activation</span><span class="p">)</span>
+    <span class="k">with</span> <span class="n">tf</span><span class="o">.</span><span class="n">variable_scope</span><span class="p">(</span><span class="s1">&#39;q&#39;</span><span class="p">):</span>
+<span class="hll">        <span class="n">q</span> <span class="o">=</span> <span class="n">mlp</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">x</span><span class="p">,</span><span class="n">a</span><span class="p">],</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">),</span> <span class="nb">list</span><span class="p">(</span><span class="n">hidden_sizes</span><span class="p">)</span><span class="o">+</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">activation</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+</span>    <span class="k">with</span> <span class="n">tf</span><span class="o">.</span><span class="n">variable_scope</span><span class="p">(</span><span class="s1">&#39;q&#39;</span><span class="p">,</span> <span class="n">reuse</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+<span class="hll">        <span class="n">q_pi</span> <span class="o">=</span> <span class="n">mlp</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">x</span><span class="p">,</span><span class="n">pi</span><span class="p">],</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">),</span> <span class="nb">list</span><span class="p">(</span><span class="n">hidden_sizes</span><span class="p">)</span><span class="o">+</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">activation</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+</span>    <span class="k">return</span> <span class="n">pi</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">q_pi</span>
+</pre></div>
+</div>
+<p>is the tensor shape for the Q-functions. The correct version squeezes ouputs so that they have shape <code class="docutils literal"><span class="pre">[batch</span> <span class="pre">size]</span></code>, whereas the bugged version doesn&#8217;t, resulting in Q-functions with shape <code class="docutils literal"><span class="pre">[batch</span> <span class="pre">size,</span> <span class="pre">1]</span></code>.</p>
+</div>
+<div class="section" id="how-it-gums-up-the-works">
+<h2>How it Gums Up the Works<a class="headerlink" href="#how-it-gums-up-the-works" title="Permalink to this headline">¶</a></h2>
+<p>Consider the excerpt from the part in the code that builds the DDPG computation graph:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="c1"># Bellman backup for Q function</span>
+<span class="n">backup</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">stop_gradient</span><span class="p">(</span><span class="n">r_ph</span> <span class="o">+</span> <span class="n">gamma</span><span class="o">*</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">d_ph</span><span class="p">)</span><span class="o">*</span><span class="n">q_pi_targ</span><span class="p">)</span>
+
+<span class="c1"># DDPG losses</span>
+<span class="n">pi_loss</span> <span class="o">=</span> <span class="o">-</span><span class="n">tf</span><span class="o">.</span><span class="n">reduce_mean</span><span class="p">(</span><span class="n">q_pi</span><span class="p">)</span>
+<span class="n">q_loss</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">reduce_mean</span><span class="p">((</span><span class="n">q</span><span class="o">-</span><span class="n">backup</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This is where the tensor shape issue comes into play. It&#8217;s important to know that <code class="docutils literal"><span class="pre">r_ph</span></code> and <code class="docutils literal"><span class="pre">d_ph</span></code> have shape <code class="docutils literal"><span class="pre">[batch</span> <span class="pre">size]</span></code>.</p>
+<p>The line that produces the Bellman backup was written with the assumption that it would add together tensors with the same shape. However, this line can <strong>also</strong> add together tensors with different shapes, as long as they&#8217;re broadcast-compatible.</p>
+<p>Tensors with shapes <code class="docutils literal"><span class="pre">[batch</span> <span class="pre">size]</span></code> and <code class="docutils literal"><span class="pre">[batch</span> <span class="pre">size,</span> <span class="pre">1]</span></code> are broadcast compatible, but the behavior is not actually what you might expect! Check out this example:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">tensorflow</span> <span class="k">as</span> <span class="nn">tf</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">constant</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">5</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">y</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">constant</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">z1</span> <span class="o">=</span> <span class="n">x</span> <span class="o">*</span> <span class="n">y</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">z2</span> <span class="o">=</span> <span class="n">x</span> <span class="o">+</span> <span class="n">y</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">z3</span> <span class="o">=</span> <span class="n">x</span> <span class="o">+</span> <span class="n">z1</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span><span class="o">.</span><span class="n">shape</span>
+<span class="go">TensorShape([Dimension(5)])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">y</span><span class="o">.</span><span class="n">shape</span>
+<span class="go">TensorShape([Dimension(5), Dimension(1)])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">z1</span><span class="o">.</span><span class="n">shape</span>
+<span class="go">TensorShape([Dimension(5), Dimension(5)])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">z2</span><span class="o">.</span><span class="n">shape</span>
+<span class="go">TensorShape([Dimension(5), Dimension(5)])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sess</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">InteractiveSession</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">z1</span><span class="p">)</span>
+<span class="go">array([[ 0,  0,  0,  0,  0],</span>
+<span class="go">       [ 0,  1,  2,  3,  4],</span>
+<span class="go">       [ 0,  2,  4,  6,  8],</span>
+<span class="go">       [ 0,  3,  6,  9, 12],</span>
+<span class="go">       [ 0,  4,  8, 12, 16]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">z2</span><span class="p">)</span>
+<span class="go">array([[0, 1, 2, 3, 4],</span>
+<span class="go">       [1, 2, 3, 4, 5],</span>
+<span class="go">       [2, 3, 4, 5, 6],</span>
+<span class="go">       [3, 4, 5, 6, 7],</span>
+<span class="go">       [4, 5, 6, 7, 8]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">z3</span><span class="p">)</span>
+<span class="go">array([[ 0,  1,  2,  3,  4],</span>
+<span class="go">       [ 0,  2,  4,  6,  8],</span>
+<span class="go">       [ 0,  3,  6,  9, 12],</span>
+<span class="go">       [ 0,  4,  8, 12, 16],</span>
+<span class="go">       [ 0,  5, 10, 15, 20]])</span>
+</pre></div>
+</div>
+<p>Adding or multiplying a shape <code class="docutils literal"><span class="pre">[5]</span></code> tensor by a shape <code class="docutils literal"><span class="pre">[5,1]</span></code> tensor returns a shape <code class="docutils literal"><span class="pre">[5,5]</span></code> tensor!</p>
+<p>When you don&#8217;t squeeze the Q-functions, <code class="docutils literal"><span class="pre">q_pi_targ</span></code> has shape <code class="docutils literal"><span class="pre">[batch</span> <span class="pre">size,</span> <span class="pre">1]</span></code>, and the backup&#8212;and in turn, the whole Q-loss&#8212;gets totally messed up.</p>
+<p>Broadcast error 1: <code class="docutils literal"><span class="pre">(1</span> <span class="pre">-</span> <span class="pre">d_ph)</span> <span class="pre">*</span> <span class="pre">q_pi_targ</span></code> becomes a <code class="docutils literal"><span class="pre">[batch</span> <span class="pre">size,</span> <span class="pre">batch</span> <span class="pre">size]</span></code> tensor containing the outer product of the mask with the target network Q-values.</p>
+<p>Broadcast error 2: <code class="docutils literal"><span class="pre">r_ph</span></code> then gets treated as a row vector and added to each row of <code class="docutils literal"><span class="pre">(1</span> <span class="pre">-</span> <span class="pre">d_ph)</span> <span class="pre">*</span> <span class="pre">q_pi_targ</span></code> separately.</p>
+<p>Broadcast error 3: <code class="docutils literal"><span class="pre">q_loss</span></code> depends on <code class="docutils literal"><span class="pre">q</span> <span class="pre">-</span> <span class="pre">backup</span></code>, which involves another bad broadcast between <code class="docutils literal"><span class="pre">q</span></code> (shape <code class="docutils literal"><span class="pre">[batch</span> <span class="pre">size,</span> <span class="pre">1]</span></code>) and <code class="docutils literal"><span class="pre">backup</span></code> (shape <code class="docutils literal"><span class="pre">[batch</span> <span class="pre">size,</span> <span class="pre">batch</span> <span class="pre">size]</span></code>).</p>
+<p>To put it mathematically: let <img class="math" src="../_images/math/daba3e876d43fa9d818d638f9913777fcc80b363.svg" alt="q"/>, <img class="math" src="../_images/math/1b010cfe4b9ad4a54f668b8e2ae1d2dc65ffbd57.svg" alt="q'"/>, <img class="math" src="../_images/math/dbf18beb64ca1fdf76bde5abbebab172c0a427d2.svg" alt="r"/>, <img class="math" src="../_images/math/dcb88eb0117e005c37557afd791bf0dbc90733a4.svg" alt="d"/> denote vectors containing the q-values, target q-values, rewards, and dones for a given batch, where there are <img class="math" src="../_images/math/b4ef37d0fe59960f8dbd307ee538e538e6d51e9a.svg" alt="n"/> entries in the batch. The correct backup is</p>
+<div class="math">
+<p><img src="../_images/math/0ae2a85ffe04b3e5ff9d56e4846f994fc11024fa.svg" alt="z_i = r_i + \gamma (1-d_i) q'_i,"/></p>
+</div><p>and the correct loss function is</p>
+<div class="math">
+<p><img src="../_images/math/af10c7e7561a9d41ce0daf7df05d9c81d62fd5dc.svg" alt="\frac{1}{n} \sum_{i=1}^n (q_i - z_i)^2."/></p>
+</div><p>But with these errors, what gets computed is a backup <em>matrix</em>,</p>
+<div class="math">
+<p><img src="../_images/math/3fbd1adcd20bbf168c35f71d60584643abcb0f1f.svg" alt="z_{ij} = r_j + \gamma (1-d_j) q'_i,"/></p>
+</div><p>and a messed up loss function</p>
+<div class="math">
+<p><img src="../_images/math/4b5d281c8d8d6f15edd88daa522f90d03804e89d.svg" alt="\frac{1}{n^2} \sum_{i=1}^n \sum_{j=1}^n (q_j - z_{ij})^2."/></p>
+</div><p>If you leave this to run in HalfCheetah long enough, you&#8217;ll actually see some non-trivial learning process, because weird details specific to this environment partly cancel out the errors. But almost everywhere else, it fails completely.</p>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, OpenAI.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+
+  
+
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

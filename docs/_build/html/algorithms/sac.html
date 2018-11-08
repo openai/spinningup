@@ -1,0 +1,649 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Soft Actor-Critic &mdash; Spinning Up  documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../_static/openai_icon.ico"/>
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/modify.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Logger" href="../utils/logger.html" />
+    <link rel="prev" title="Twin Delayed DDPG" href="td3.html" /> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html">
+          
+
+          
+            
+            <img src="../_static/spinning-up-logo2.png" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">User Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../user/introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/algorithms.html">Algorithms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/running.html">Running Experiments</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/saving_and_loading.html">Experiment Outputs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/plotting.html">Plotting Results</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Introduction to RL</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../spinningup/rl_intro.html">Part 1: Key Concepts in RL</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../spinningup/rl_intro2.html">Part 2: Kinds of RL Algorithms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../spinningup/rl_intro3.html">Part 3: Intro to Policy Optimization</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Resources</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../spinningup/spinningup.html">Spinning Up as a Deep RL Researcher</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../spinningup/keypapers.html">Key Papers in Deep RL</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../spinningup/exercises.html">Exercises</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../spinningup/bench.html">Benchmarks for Spinning Up Implementations</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Algorithms Docs</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="vpg.html">Vanilla Policy Gradient</a></li>
+<li class="toctree-l1"><a class="reference internal" href="trpo.html">Trust Region Policy Optimization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ppo.html">Proximal Policy Optimization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ddpg.html">Deep Deterministic Policy Gradient</a></li>
+<li class="toctree-l1"><a class="reference internal" href="td3.html">Twin Delayed DDPG</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Soft Actor-Critic</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#background">Background</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#quick-facts">Quick Facts</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#key-equations">Key Equations</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#entropy-regularized-reinforcement-learning">Entropy-Regularized Reinforcement Learning</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id1">Soft Actor-Critic</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#exploration-vs-exploitation">Exploration vs. Exploitation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#pseudocode">Pseudocode</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#documentation">Documentation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#saved-model-contents">Saved Model Contents</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#references">References</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#relevant-papers">Relevant Papers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#other-public-implementations">Other Public Implementations</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p class="caption"><span class="caption-text">Utilities Docs</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../utils/logger.html">Logger</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../utils/plotter.html">Plotter</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../utils/mpi.html">MPI Tools</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../utils/run_utils.html">Run Utils</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Etc.</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../etc/acknowledgements.html">Acknowledgements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../etc/author.html">About the Author</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Spinning Up</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+      <li>Soft Actor-Critic</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/algorithms/sac.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="soft-actor-critic">
+<h1><a class="toc-backref" href="#id2">Soft Actor-Critic</a><a class="headerlink" href="#soft-actor-critic" title="Permalink to this headline">¶</a></h1>
+<div class="contents topic" id="table-of-contents">
+<p class="topic-title first">Table of Contents</p>
+<ul class="simple">
+<li><a class="reference internal" href="#soft-actor-critic" id="id2">Soft Actor-Critic</a><ul>
+<li><a class="reference internal" href="#background" id="id3">Background</a><ul>
+<li><a class="reference internal" href="#quick-facts" id="id4">Quick Facts</a></li>
+<li><a class="reference internal" href="#key-equations" id="id5">Key Equations</a><ul>
+<li><a class="reference internal" href="#entropy-regularized-reinforcement-learning" id="id6">Entropy-Regularized Reinforcement Learning</a></li>
+<li><a class="reference internal" href="#id1" id="id7">Soft Actor-Critic</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#exploration-vs-exploitation" id="id8">Exploration vs. Exploitation</a></li>
+<li><a class="reference internal" href="#pseudocode" id="id9">Pseudocode</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#documentation" id="id10">Documentation</a><ul>
+<li><a class="reference internal" href="#saved-model-contents" id="id11">Saved Model Contents</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#references" id="id12">References</a><ul>
+<li><a class="reference internal" href="#relevant-papers" id="id13">Relevant Papers</a></li>
+<li><a class="reference internal" href="#other-public-implementations" id="id14">Other Public Implementations</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="section" id="background">
+<h2><a class="toc-backref" href="#id3">Background</a><a class="headerlink" href="#background" title="Permalink to this headline">¶</a></h2>
+<p>(Previously: <a class="reference external" href="../algorithms/td3.html#background">Background for TD3</a>)</p>
+<p>Soft Actor Critic (SAC) is an algorithm which optimizes a stochastic policy in an off-policy way, forming a bridge between stochastic policy optimization and DDPG-style approaches. It isn&#8217;t a direct successor to TD3 (having been published roughly concurrently), but it incorporates the clipped double-Q trick, and due to the inherent stochasticity of the policy in SAC, it also winds up benefiting from something like target policy smoothing.</p>
+<p>A central feature of SAC is <strong>entropy regularization.</strong> The policy is trained to maximize a trade-off between expected return and <a class="reference external" href="https://en.wikipedia.org/wiki/Entropy_(information_theory)">entropy</a>, a measure of randomness in the policy. This has a close connection to the exploration-exploitation trade-off: increasing entropy results in more exploration, which can accelerate learning later on. It can also prevent the policy from prematurely converging to a bad local optimum.</p>
+<div class="section" id="quick-facts">
+<h3><a class="toc-backref" href="#id4">Quick Facts</a><a class="headerlink" href="#quick-facts" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li>SAC is an off-policy algorithm.</li>
+<li>The version of SAC implemented here can only be used for environments with continuous action spaces.</li>
+<li>An alternate version of SAC, which slightly changes the policy update rule, can be implemented to handle discrete action spaces.</li>
+<li>The Spinning Up implementation of SAC does not support parallelization.</li>
+</ul>
+</div>
+<div class="section" id="key-equations">
+<h3><a class="toc-backref" href="#id5">Key Equations</a><a class="headerlink" href="#key-equations" title="Permalink to this headline">¶</a></h3>
+<p>To explain Soft Actor Critic, we first have to introduce the entropy-regularized reinforcement learning setting. In entropy-regularized RL, there are slightly-different equations for value functions.</p>
+<div class="section" id="entropy-regularized-reinforcement-learning">
+<h4><a class="toc-backref" href="#id6">Entropy-Regularized Reinforcement Learning</a><a class="headerlink" href="#entropy-regularized-reinforcement-learning" title="Permalink to this headline">¶</a></h4>
+<p>Entropy is a quantity which, roughly speaking, says how random a random variable is. If a coin is weighted so that it almost always comes up heads, it has low entropy; if it&#8217;s evenly weighted and has a half chance of either outcome, it has high entropy.</p>
+<p>Let <img class="math" src="../_images/math/a679a9634cd3d168023caa7576bcbcbaeaa0d7d5.svg" alt="x"/> be a random variable with probability mass or density function <img class="math" src="../_images/math/fda9c3d12bc5face394db0eecc0a54d1bff5b46a.svg" alt="P"/>. The entropy <img class="math" src="../_images/math/b9d29b0250dbf71e8858eba83d7d2bf4f6c32e4a.svg" alt="H"/> of <img class="math" src="../_images/math/a679a9634cd3d168023caa7576bcbcbaeaa0d7d5.svg" alt="x"/> is computed from its distribution <img class="math" src="../_images/math/fda9c3d12bc5face394db0eecc0a54d1bff5b46a.svg" alt="P"/> according to</p>
+<div class="math">
+<p><img src="../_images/math/b3d05fa94f0a18323c8c1dca703982855b1ba514.svg" alt="H(P) = \underE{x \sim P}{-\log P(x)}."/></p>
+</div><p>In entropy-regularized reinforcement learning, the agent gets a bonus reward at each time step proportional to the entropy of the policy at that timestep. This changes <a class="reference external" href="../spinningup/rl_intro.html#the-rl-problem">the RL problem</a> to:</p>
+<div class="math">
+<p><img src="../_images/math/96a8f8d1621fedfc2a633d1bb55fde203bd44ab9.svg" alt="\pi^* = \arg \max_{\pi} \underE{\tau \sim \pi}{ \sum_{t=0}^{\infty} \gamma^t \bigg( R(s_t, a_t, s_{t+1}) + \alpha H\left(\pi(\cdot|s_t)\right) \bigg)},"/></p>
+</div><p>where <img class="math" src="../_images/math/dee787f38c91d2cbcd96b8b8b9694eac695ef98c.svg" alt="\alpha &gt; 0"/> is the trade-off coefficient. (Note: we&#8217;re assuming an infinite-horizon discounted setting here, and we&#8217;ll do the same for the rest of this page.) We can now define the slightly-different value functions in this setting. <img class="math" src="../_images/math/f857ab97cf4591adcaac91f1d072868338bc5bfe.svg" alt="V^{\pi}"/> is changed to include the entropy bonuses from every timestep:</p>
+<div class="math">
+<p><img src="../_images/math/0968b9e16194afccc4d8bfc2a4a081d266087433.svg" alt="V^{\pi}(s) = \underE{\tau \sim \pi}{ \left. \sum_{t=0}^{\infty} \gamma^t \bigg( R(s_t, a_t, s_{t+1}) + \alpha H\left(\pi(\cdot|s_t)\right) \bigg) \right| s_0 = s}"/></p>
+</div><p><img class="math" src="../_images/math/d450c2b5a28043ac0eb590b277d53ba7d5866799.svg" alt="Q^{\pi}"/> is changed to include the entropy bonuses from every timestep <em>except the first</em>:</p>
+<div class="math">
+<p><img src="../_images/math/920644da88017126ee516b08aee186696bda7152.svg" alt="Q^{\pi}(s,a) = \underE{\tau \sim \pi}{ \left. \sum_{t=0}^{\infty} \gamma^t  R(s_t, a_t, s_{t+1}) + \alpha \sum_{t=1}^{\infty} \gamma^t H\left(\pi(\cdot|s_t)\right)\right| s_0 = s, a_0 = a}"/></p>
+</div><p>With these definitions, <img class="math" src="../_images/math/f857ab97cf4591adcaac91f1d072868338bc5bfe.svg" alt="V^{\pi}"/> and <img class="math" src="../_images/math/d450c2b5a28043ac0eb590b277d53ba7d5866799.svg" alt="Q^{\pi}"/> are connected by:</p>
+<div class="math">
+<p><img src="../_images/math/b726a1d37859b4b8eb8ed169d215b074933d1df6.svg" alt="V^{\pi}(s) = \underE{a \sim \pi}{Q^{\pi}(s,a)} + \alpha H\left(\pi(\cdot|s)\right)"/></p>
+</div><p>and the Bellman equation for <img class="math" src="../_images/math/d450c2b5a28043ac0eb590b277d53ba7d5866799.svg" alt="Q^{\pi}"/> is</p>
+<div class="math">
+<p><img src="../_images/math/33f7821425215be70a10b71279ef0dc8a7c9079a.svg" alt="Q^{\pi}(s,a) &amp;= \underE{s' \sim P \\ a' \sim \pi}{R(s,a,s') + \gamma\left(Q^{\pi}(s',a') + \alpha H\left(\pi(\cdot|s')\right) \right)} \\
+&amp;= \underE{s' \sim P}{R(s,a,s') + \gamma V^{\pi}(s')}."/></p>
+</div><div class="admonition-you-should-know admonition">
+<p class="first admonition-title">You Should Know</p>
+<p class="last">The way we&#8217;ve set up the value functions in the entropy-regularized setting is a little bit arbitrary, and actually we could have done it differently (eg make <img class="math" src="../_images/math/d450c2b5a28043ac0eb590b277d53ba7d5866799.svg" alt="Q^{\pi}"/> include the entropy bonus at the first timestep). The choice of definition may vary slightly across papers on the subject.</p>
+</div>
+</div>
+<div class="section" id="id1">
+<h4><a class="toc-backref" href="#id7">Soft Actor-Critic</a><a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h4>
+<p>SAC concurrently learns a policy <img class="math" src="../_images/math/80088cfe6126980142c5447a9cb12f69ee7fa333.svg" alt="\pi_{\theta}"/>, two Q-functions <img class="math" src="../_images/math/213a47cc1d5ab93ba1e7101e3869903f40e52df8.svg" alt="Q_{\phi_1}, Q_{\phi_2}"/>, and a value function <img class="math" src="../_images/math/9ebf8cd5585270a258da5a299e7db7229c9fddaf.svg" alt="V_{\psi}"/>.</p>
+<p><strong>Learning Q.</strong> The Q-functions are learned by MSBE minimization, using a <strong>target value network</strong> to form the Bellman backups. They both use the same target, like in TD3, and have loss functions:</p>
+<div class="math">
+<p><img src="../_images/math/0a1fc500475d85a71984c03f94462b075da698c3.svg" alt="L(\phi_i, {\mathcal D}) = \underset{(s,a,r,s',d) \sim {\mathcal D}}{{\mathrm E}}\left[
+    \Bigg( Q_{\phi_i}(s,a) - \left(r + \gamma (1 - d) V_{\psi_{\text{targ}}}(s') \right) \Bigg)^2
+    \right]."/></p>
+</div><p>The target value network, like the target networks in DDPG and TD3, is obtained by polyak averaging the value network parameters over the course of training.</p>
+<p><strong>Learning V.</strong> The value function is learned by exploiting (a sample-based approximation of) the connection between <img class="math" src="../_images/math/d450c2b5a28043ac0eb590b277d53ba7d5866799.svg" alt="Q^{\pi}"/> and <img class="math" src="../_images/math/f857ab97cf4591adcaac91f1d072868338bc5bfe.svg" alt="V^{\pi}"/>. Before we go into the learning rule, let&#8217;s first rewrite the connection equation by using the definition of entropy to obtain:</p>
+<div class="math">
+<p><img src="../_images/math/51bf906bb7631d4354e52f5069ef0242bd2a2d96.svg" alt="V^{\pi}(s) &amp;= \underE{a \sim \pi}{Q^{\pi}(s,a)} + \alpha H\left(\pi(\cdot|s)\right) \\
+&amp;= \underE{a \sim \pi}{Q^{\pi}(s,a) - \alpha \log \pi(a|s)}."/></p>
+</div><p>The RHS is an expectation over actions, so we can approximate it by sampling from the policy:</p>
+<div class="math">
+<p><img src="../_images/math/4843a432be98c7c7b50100e5227bc43ab4acd691.svg" alt="V^{\pi}(s) \approx Q^{\pi}(s,\tilde{a}) - \alpha \log \pi(\tilde{a}|s), \;\;\;\;\; \tilde{a} \sim \pi(\cdot|s)."/></p>
+</div><p>SAC sets up a mean-squared-error loss for <img class="math" src="../_images/math/9ebf8cd5585270a258da5a299e7db7229c9fddaf.svg" alt="V_{\psi}"/> based on this approximation. But what Q-value do we use? SAC uses <strong>clipped double-Q</strong> like TD3 for learning the value function, and takes the minimum Q-value between the two approximators. So the SAC loss for value function parameters is:</p>
+<div class="math">
+<p><img src="../_images/math/d44a3cfb903ec8530a5880aa718aa5cf0dad28f8.svg" alt="L(\psi, {\mathcal D}) = \underE{s \sim \mathcal{D} \\ \tilde{a} \sim \pi_{\theta}}{\Bigg(V_{\psi}(s) - \left(\min_{i=1,2} Q_{\phi_i}(s,\tilde{a}) - \alpha \log \pi_{\theta}(\tilde{a}|s) \right)\Bigg)^2}."/></p>
+</div><p>Importantly, we do <strong>not</strong> use actions from the replay buffer here: these actions are sampled fresh from the current version of the policy.</p>
+<p><strong>Learning the Policy.</strong> The policy should, in each state, act to maximize the expected future return plus expected future entropy. That is, it should maximize <img class="math" src="../_images/math/3c343749cc2f7804a670b618d03d056d7e35b5eb.svg" alt="V^{\pi}(s)"/>, which we expand out (as before) into</p>
+<div class="math">
+<p><img src="../_images/math/d3deca00a02e211a85278358f902e3ab0683c8a5.svg" alt="\underE{a \sim \pi}{Q^{\pi}(s,a) - \alpha \log \pi(a|s)}."/></p>
+</div><p>The way we optimize the policy makes use of the <strong>reparameterization trick</strong>, in which a sample from <img class="math" src="../_images/math/f85b799256ad373b882e9d0760b03ffcc297627e.svg" alt="\pi_{\theta}(\cdot|s)"/> is drawn by computing a deterministic function of state, policy parameters, and independent noise. To illustrate: following the authors of the SAC paper, we use a squashed Gaussian policy, which means that samples are obtained according to</p>
+<div class="math">
+<p><img src="../_images/math/905cd42f4795d08f38be91a4affaed472941799a.svg" alt="\tilde{a}_{\theta}(s, \xi) = \tanh\left( \mu_{\theta}(s) + \sigma_{\theta}(s) \odot \xi \right), \;\;\;\;\; \xi \sim \mathcal{N}(0, I)."/></p>
+</div><div class="admonition-you-should-know admonition">
+<p class="first admonition-title">You Should Know</p>
+<p>This policy has two key differences from the policies we use in the other policy optimization algorithms:</p>
+<p><strong>1. The squashing function.</strong> The <img class="math" src="../_images/math/21166b68ac043adf354c550774eed2b507231426.svg" alt="\tanh"/> in the SAC policy ensures that actions are bounded to a finite range. This is absent in the VPG, TRPO, and PPO policies. It also changes the distribution: before the <img class="math" src="../_images/math/21166b68ac043adf354c550774eed2b507231426.svg" alt="\tanh"/> the SAC policy is a factored Gaussian like the other algorithms&#8217; policies, but after the <img class="math" src="../_images/math/21166b68ac043adf354c550774eed2b507231426.svg" alt="\tanh"/> it is not. (You can still compute the log-probabilities of actions in closed form, though: see the paper appendix for details.)</p>
+<p class="last"><strong>2. The way standard deviations are parameterized.</strong> In VPG, TRPO, and PPO, we represent the log std devs with state-independent parameter vectors. In SAC, we represent the log std devs as outputs from the neural network, meaning that they depend on state in a complex way. SAC with state-independent log std devs, in our experience, did not work. (Can you think of why? Or better yet: run an experiment to verify?)</p>
+</div>
+<p>The reparameterization trick allows us to rewrite the expectation over actions (which contains a pain point: the distribution depends on the policy parameters) into an expectation over noise (which removes the pain point: the distribution now has no dependence on parameters):</p>
+<div class="math">
+<p><img src="../_images/math/5bb18b5df7cf3c929debb1cf1e38e14af6ed96ca.svg" alt="\underE{a \sim \pi_{\theta}}{Q^{\pi_{\theta}}(s,a) - \alpha \log \pi_{\theta}(a|s)} = \underE{\xi \sim \mathcal{N}}{Q^{\pi_{\theta}}(s,\tilde{a}_{\theta}(s,\xi)) - \alpha \log \pi_{\theta}(\tilde{a}_{\theta}(s,\xi)|s)}"/></p>
+</div><p>To get the policy loss, the final step is that we need to substitute <img class="math" src="../_images/math/0d33c407d2046710a84c9e7f5c35ddf432d08da9.svg" alt="Q^{\pi_{\theta}}"/> with one of our function approximators. The same as in TD3, we use <img class="math" src="../_images/math/d0ce34d2d12b36de9ee3689921ea102f5ef641ce.svg" alt="Q_{\phi_1}"/>. The policy is thus optimized according to</p>
+<div class="math">
+<p><img src="../_images/math/4d5b512d3799ef605088739a2503b7b248a54ac7.svg" alt="\max_{\theta} \underE{s \sim \mathcal{D} \\ \xi \sim \mathcal{N}}{Q_{\phi_1}(s,\tilde{a}_{\theta}(s,\xi)) - \alpha \log \pi_{\theta}(\tilde{a}_{\theta}(s,\xi)|s)},"/></p>
+</div><p>which is almost the same as the DDPG and TD3 policy optimization, except for the stochasticity and entropy term.</p>
+</div>
+</div>
+<div class="section" id="exploration-vs-exploitation">
+<h3><a class="toc-backref" href="#id8">Exploration vs. Exploitation</a><a class="headerlink" href="#exploration-vs-exploitation" title="Permalink to this headline">¶</a></h3>
+<p>SAC trains a stochastic policy with entropy regularization, and explores in an on-policy way. The entropy regularization coefficient <img class="math" src="../_images/math/e37a3c8967bacd71f976963d8ff117f6dd0ad132.svg" alt="\alpha"/> explicitly controls the explore-exploit tradeoff, with higher <img class="math" src="../_images/math/e37a3c8967bacd71f976963d8ff117f6dd0ad132.svg" alt="\alpha"/> corresponding to more exploration, and lower <img class="math" src="../_images/math/e37a3c8967bacd71f976963d8ff117f6dd0ad132.svg" alt="\alpha"/> corresponding to more exploitation. The right coefficient (the one which leads to the stablest / highest-reward learning) may vary from environment to environment, and could require careful tuning.</p>
+<p>At test time, to see how well the policy exploits what it has learned, we remove stochasticity and use the mean action instead of a sample from the distribution. This tends to improve performance over the original stochastic policy.</p>
+<div class="admonition-you-should-know admonition">
+<p class="first admonition-title">You Should Know</p>
+<p class="last">Our SAC implementation uses a trick to improve exploration at the start of training. For a fixed number of steps at the beginning (set with the <code class="docutils literal"><span class="pre">start_steps</span></code> keyword argument), the agent takes actions which are sampled from a uniform random distribution over valid actions. After that, it returns to normal SAC exploration.</p>
+</div>
+</div>
+<div class="section" id="pseudocode">
+<h3><a class="toc-backref" href="#id9">Pseudocode</a><a class="headerlink" href="#pseudocode" title="Permalink to this headline">¶</a></h3>
+<div class="math">
+<p><img src="../_images/math/7ff0536d2e479ae833174c13ccff07b043d7cb55.svg" alt="\begin{algorithm}[H]
+    \caption{Soft Actor-Critic}
+    \label{alg1}
+\begin{algorithmic}[1]
+    \STATE Input: initial policy parameters $\theta$, Q-function parameters $\phi_1$, $\phi_2$, V-function parameters $\psi$, empty replay buffer $\mathcal{D}$
+    \STATE Set target parameters equal to main parameters $\psi_{\text{targ}} \leftarrow \psi$
+    \REPEAT
+        \STATE Observe state $s$ and select action $a \sim \pi_{\theta}(\cdot|s)$
+        \STATE Execute $a$ in the environment
+        \STATE Observe next state $s'$, reward $r$, and done signal $d$ to indicate whether $s'$ is terminal
+        \STATE Store $(s,a,r,s',d)$ in replay buffer $\mathcal{D}$
+        \STATE If $s'$ is terminal, reset environment state.
+        \IF{it's time to update}
+            \FOR{$j$ in range(however many updates)}
+                \STATE Randomly sample a batch of transitions, $B = \{ (s,a,r,s',d) \}$ from $\mathcal{D}$
+                \STATE Compute targets for Q and V functions:
+                \begin{align*}
+                    y_q (r,s',d) &amp;= r + \gamma (1-d) V_{\psi_{\text{targ}}}(s') &amp;&amp;\\
+                    y_v (s) &amp;= \min_{i=1,2} Q_{\phi_i} (s, \tilde{a}) - \alpha \log \pi_{\theta}(\tilde{a}|s), &amp;&amp; \tilde{a} \sim \pi_{\theta}(\cdot|s)
+                \end{align*}
+                \STATE Update Q-functions by one step of gradient descent using
+                \begin{align*}
+                    &amp; \nabla_{\phi_i} \frac{1}{|B|}\sum_{(s,a,r,s',d) \in B} \left( Q_{\phi,i}(s,a) - y_q(r,s',d) \right)^2 &amp;&amp; \text{for } i=1,2
+                \end{align*}
+                \STATE Update V-function by one step of gradient descent using
+                \begin{equation*}
+                    \nabla_{\psi} \frac{1}{|B|}\sum_{s \in B} \left( V_{\psi}(s) - y_v(s) \right)^2
+                \end{equation*}
+                \STATE Update policy by one step of gradient ascent using
+                \begin{equation*}
+                    \nabla_{\theta} \frac{1}{|B|}\sum_{s \in B} \Big( Q_{\phi,1}(s, \tilde{a}_{\theta}(s)) - \alpha \log \pi_{\theta} \left(\left. \tilde{a}_{\theta}(s) \right| s\right) \Big),
+                \end{equation*}
+                where $\tilde{a}_{\theta}(s)$ is a sample from $\pi_{\theta}(\cdot|s)$ which is differentiable wrt $\theta$ via the reparametrization trick.
+                \STATE Update target value network with
+                \begin{align*}
+                    \psi_{\text{targ}} &amp;\leftarrow \rho \psi_{\text{targ}} + (1-\rho) \psi
+                \end{align*}
+            \ENDFOR
+        \ENDIF
+    \UNTIL{convergence}
+\end{algorithmic}
+\end{algorithm}"/></p>
+</div></div>
+</div>
+<div class="section" id="documentation">
+<h2><a class="toc-backref" href="#id10">Documentation</a><a class="headerlink" href="#documentation" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="spinup.sac">
+<code class="descclassname">spinup.</code><code class="descname">sac</code><span class="sig-paren">(</span><em>env_fn</em>, <em>actor_critic=&lt;function mlp_actor_critic&gt;</em>, <em>ac_kwargs={}</em>, <em>seed=0</em>, <em>steps_per_epoch=5000</em>, <em>epochs=100</em>, <em>replay_size=1000000</em>, <em>gamma=0.99</em>, <em>polyak=0.995</em>, <em>lr=0.001</em>, <em>alpha=0.2</em>, <em>batch_size=100</em>, <em>start_steps=10000</em>, <em>max_ep_len=1000</em>, <em>logger_kwargs={}</em>, <em>save_freq=1</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/spinup/algos/sac/sac.html#sac"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinup.sac" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>env_fn</strong> &#8211; A function which creates a copy of the environment.
+The environment must satisfy the OpenAI Gym API.</li>
+<li><strong>actor_critic</strong> &#8211; <p>A function which takes in placeholder symbols
+for state, <code class="docutils literal"><span class="pre">x_ph</span></code>, and action, <code class="docutils literal"><span class="pre">a_ph</span></code>, and returns the main
+outputs from the agent&#8217;s Tensorflow computation graph:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="16%" />
+<col width="23%" />
+<col width="61%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Symbol</th>
+<th class="head">Shape</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">mu</span></code></td>
+<td>(batch, act_dim)</td>
+<td><div class="first last line-block">
+<div class="line">Computes mean actions from policy</div>
+<div class="line">given states.</div>
+</div>
+</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">pi</span></code></td>
+<td>(batch, act_dim)</td>
+<td><div class="first last line-block">
+<div class="line">Samples actions from policy given</div>
+<div class="line">states.</div>
+</div>
+</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">logp_pi</span></code></td>
+<td>(batch,)</td>
+<td><div class="first last line-block">
+<div class="line">Gives log probability, according to</div>
+<div class="line">the policy, of the action sampled by</div>
+<div class="line"><code class="docutils literal"><span class="pre">pi</span></code>. Critical: must be differentiable</div>
+<div class="line">with respect to policy parameters all</div>
+<div class="line">the way through action sampling.</div>
+</div>
+</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">q1</span></code></td>
+<td>(batch,)</td>
+<td><div class="first last line-block">
+<div class="line">Gives one estimate of Q* for</div>
+<div class="line">states in <code class="docutils literal"><span class="pre">x_ph</span></code> and actions in</div>
+<div class="line"><code class="docutils literal"><span class="pre">a_ph</span></code>.</div>
+</div>
+</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">q2</span></code></td>
+<td>(batch,)</td>
+<td><div class="first last line-block">
+<div class="line">Gives another estimate of Q* for</div>
+<div class="line">states in <code class="docutils literal"><span class="pre">x_ph</span></code> and actions in</div>
+<div class="line"><code class="docutils literal"><span class="pre">a_ph</span></code>.</div>
+</div>
+</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">q1_pi</span></code></td>
+<td>(batch,)</td>
+<td><div class="first last line-block">
+<div class="line">Gives the composition of <code class="docutils literal"><span class="pre">q1</span></code> and</div>
+<div class="line"><code class="docutils literal"><span class="pre">pi</span></code> for states in <code class="docutils literal"><span class="pre">x_ph</span></code>:</div>
+<div class="line">q1(x, pi(x)).</div>
+</div>
+</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">q2_pi</span></code></td>
+<td>(batch,)</td>
+<td><div class="first last line-block">
+<div class="line">Gives the composition of <code class="docutils literal"><span class="pre">q2</span></code> and</div>
+<div class="line"><code class="docutils literal"><span class="pre">pi</span></code> for states in <code class="docutils literal"><span class="pre">x_ph</span></code>:</div>
+<div class="line">q2(x, pi(x)).</div>
+</div>
+</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">v</span></code></td>
+<td>(batch,)</td>
+<td><div class="first last line-block">
+<div class="line">Gives the value estimate for states</div>
+<div class="line">in <code class="docutils literal"><span class="pre">x_ph</span></code>.</div>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</li>
+<li><strong>ac_kwargs</strong> (<em>dict</em>) &#8211; Any kwargs appropriate for the actor_critic
+function you provided to SAC.</li>
+<li><strong>seed</strong> (<em>int</em>) &#8211; Seed for random number generators.</li>
+<li><strong>steps_per_epoch</strong> (<em>int</em>) &#8211; Number of steps of interaction (state-action pairs)
+for the agent and the environment in each epoch.</li>
+<li><strong>epochs</strong> (<em>int</em>) &#8211; Number of epochs to run and train agent.</li>
+<li><strong>replay_size</strong> (<em>int</em>) &#8211; Maximum length of replay buffer.</li>
+<li><strong>gamma</strong> (<em>float</em>) &#8211; Discount factor. (Always between 0 and 1.)</li>
+<li><strong>polyak</strong> (<em>float</em>) &#8211; <p>Interpolation factor in polyak averaging for target
+networks. Target networks are updated towards main networks
+according to:</p>
+<div class="math">
+<p><img src="../_images/math/3714bdd41380a369cd9fb38e2c4a8c5712ff0048.svg" alt="\theta_{\text{targ}} \leftarrow
+\rho \theta_{\text{targ}} + (1-\rho) \theta"/></p>
+</div><p>where <img class="math" src="../_images/math/aa9d23401f3dfa97ca4762171bd13086d58d89bb.svg" alt="\rho"/> is polyak. (Always between 0 and 1, usually
+close to 1.)</p>
+</li>
+<li><strong>lr</strong> (<em>float</em>) &#8211; Learning rate (used for both policy and value learning).</li>
+<li><strong>alpha</strong> (<em>float</em>) &#8211; Entropy regularization coefficient. (Equivalent to
+inverse of reward scale in the original SAC paper.)</li>
+<li><strong>batch_size</strong> (<em>int</em>) &#8211; Minibatch size for SGD.</li>
+<li><strong>start_steps</strong> (<em>int</em>) &#8211; Number of steps for uniform-random action selection,
+before running real policy. Helps exploration.</li>
+<li><strong>max_ep_len</strong> (<em>int</em>) &#8211; Maximum length of trajectory / episode / rollout.</li>
+<li><strong>logger_kwargs</strong> (<em>dict</em>) &#8211; Keyword args for EpochLogger.</li>
+<li><strong>save_freq</strong> (<em>int</em>) &#8211; How often (in terms of gap between epochs) to save
+the current policy and value function.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<div class="section" id="saved-model-contents">
+<h3><a class="toc-backref" href="#id11">Saved Model Contents</a><a class="headerlink" href="#saved-model-contents" title="Permalink to this headline">¶</a></h3>
+<p>The computation graph saved by the logger includes:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="9%" />
+<col width="91%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Key</th>
+<th class="head">Value</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">x</span></code></td>
+<td>Tensorflow placeholder for state input.</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">a</span></code></td>
+<td>Tensorflow placeholder for action input.</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">mu</span></code></td>
+<td>Deterministically computes mean action from the agent, given states in <code class="docutils literal"><span class="pre">x</span></code>.</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">pi</span></code></td>
+<td>Samples an action from the agent, conditioned on states in <code class="docutils literal"><span class="pre">x</span></code>.</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">q1</span></code></td>
+<td>Gives one action-value estimate for states in <code class="docutils literal"><span class="pre">x</span></code> and actions in <code class="docutils literal"><span class="pre">a</span></code>.</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">q2</span></code></td>
+<td>Gives the other action-value estimate for states in <code class="docutils literal"><span class="pre">x</span></code> and actions in <code class="docutils literal"><span class="pre">a</span></code>.</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">v</span></code></td>
+<td>Gives the value estimate for states in <code class="docutils literal"><span class="pre">x</span></code>.</td>
+</tr>
+</tbody>
+</table>
+<p>This saved model can be accessed either by</p>
+<ul class="simple">
+<li>running the trained policy with the <a class="reference external" href="../user/saving_and_loading.html#loading-and-running-trained-policies">test_policy.py</a> tool,</li>
+<li>or loading the whole saved graph into a program with <a class="reference external" href="../utils/logger.html#spinup.utils.logx.restore_tf_graph">restore_tf_graph</a>.</li>
+</ul>
+<p>Note: for SAC, the correct evaluation policy is given by <code class="docutils literal"><span class="pre">mu</span></code> and not by <code class="docutils literal"><span class="pre">pi</span></code>. The policy <code class="docutils literal"><span class="pre">pi</span></code> may be thought of as the exploration policy, while <code class="docutils literal"><span class="pre">mu</span></code> is the exploitation policy.</p>
+</div>
+</div>
+<div class="section" id="references">
+<h2><a class="toc-backref" href="#id12">References</a><a class="headerlink" href="#references" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="relevant-papers">
+<h3><a class="toc-backref" href="#id13">Relevant Papers</a><a class="headerlink" href="#relevant-papers" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><a class="reference external" href="https://arxiv.org/abs/1801.01290">Soft Actor-Critic: Off-Policy Maximum Entropy Deep Reinforcement Learning with a Stochastic Actor</a>, Haarnoja et al, 2018</li>
+</ul>
+</div>
+<div class="section" id="other-public-implementations">
+<h3><a class="toc-backref" href="#id14">Other Public Implementations</a><a class="headerlink" href="#other-public-implementations" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><a class="reference external" href="https://github.com/haarnoja/sac">SAC release repo</a></li>
+</ul>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../utils/logger.html" class="btn btn-neutral float-right" title="Logger" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="td3.html" class="btn btn-neutral" title="Twin Delayed DDPG" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, OpenAI.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+
+  
+
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

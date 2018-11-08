@@ -1,0 +1,6 @@
+*.*~
+__pycache__/
+*.pkl
+data/
+**/*.egg-info
+.python-version

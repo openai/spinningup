@@ -1,0 +1,488 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Experiment Outputs &mdash; Spinning Up  documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../_static/openai_icon.ico"/>
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/modify.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Plotting Results" href="plotting.html" />
+    <link rel="prev" title="Running Experiments" href="running.html" /> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html">
+          
+
+          
+            
+            <img src="../_static/spinning-up-logo2.png" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">User Documentation</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="algorithms.html">Algorithms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="running.html">Running Experiments</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Experiment Outputs</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#algorithm-outputs">Algorithm Outputs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#save-directory-location">Save Directory Location</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#loading-and-running-trained-policies">Loading and Running Trained Policies</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#if-environment-saves-successfully">If Environment Saves Successfully</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#environment-not-found-error">Environment Not Found Error</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#using-trained-value-functions">Using Trained Value Functions</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="plotting.html">Plotting Results</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Introduction to RL</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../spinningup/rl_intro.html">Part 1: Key Concepts in RL</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../spinningup/rl_intro2.html">Part 2: Kinds of RL Algorithms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../spinningup/rl_intro3.html">Part 3: Intro to Policy Optimization</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Resources</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../spinningup/spinningup.html">Spinning Up as a Deep RL Researcher</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../spinningup/keypapers.html">Key Papers in Deep RL</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../spinningup/exercises.html">Exercises</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../spinningup/bench.html">Benchmarks for Spinning Up Implementations</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Algorithms Docs</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../algorithms/vpg.html">Vanilla Policy Gradient</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../algorithms/trpo.html">Trust Region Policy Optimization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../algorithms/ppo.html">Proximal Policy Optimization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../algorithms/ddpg.html">Deep Deterministic Policy Gradient</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../algorithms/td3.html">Twin Delayed DDPG</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../algorithms/sac.html">Soft Actor-Critic</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Utilities Docs</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../utils/logger.html">Logger</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../utils/plotter.html">Plotter</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../utils/mpi.html">MPI Tools</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../utils/run_utils.html">Run Utils</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Etc.</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../etc/acknowledgements.html">Acknowledgements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../etc/author.html">About the Author</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Spinning Up</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+      <li>Experiment Outputs</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/user/saving_and_loading.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="experiment-outputs">
+<h1><a class="toc-backref" href="#id1">Experiment Outputs</a><a class="headerlink" href="#experiment-outputs" title="Permalink to this headline">¶</a></h1>
+<div class="contents topic" id="table-of-contents">
+<p class="topic-title first">Table of Contents</p>
+<ul class="simple">
+<li><a class="reference internal" href="#experiment-outputs" id="id1">Experiment Outputs</a><ul>
+<li><a class="reference internal" href="#algorithm-outputs" id="id2">Algorithm Outputs</a></li>
+<li><a class="reference internal" href="#save-directory-location" id="id3">Save Directory Location</a></li>
+<li><a class="reference internal" href="#loading-and-running-trained-policies" id="id4">Loading and Running Trained Policies</a><ul>
+<li><a class="reference internal" href="#if-environment-saves-successfully" id="id5">If Environment Saves Successfully</a></li>
+<li><a class="reference internal" href="#environment-not-found-error" id="id6">Environment Not Found Error</a></li>
+<li><a class="reference internal" href="#using-trained-value-functions" id="id7">Using Trained Value Functions</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+<p>In this section we&#8217;ll cover</p>
+<ul class="simple">
+<li>what outputs come from Spinning Up algorithm implementations,</li>
+<li>what formats they&#8217;re stored in and how they&#8217;re organized,</li>
+<li>where they are stored and how you can change that,</li>
+<li>and how to load and run trained policies.</li>
+</ul>
+<div class="admonition-you-should-know admonition">
+<p class="first admonition-title">You Should Know</p>
+<p class="last">Spinning Up implementations currently have no way to resume training for partially-trained agents. If you consider this feature important, please let us know&#8212;or consider it a hacking project!</p>
+</div>
+<div class="section" id="algorithm-outputs">
+<h2><a class="toc-backref" href="#id2">Algorithm Outputs</a><a class="headerlink" href="#algorithm-outputs" title="Permalink to this headline">¶</a></h2>
+<p>Each algorithm is set up to save a training run&#8217;s hyperparameter configuration, learning progress, trained agent and value functions, and a copy of the environment if possible (to make it easy to load up the agent and environment simultaneously). The output directory contains the following:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="20%" />
+<col width="80%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td colspan="2"><strong>Output Directory Structure</strong></td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">simple_save/</span></code></td>
+<td><div class="first last line-block">
+<div class="line">A directory containing everything needed to restore the</div>
+<div class="line">trained agent and value functions. (<a class="reference internal" href="#details-below">Details below.</a>)</div>
+</div>
+</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">config.json</span></code></td>
+<td><div class="first last line-block">
+<div class="line">A dict containing an as-complete-as-possible description</div>
+<div class="line">of the args and kwargs you used to launch the training</div>
+<div class="line">function. If you passed in something which can&#8217;t be</div>
+<div class="line">serialized to JSON, it should get handled gracefully by the</div>
+<div class="line">logger, and the config file will represent it with a string.</div>
+<div class="line">Note: this is meant for record-keeping only. Launching an</div>
+<div class="line">experiment from a config file is not currently supported.</div>
+</div>
+</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">progress.txt</span></code></td>
+<td><div class="first last line-block">
+<div class="line">A tab-separated value file containing records of the metrics</div>
+<div class="line">recorded by the logger throughout training. eg, <code class="docutils literal"><span class="pre">Epoch</span></code>,</div>
+<div class="line"><code class="docutils literal"><span class="pre">AverageEpRet</span></code>, etc.</div>
+</div>
+</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">vars.pkl</span></code></td>
+<td><div class="first last line-block">
+<div class="line">A pickle file containing anything about the algorithm state</div>
+<div class="line">which should get stored. Currently, all algorithms only use</div>
+<div class="line">this to save a copy of the environment.</div>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition-you-should-know admonition">
+<p class="first admonition-title">You Should Know</p>
+<p class="last">Sometimes environment-saving fails because the environment can&#8217;t be pickled, and <code class="docutils literal"><span class="pre">vars.pkl</span></code> is empty. This is known to be a problem for Gym Box2D environments in older versions of Gym, which can&#8217;t be saved in this manner.</p>
+</div>
+<p id="details-below">The <code class="docutils literal"><span class="pre">simple_save</span></code> directory contains:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="22%" />
+<col width="78%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td colspan="2"><strong>Simple_Save Directory Structure</strong></td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">variables/</span></code></td>
+<td><div class="first last line-block">
+<div class="line">A directory containing outputs from the Tensorflow Saver.</div>
+<div class="line">See documentation for <a class="reference external" href="https://github.com/tensorflow/tensorflow/blob/master/tensorflow/python/saved_model/README.md">Tensorflow SavedModel</a>.</div>
+</div>
+</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">model_info.pkl</span></code></td>
+<td><div class="first last line-block">
+<div class="line">A dict containing information (map from key to tensor name)</div>
+<div class="line">which helps us unpack the saved model after loading.</div>
+</div>
+</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">saved_model.pb</span></code></td>
+<td><div class="first last line-block">
+<div class="line">A protocol buffer, needed for a <a class="reference external" href="https://github.com/tensorflow/tensorflow/blob/master/tensorflow/python/saved_model/README.md">Tensorflow SavedModel</a>.</div>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition-you-should-know admonition">
+<p class="first admonition-title">You Should Know</p>
+<p class="last">The only file in here that you should ever have to use &#8220;by hand&#8221; is the <code class="docutils literal"><span class="pre">config.json</span></code> file. Our agent testing utility will load things from the <code class="docutils literal"><span class="pre">simple_save/</span></code> directory and <code class="docutils literal"><span class="pre">vars.pkl</span></code> file, and our plotter interprets the contents of <code class="docutils literal"><span class="pre">progress.txt</span></code>, and those are the correct tools for interfacing with these outputs. But there is no tooling for <code class="docutils literal"><span class="pre">config.json</span></code>&#8212;it&#8217;s just there so that if you forget what hyperparameters you ran an experiment with, you can double-check.</p>
+</div>
+</div>
+<div class="section" id="save-directory-location">
+<h2><a class="toc-backref" href="#id3">Save Directory Location</a><a class="headerlink" href="#save-directory-location" title="Permalink to this headline">¶</a></h2>
+<p>Experiment results will, by default, be saved in the same directory as the Spinning Up package, in a folder called <code class="docutils literal"><span class="pre">data</span></code>:</p>
+<pre class="literal-block">
+spinningup/
+    <strong>data/</strong>
+        ...
+    docs/
+        ...
+    spinup/
+        ...
+    LICENSE
+    setup.py
+</pre>
+<p>You can change the default results directory by modifying <code class="docutils literal"><span class="pre">DEFAULT_DATA_DIR</span></code> in <code class="docutils literal"><span class="pre">spinup/user_config.py</span></code>.</p>
+</div>
+<div class="section" id="loading-and-running-trained-policies">
+<h2><a class="toc-backref" href="#id4">Loading and Running Trained Policies</a><a class="headerlink" href="#loading-and-running-trained-policies" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="if-environment-saves-successfully">
+<h3><a class="toc-backref" href="#id5">If Environment Saves Successfully</a><a class="headerlink" href="#if-environment-saves-successfully" title="Permalink to this headline">¶</a></h3>
+<p>For cases where the environment is successfully saved alongside the agent, it&#8217;s a cinch to watch the trained agent act in the environment using:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">spinup</span><span class="o">.</span><span class="n">run</span> <span class="n">test_policy</span> <span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">output_directory</span>
+</pre></div>
+</div>
+<p>There are a few flags for options:</p>
+<dl class="option">
+<dt id="cmdoption-l">
+<code class="descname">-l</code><code class="descclassname"> L</code><code class="descclassname">, </code><code class="descname">--len</code><code class="descclassname">=L</code><code class="descclassname">, </code><code class="descname">default</code><code class="descclassname">=0</code><a class="headerlink" href="#cmdoption-l" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>int</em>. Maximum length of test episode / trajectory / rollout. The default of 0 means no maximum episode length&#8212;episodes only end when the agent has reached a terminal state in the environment. (Note: setting L=0 will not prevent Gym envs wrapped by TimeLimit wrappers from ending when they reach their pre-set maximum episode length.)</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-n">
+<code class="descname">-n</code><code class="descclassname"> N</code><code class="descclassname">, </code><code class="descname">--episodes</code><code class="descclassname">=N</code><code class="descclassname">, </code><code class="descname">default</code><code class="descclassname">=100</code><a class="headerlink" href="#cmdoption-n" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>int</em>. Number of test episodes to run the agent for.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-nr">
+<code class="descname">-nr</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--norender</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-nr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Do not render the test episodes to the screen. In this case, <code class="docutils literal"><span class="pre">test_policy</span></code> will only print the episode returns and lengths. (Use case: the renderer slows down the testing process, and you just want to get a fast sense of how the agent is performing, so you don&#8217;t particularly care to watch it.)</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-i">
+<code class="descname">-i</code><code class="descclassname"> I</code><code class="descclassname">, </code><code class="descname">--itr</code><code class="descclassname">=I</code><code class="descclassname">, </code><code class="descname">default</code><code class="descclassname">=-1</code><a class="headerlink" href="#cmdoption-i" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>int</em>. This is an option for a special case which is not supported by algorithms in this package as-shipped, but which they are easily modified to do. Use case: Sometimes it&#8217;s nice to watch trained agents from many different points in training (eg watch at iteration 50, 100, 150, etc.). The logger can do this&#8212;save snapshots of the agent from those different points, so they can be run and watched later. In this case, you use this flag to specify which iteration to run. But again: spinup algorithms by default only save snapshots of the most recent agent, overwriting the old snapshots.</p>
+<p>The default value of this flag means &#8220;use the latest snapshot.&#8221;</p>
+<p>To modify an algo so it does produce multiple snapshots, find the following lines (which are present in all of the algorithms):</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="p">(</span><span class="n">epoch</span> <span class="o">%</span> <span class="n">save_freq</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">epoch</span> <span class="o">==</span> <span class="n">epochs</span><span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">save_state</span><span class="p">({</span><span class="s1">&#39;env&#39;</span><span class="p">:</span> <span class="n">env</span><span class="p">},</span> <span class="bp">None</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>and tweak them to</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="p">(</span><span class="n">epoch</span> <span class="o">%</span> <span class="n">save_freq</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">epoch</span> <span class="o">==</span> <span class="n">epochs</span><span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">save_state</span><span class="p">({</span><span class="s1">&#39;env&#39;</span><span class="p">:</span> <span class="n">env</span><span class="p">},</span> <span class="n">epoch</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Make sure to then also set <code class="docutils literal"><span class="pre">save_freq</span></code> to something reasonable (because if it defaults to 1, for instance, you&#8217;ll flood your output directory with one <code class="docutils literal"><span class="pre">simple_save</span></code> folder for each snapshot&#8212;which adds up fast).</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-d">
+<code class="descname">-d</code><code class="descclassname"></code><code class="descclassname">, </code><code class="descname">--deterministic</code><code class="descclassname"></code><a class="headerlink" href="#cmdoption-d" title="Permalink to this definition">¶</a></dt>
+<dd><p>Another special case, which is only used for SAC. The Spinning Up SAC implementation trains a stochastic policy, but is evaluated using the deterministic <em>mean</em> of the action distribution. <code class="docutils literal"><span class="pre">test_policy</span></code> will default to using the stochastic policy trained by SAC, but you should set the deterministic flag to watch the deterministic mean policy (the correct evaluation policy for SAC). This flag is not used for any other algorithms.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="environment-not-found-error">
+<h3><a class="toc-backref" href="#id6">Environment Not Found Error</a><a class="headerlink" href="#environment-not-found-error" title="Permalink to this headline">¶</a></h3>
+<p>If the environment wasn&#8217;t saved successfully, you can expect <code class="docutils literal"><span class="pre">test_policy.py</span></code> to crash with</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>Traceback (most recent call last):
+  File &quot;spinup/utils/test_policy.py&quot;, line 88, in &lt;module&gt;
+    run_policy(env, get_action, args.len, args.episodes, not(args.norender))
+  File &quot;spinup/utils/test_policy.py&quot;, line 50, in run_policy
+    &quot;page on Experiment Outputs for how to handle this situation.&quot;
+AssertionError: Environment not found!
+
+ It looks like the environment wasn&#39;t saved, and we can&#39;t run the agent in it. :(
+
+ Check out the readthedocs page on Experiment Outputs for how to handle this situation.
+</pre></div>
+</div>
+<p>In this case, watching your agent perform is slightly more of a pain but not impossible, as long as you can recreate your environment easily. Try the following in IPython:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">spinup.utils.test_policy</span> <span class="k">import</span> <span class="n">load_policy</span><span class="p">,</span> <span class="n">run_policy</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">your_env</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">_</span><span class="p">,</span> <span class="n">get_action</span> <span class="o">=</span> <span class="n">load_policy</span><span class="p">(</span><span class="s1">&#39;/path/to/output_directory&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">env</span> <span class="o">=</span> <span class="n">your_env</span><span class="o">.</span><span class="n">make</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">run_policy</span><span class="p">(</span><span class="n">env</span><span class="p">,</span> <span class="n">get_action</span><span class="p">)</span>
+<span class="go">Logging data to /tmp/experiments/1536150702/progress.txt</span>
+<span class="go">Episode 0    EpRet -163.830      EpLen 93</span>
+<span class="go">Episode 1    EpRet -346.164      EpLen 99</span>
+<span class="gp">...</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="using-trained-value-functions">
+<h3><a class="toc-backref" href="#id7">Using Trained Value Functions</a><a class="headerlink" href="#using-trained-value-functions" title="Permalink to this headline">¶</a></h3>
+<p>The <code class="docutils literal"><span class="pre">test_policy.py</span></code> tool doesn&#8217;t help you look at trained value functions, and if you want to use those, you will have to do some digging by hand. Check the documentation for the <a class="reference external" href="../utils/logger.html#spinup.utils.logx.restore_tf_graph">restore_tf_graph</a> function for details on how.</p>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="plotting.html" class="btn btn-neutral float-right" title="Plotting Results" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="running.html" class="btn btn-neutral" title="Running Experiments" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, OpenAI.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+
+  
+
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

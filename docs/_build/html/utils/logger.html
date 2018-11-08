@@ -1,0 +1,710 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Logger &mdash; Spinning Up  documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../_static/openai_icon.ico"/>
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/modify.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Plotter" href="plotter.html" />
+    <link rel="prev" title="Soft Actor-Critic" href="../algorithms/sac.html" /> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html">
+          
+
+          
+            
+            <img src="../_static/spinning-up-logo2.png" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">User Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../user/introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/algorithms.html">Algorithms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/running.html">Running Experiments</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/saving_and_loading.html">Experiment Outputs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/plotting.html">Plotting Results</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Introduction to RL</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../spinningup/rl_intro.html">Part 1: Key Concepts in RL</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../spinningup/rl_intro2.html">Part 2: Kinds of RL Algorithms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../spinningup/rl_intro3.html">Part 3: Intro to Policy Optimization</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Resources</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../spinningup/spinningup.html">Spinning Up as a Deep RL Researcher</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../spinningup/keypapers.html">Key Papers in Deep RL</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../spinningup/exercises.html">Exercises</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../spinningup/bench.html">Benchmarks for Spinning Up Implementations</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Algorithms Docs</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../algorithms/vpg.html">Vanilla Policy Gradient</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../algorithms/trpo.html">Trust Region Policy Optimization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../algorithms/ppo.html">Proximal Policy Optimization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../algorithms/ddpg.html">Deep Deterministic Policy Gradient</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../algorithms/td3.html">Twin Delayed DDPG</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../algorithms/sac.html">Soft Actor-Critic</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Utilities Docs</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Logger</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#using-a-logger">Using a Logger</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#examples">Examples</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#logging-and-mpi">Logging and MPI</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#logger-classes">Logger Classes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#loading-saved-graphs">Loading Saved Graphs</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="plotter.html">Plotter</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mpi.html">MPI Tools</a></li>
+<li class="toctree-l1"><a class="reference internal" href="run_utils.html">Run Utils</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Etc.</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../etc/acknowledgements.html">Acknowledgements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../etc/author.html">About the Author</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Spinning Up</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+      <li>Logger</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/utils/logger.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="logger">
+<h1><a class="toc-backref" href="#id2">Logger</a><a class="headerlink" href="#logger" title="Permalink to this headline">¶</a></h1>
+<div class="contents topic" id="table-of-contents">
+<p class="topic-title first">Table of Contents</p>
+<ul class="simple">
+<li><a class="reference internal" href="#logger" id="id2">Logger</a><ul>
+<li><a class="reference internal" href="#using-a-logger" id="id3">Using a Logger</a><ul>
+<li><a class="reference internal" href="#examples" id="id4">Examples</a></li>
+<li><a class="reference internal" href="#logging-and-mpi" id="id5">Logging and MPI</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#logger-classes" id="id6">Logger Classes</a></li>
+<li><a class="reference internal" href="#loading-saved-graphs" id="id7">Loading Saved Graphs</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="section" id="using-a-logger">
+<h2><a class="toc-backref" href="#id3">Using a Logger</a><a class="headerlink" href="#using-a-logger" title="Permalink to this headline">¶</a></h2>
+<p>Spinning Up ships with basic logging tools, implemented in the classes <a class="reference external" href="../utils/logger.html#spinup.utils.logx.Logger">Logger</a> and <a class="reference external" href="../utils/logger.html#spinup.utils.logx.EpochLogger">EpochLogger</a>. The Logger class contains most of the basic functionality for saving diagnostics, hyperparameter configurations, the state of a training run, and the trained model. The EpochLogger class adds a thin layer on top of that to make it easy to track the average, standard deviation, min, and max value of a diagnostic over each epoch and across MPI workers.</p>
+<div class="admonition-you-should-know admonition">
+<p class="first admonition-title">You Should Know</p>
+<p class="last">All Spinning Up algorithm implementations use an EpochLogger.</p>
+</div>
+<div class="section" id="examples">
+<h3><a class="toc-backref" href="#id4">Examples</a><a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h3>
+<p>First, let&#8217;s look at a simple example of how an EpochLogger keeps track of a diagnostic value:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">spinup.utils.logx</span> <span class="k">import</span> <span class="n">EpochLogger</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">epoch_logger</span> <span class="o">=</span> <span class="n">EpochLogger</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
+<span class="go">        epoch_logger.store(Test=i)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">epoch_logger</span><span class="o">.</span><span class="n">log_tabular</span><span class="p">(</span><span class="s1">&#39;Test&#39;</span><span class="p">,</span> <span class="n">with_min_and_max</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">epoch_logger</span><span class="o">.</span><span class="n">dump_tabular</span><span class="p">()</span>
+<span class="go">-------------------------------------</span>
+<span class="go">|     AverageTest |             4.5 |</span>
+<span class="go">|         StdTest |            2.87 |</span>
+<span class="go">|         MaxTest |               9 |</span>
+<span class="go">|         MinTest |               0 |</span>
+<span class="go">-------------------------------------</span>
+</pre></div>
+</div>
+<p>The <code class="docutils literal"><span class="pre">store</span></code> method is used to save all values of <code class="docutils literal"><span class="pre">Test</span></code> to the <code class="docutils literal"><span class="pre">epoch_logger</span></code>&#8216;s internal state. Then, when <code class="docutils literal"><span class="pre">log_tabular</span></code> is called, it computes the average, standard deviation, min, and max of <code class="docutils literal"><span class="pre">Test</span></code> over all of the values in the internal state. The internal state is wiped clean after the call to <code class="docutils literal"><span class="pre">log_tabular</span></code> (to prevent leakage into the statistics at the next epoch). Finally, <code class="docutils literal"><span class="pre">dump_tabular</span></code> is called to write the diagnostics to file and to stdout.</p>
+<p>Next, let&#8217;s look at a full training procedure with the logger embedded, to highlight configuration and model saving as well as diagnostic logging:</p>
+<div class="highlight-python"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69</pre></div></td><td class="code"><div class="highlight"><pre><span></span> <span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+ <span class="kn">import</span> <span class="nn">tensorflow</span> <span class="kn">as</span> <span class="nn">tf</span>
+ <span class="kn">import</span> <span class="nn">time</span>
+ <span class="kn">from</span> <span class="nn">spinup.utils.logx</span> <span class="kn">import</span> <span class="n">EpochLogger</span>
+
+
+ <span class="k">def</span> <span class="nf">mlp</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">hidden_sizes</span><span class="o">=</span><span class="p">(</span><span class="mi">32</span><span class="p">,),</span> <span class="n">activation</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">tanh</span><span class="p">,</span> <span class="n">output_activation</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+     <span class="k">for</span> <span class="n">h</span> <span class="ow">in</span> <span class="n">hidden_sizes</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
+         <span class="n">x</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">dense</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="n">h</span><span class="p">,</span> <span class="n">activation</span><span class="o">=</span><span class="n">activation</span><span class="p">)</span>
+     <span class="k">return</span> <span class="n">tf</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">dense</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="n">hidden_sizes</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">activation</span><span class="o">=</span><span class="n">output_activation</span><span class="p">)</span>
+
+
+ <span class="c1"># Simple script for training an MLP on MNIST.</span>
+ <span class="k">def</span> <span class="nf">train_mnist</span><span class="p">(</span><span class="n">steps_per_epoch</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+                 <span class="n">lr</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">,</span> <span class="n">layers</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">hidden_size</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span>
+                 <span class="n">logger_kwargs</span><span class="o">=</span><span class="nb">dict</span><span class="p">(),</span> <span class="n">save_freq</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+
+<span class="hll">     <span class="n">logger</span> <span class="o">=</span> <span class="n">EpochLogger</span><span class="p">(</span><span class="o">**</span><span class="n">logger_kwargs</span><span class="p">)</span>
+</span><span class="hll">     <span class="n">logger</span><span class="o">.</span><span class="n">save_config</span><span class="p">(</span><span class="nb">locals</span><span class="p">())</span>
+</span>
+     <span class="c1"># Load and preprocess MNIST data</span>
+     <span class="p">(</span><span class="n">x_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">),</span> <span class="n">_</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">datasets</span><span class="o">.</span><span class="n">mnist</span><span class="o">.</span><span class="n">load_data</span><span class="p">()</span>
+     <span class="n">x_train</span> <span class="o">=</span> <span class="n">x_train</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">28</span><span class="o">*</span><span class="mi">28</span><span class="p">)</span> <span class="o">/</span> <span class="mf">255.0</span>
+
+     <span class="c1"># Define inputs &amp; main outputs from computation graph</span>
+     <span class="n">x_ph</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">placeholder</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="bp">None</span><span class="p">,</span> <span class="mi">28</span><span class="o">*</span><span class="mi">28</span><span class="p">))</span>
+     <span class="n">y_ph</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">placeholder</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">int32</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="bp">None</span><span class="p">,))</span>
+     <span class="n">logits</span> <span class="o">=</span> <span class="n">mlp</span><span class="p">(</span><span class="n">x_ph</span><span class="p">,</span> <span class="n">hidden_sizes</span><span class="o">=</span><span class="p">[</span><span class="n">hidden_size</span><span class="p">]</span><span class="o">*</span><span class="n">layers</span> <span class="o">+</span> <span class="p">[</span><span class="mi">10</span><span class="p">],</span> <span class="n">activation</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span><span class="p">)</span>
+     <span class="n">predict</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">logits</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">output_type</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
+
+     <span class="c1"># Define loss function, accuracy, and training op</span>
+     <span class="n">y</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">one_hot</span><span class="p">(</span><span class="n">y_ph</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+     <span class="n">loss</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">losses</span><span class="o">.</span><span class="n">softmax_cross_entropy</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">logits</span><span class="p">)</span>
+     <span class="n">acc</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">reduce_mean</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">equal</span><span class="p">(</span><span class="n">y_ph</span><span class="p">,</span> <span class="n">predict</span><span class="p">),</span> <span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">))</span>
+     <span class="n">train_op</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">train</span><span class="o">.</span><span class="n">AdamOptimizer</span><span class="p">()</span><span class="o">.</span><span class="n">minimize</span><span class="p">(</span><span class="n">loss</span><span class="p">)</span>
+
+     <span class="c1"># Prepare session</span>
+     <span class="n">sess</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">Session</span><span class="p">()</span>
+     <span class="n">sess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">global_variables_initializer</span><span class="p">())</span>
+
+     <span class="c1"># Setup model saving</span>
+<span class="hll">     <span class="n">logger</span><span class="o">.</span><span class="n">setup_tf_saver</span><span class="p">(</span><span class="n">sess</span><span class="p">,</span> <span class="n">inputs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="n">x_ph</span><span class="p">},</span>
+</span><span class="hll">                                 <span class="n">outputs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;logits&#39;</span><span class="p">:</span> <span class="n">logits</span><span class="p">,</span> <span class="s1">&#39;predict&#39;</span><span class="p">:</span> <span class="n">predict</span><span class="p">})</span>
+</span>
+     <span class="n">start_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+
+     <span class="c1"># Run main training loop</span>
+     <span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">epochs</span><span class="p">):</span>
+         <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">steps_per_epoch</span><span class="p">):</span>
+             <span class="n">idxs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">x_train</span><span class="p">),</span> <span class="mi">32</span><span class="p">)</span>
+             <span class="n">feed_dict</span> <span class="o">=</span> <span class="p">{</span><span class="n">x_ph</span><span class="p">:</span> <span class="n">x_train</span><span class="p">[</span><span class="n">idxs</span><span class="p">],</span>
+                          <span class="n">y_ph</span><span class="p">:</span> <span class="n">y_train</span><span class="p">[</span><span class="n">idxs</span><span class="p">]}</span>
+             <span class="n">outs</span> <span class="o">=</span> <span class="n">sess</span><span class="o">.</span><span class="n">run</span><span class="p">([</span><span class="n">loss</span><span class="p">,</span> <span class="n">acc</span><span class="p">,</span> <span class="n">train_op</span><span class="p">],</span> <span class="n">feed_dict</span><span class="o">=</span><span class="n">feed_dict</span><span class="p">)</span>
+<span class="hll">             <span class="n">logger</span><span class="o">.</span><span class="n">store</span><span class="p">(</span><span class="n">Loss</span><span class="o">=</span><span class="n">outs</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">Acc</span><span class="o">=</span><span class="n">outs</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+</span>
+         <span class="c1"># Save model</span>
+         <span class="k">if</span> <span class="p">(</span><span class="n">epoch</span> <span class="o">%</span> <span class="n">save_freq</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">epoch</span> <span class="o">==</span> <span class="n">epochs</span><span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+<span class="hll">             <span class="n">logger</span><span class="o">.</span><span class="n">save_state</span><span class="p">(</span><span class="n">state_dict</span><span class="o">=</span><span class="nb">dict</span><span class="p">(),</span> <span class="n">itr</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
+</span>
+         <span class="c1"># Log info about epoch</span>
+<span class="hll">         <span class="n">logger</span><span class="o">.</span><span class="n">log_tabular</span><span class="p">(</span><span class="s1">&#39;Epoch&#39;</span><span class="p">,</span> <span class="n">epoch</span><span class="p">)</span>
+</span><span class="hll">         <span class="n">logger</span><span class="o">.</span><span class="n">log_tabular</span><span class="p">(</span><span class="s1">&#39;Acc&#39;</span><span class="p">,</span> <span class="n">with_min_and_max</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+</span><span class="hll">         <span class="n">logger</span><span class="o">.</span><span class="n">log_tabular</span><span class="p">(</span><span class="s1">&#39;Loss&#39;</span><span class="p">,</span> <span class="n">average_only</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+</span><span class="hll">         <span class="n">logger</span><span class="o">.</span><span class="n">log_tabular</span><span class="p">(</span><span class="s1">&#39;TotalGradientSteps&#39;</span><span class="p">,</span> <span class="p">(</span><span class="n">epoch</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">steps_per_epoch</span><span class="p">)</span>
+</span><span class="hll">         <span class="n">logger</span><span class="o">.</span><span class="n">log_tabular</span><span class="p">(</span><span class="s1">&#39;Time&#39;</span><span class="p">,</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span><span class="o">-</span><span class="n">start_time</span><span class="p">)</span>
+</span><span class="hll">         <span class="n">logger</span><span class="o">.</span><span class="n">dump_tabular</span><span class="p">()</span>
+</span>
+ <span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+     <span class="n">train_mnist</span><span class="p">()</span>
+</pre></div>
+</td></tr></table></div>
+<p>In this example, observe that</p>
+<ul class="simple">
+<li>On line 19, <a class="reference external" href="../utils/logger.html#spinup.utils.logx.Logger.save_config">logger.save_config</a> is used to save the hyperparameter configuration to a JSON file.</li>
+<li>On lines 42 and 43, <a class="reference external" href="../utils/logger.html#spinup.utils.logx.Logger.setup_tf_saver">logger.setup_tf_saver</a> is used to prepare the logger to save the key elements of the computation graph.</li>
+<li>On line 54, diagnostics are saved to the logger&#8217;s internal state via <a class="reference external" href="../utils/logger.html#spinup.utils.logx.EpochLogger.store">logger.store</a>.</li>
+<li>On line 58, the computation graph is saved once per epoch via <a class="reference external" href="../utils/logger.html#spinup.utils.logx.Logger.save_state">logger.save_state</a>.</li>
+<li>On lines 61-66, <a class="reference external" href="../utils/logger.html#spinup.utils.logx.EpochLogger.log_tabular">logger.log_tabular</a> and <a class="reference external" href="../utils/logger.html#spinup.utils.logx.Logger.dump_tabular">logger.dump_tabular</a> are used to write the epoch diagnostics to file. Note that the keys passed into <a class="reference external" href="../utils/logger.html#spinup.utils.logx.EpochLogger.log_tabular">logger.log_tabular</a> are the same as the keys passed into <a class="reference external" href="../utils/logger.html#spinup.utils.logx.EpochLogger.store">logger.store</a>.</li>
+</ul>
+</div>
+<div class="section" id="logging-and-mpi">
+<h3><a class="toc-backref" href="#id5">Logging and MPI</a><a class="headerlink" href="#logging-and-mpi" title="Permalink to this headline">¶</a></h3>
+<div class="admonition-you-should-know admonition">
+<p class="first admonition-title">You Should Know</p>
+<p class="last">Several algorithms in RL are easily parallelized by using MPI to average gradients and/or other key quantities. The Spinning Up loggers are designed to be well-behaved when using MPI: things will only get written to stdout and to file from the process with rank 0. But information from other processes isn&#8217;t lost if you use the EpochLogger: everything which is passed into EpochLogger via <code class="docutils literal"><span class="pre">store</span></code>, regardless of which process it&#8217;s stored in, gets used to compute average/std/min/max values for a diagnostic.</p>
+</div>
+</div>
+</div>
+<div class="section" id="logger-classes">
+<h2><a class="toc-backref" href="#id6">Logger Classes</a><a class="headerlink" href="#logger-classes" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="spinup.utils.logx.Logger">
+<em class="property">class </em><code class="descclassname">spinup.utils.logx.</code><code class="descname">Logger</code><span class="sig-paren">(</span><em>output_dir=None</em>, <em>output_fname='progress.txt'</em>, <em>exp_name=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/spinup/utils/logx.html#Logger"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinup.utils.logx.Logger" title="Permalink to this definition">¶</a></dt>
+<dd><p>A general-purpose logger.</p>
+<p>Makes it easy to save diagnostics, hyperparameter configurations, the
+state of a training run, and the trained model.</p>
+<dl class="method">
+<dt id="spinup.utils.logx.Logger.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>output_dir=None</em>, <em>output_fname='progress.txt'</em>, <em>exp_name=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/spinup/utils/logx.html#Logger.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinup.utils.logx.Logger.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize a Logger.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>output_dir</strong> (<em>string</em>) &#8211; A directory for saving results to. If
+<code class="docutils literal"><span class="pre">None</span></code>, defaults to a temp directory of the form
+<code class="docutils literal"><span class="pre">/tmp/experiments/somerandomnumber</span></code>.</li>
+<li><strong>output_fname</strong> (<em>string</em>) &#8211; Name for the tab-separated-value file
+containing metrics logged throughout a training run.
+Defaults to <code class="docutils literal"><span class="pre">progress.txt</span></code>.</li>
+<li><strong>exp_name</strong> (<em>string</em>) &#8211; Experiment name. If you run multiple training
+runs and give them all the same <code class="docutils literal"><span class="pre">exp_name</span></code>, the plotter
+will know to group them. (Use case: if you run the same
+hyperparameter configuration with multiple random seeds, you
+should give them all the same <code class="docutils literal"><span class="pre">exp_name</span></code>.)</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="spinup.utils.logx.Logger.dump_tabular">
+<code class="descname">dump_tabular</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/spinup/utils/logx.html#Logger.dump_tabular"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinup.utils.logx.Logger.dump_tabular" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write all of the diagnostics from the current iteration.</p>
+<p>Writes both to stdout, and to the output file.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="spinup.utils.logx.Logger.log">
+<code class="descname">log</code><span class="sig-paren">(</span><em>msg</em>, <em>color='green'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/spinup/utils/logx.html#Logger.log"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinup.utils.logx.Logger.log" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print a colorized message to stdout.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="spinup.utils.logx.Logger.log_tabular">
+<code class="descname">log_tabular</code><span class="sig-paren">(</span><em>key</em>, <em>val</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/spinup/utils/logx.html#Logger.log_tabular"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinup.utils.logx.Logger.log_tabular" title="Permalink to this definition">¶</a></dt>
+<dd><p>Log a value of some diagnostic.</p>
+<p>Call this only once for each diagnostic quantity, each iteration.
+After using <code class="docutils literal"><span class="pre">log_tabular</span></code> to store values for each diagnostic,
+make sure to call <code class="docutils literal"><span class="pre">dump_tabular</span></code> to write them out to file and
+stdout (otherwise they will not get saved anywhere).</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="spinup.utils.logx.Logger.save_config">
+<code class="descname">save_config</code><span class="sig-paren">(</span><em>config</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/spinup/utils/logx.html#Logger.save_config"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinup.utils.logx.Logger.save_config" title="Permalink to this definition">¶</a></dt>
+<dd><p>Log an experiment configuration.</p>
+<p>Call this once at the top of your experiment, passing in all important
+config vars as a dict. This will serialize the config to JSON, while
+handling anything which can&#8217;t be serialized in a graceful way (writing
+as informative a string as possible).</p>
+<p>Example use:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">logger</span> <span class="o">=</span> <span class="n">EpochLogger</span><span class="p">(</span><span class="o">**</span><span class="n">logger_kwargs</span><span class="p">)</span>
+<span class="n">logger</span><span class="o">.</span><span class="n">save_config</span><span class="p">(</span><span class="nb">locals</span><span class="p">())</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="spinup.utils.logx.Logger.save_state">
+<code class="descname">save_state</code><span class="sig-paren">(</span><em>state_dict</em>, <em>itr=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/spinup/utils/logx.html#Logger.save_state"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinup.utils.logx.Logger.save_state" title="Permalink to this definition">¶</a></dt>
+<dd><p>Saves the state of an experiment.</p>
+<p>To be clear: this is about saving <em>state</em>, not logging diagnostics.
+All diagnostic logging is separate from this function. This function
+will save whatever is in <code class="docutils literal"><span class="pre">state_dict</span></code>&#8212;usually just a copy of the
+environment&#8212;and the most recent parameters for the model you
+previously set up saving for with <code class="docutils literal"><span class="pre">setup_tf_saver</span></code>.</p>
+<p>Call with any frequency you prefer. If you only want to maintain a
+single state and overwrite it at each call with the most recent
+version, leave <code class="docutils literal"><span class="pre">itr=None</span></code>. If you want to keep all of the states you
+save, provide unique (increasing) values for &#8216;itr&#8217;.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>state_dict</strong> (<em>dict</em>) &#8211; Dictionary containing essential elements to
+describe the current state of training.</li>
+<li><strong>itr</strong> &#8211; An int, or None. Current iteration of training.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="spinup.utils.logx.Logger.setup_tf_saver">
+<code class="descname">setup_tf_saver</code><span class="sig-paren">(</span><em>sess</em>, <em>inputs</em>, <em>outputs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/spinup/utils/logx.html#Logger.setup_tf_saver"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinup.utils.logx.Logger.setup_tf_saver" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set up easy model saving for tensorflow.</p>
+<p>Call once, after defining your computation graph but before training.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>sess</strong> &#8211; The Tensorflow session in which you train your computation
+graph.</li>
+<li><strong>inputs</strong> (<em>dict</em>) &#8211; A dictionary that maps from keys of your choice
+to the tensorflow placeholders that serve as inputs to the
+computation graph. Make sure that <em>all</em> of the placeholders
+needed for your outputs are included!</li>
+<li><strong>outputs</strong> (<em>dict</em>) &#8211; A dictionary that maps from keys of your choice
+to the outputs from your computation graph.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="spinup.utils.logx.EpochLogger">
+<em class="property">class </em><code class="descclassname">spinup.utils.logx.</code><code class="descname">EpochLogger</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/spinup/utils/logx.html#EpochLogger"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinup.utils.logx.EpochLogger" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#spinup.utils.logx.Logger" title="spinup.utils.logx.Logger"><code class="xref py py-class docutils literal"><span class="pre">spinup.utils.logx.Logger</span></code></a></p>
+<p>A variant of Logger tailored for tracking average values over epochs.</p>
+<p>Typical use case: there is some quantity which is calculated many times
+throughout an epoch, and at the end of the epoch, you would like to
+report the average / std / min / max value of that quantity.</p>
+<p>With an EpochLogger, each time the quantity is calculated, you would
+use</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">epoch_logger</span><span class="o">.</span><span class="n">store</span><span class="p">(</span><span class="n">NameOfQuantity</span><span class="o">=</span><span class="n">quantity_value</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>to load it into the EpochLogger&#8217;s state. Then at the end of the epoch, you
+would use</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">epoch_logger</span><span class="o">.</span><span class="n">log_tabular</span><span class="p">(</span><span class="n">NameOfQuantity</span><span class="p">,</span> <span class="o">**</span><span class="n">options</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>to record the desired values.</p>
+<dl class="method">
+<dt id="spinup.utils.logx.EpochLogger.get_stats">
+<code class="descname">get_stats</code><span class="sig-paren">(</span><em>key</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/spinup/utils/logx.html#EpochLogger.get_stats"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinup.utils.logx.EpochLogger.get_stats" title="Permalink to this definition">¶</a></dt>
+<dd><p>Lets an algorithm ask the logger for mean/std/min/max of a diagnostic.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="spinup.utils.logx.EpochLogger.log_tabular">
+<code class="descname">log_tabular</code><span class="sig-paren">(</span><em>key</em>, <em>val=None</em>, <em>with_min_and_max=False</em>, <em>average_only=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/spinup/utils/logx.html#EpochLogger.log_tabular"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinup.utils.logx.EpochLogger.log_tabular" title="Permalink to this definition">¶</a></dt>
+<dd><p>Log a value or possibly the mean/std/min/max values of a diagnostic.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>key</strong> (<em>string</em>) &#8211; The name of the diagnostic. If you are logging a
+diagnostic whose state has previously been saved with
+<code class="docutils literal"><span class="pre">store</span></code>, the key here has to match the key you used there.</li>
+<li><strong>val</strong> &#8211; A value for the diagnostic. If you have previously saved
+values for this key via <code class="docutils literal"><span class="pre">store</span></code>, do <em>not</em> provide a <code class="docutils literal"><span class="pre">val</span></code>
+here.</li>
+<li><strong>with_min_and_max</strong> (<em>bool</em>) &#8211; If true, log min and max values of the
+diagnostic over the epoch.</li>
+<li><strong>average_only</strong> (<em>bool</em>) &#8211; If true, do not log the standard deviation
+of the diagnostic over the epoch.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="spinup.utils.logx.EpochLogger.store">
+<code class="descname">store</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/spinup/utils/logx.html#EpochLogger.store"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinup.utils.logx.EpochLogger.store" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save something into the epoch_logger&#8217;s current state.</p>
+<p>Provide an arbitrary number of keyword arguments with numerical
+values.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="loading-saved-graphs">
+<h2><a class="toc-backref" href="#id7">Loading Saved Graphs</a><a class="headerlink" href="#loading-saved-graphs" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="spinup.utils.logx.restore_tf_graph">
+<code class="descclassname">spinup.utils.logx.</code><code class="descname">restore_tf_graph</code><span class="sig-paren">(</span><em>sess</em>, <em>fpath</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/spinup/utils/logx.html#restore_tf_graph"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinup.utils.logx.restore_tf_graph" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loads graphs saved by Logger.</p>
+<p>Will output a dictionary whose keys and values are from the &#8216;inputs&#8217;
+and &#8216;outputs&#8217; dict you specified with logger.setup_tf_saver().</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>sess</strong> &#8211; A Tensorflow session.</li>
+<li><strong>fpath</strong> &#8211; Filepath to save directory.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">A dictionary mapping from keys to tensors in the computation graph
+loaded from <code class="docutils literal"><span class="pre">fpath</span></code>.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<p>When you use this method to restore a graph saved by a Spinning Up implementation, you can minimally expect it to include the following:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="11%" />
+<col width="89%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Key</th>
+<th class="head">Value</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">x</span></code></td>
+<td>Tensorflow placeholder for state input.</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">pi</span></code></td>
+<td><div class="first last line-block">
+<div class="line">Samples an action from the agent, conditioned</div>
+<div class="line">on states in <code class="docutils literal"><span class="pre">x</span></code>.</div>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+<p>The relevant value functions for an algorithm are also typically stored. For details of what else gets saved by a given algorithm, see its documentation page.</p>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="plotter.html" class="btn btn-neutral float-right" title="Plotter" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="../algorithms/sac.html" class="btn btn-neutral" title="Soft Actor-Critic" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, OpenAI.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+
+  
+
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

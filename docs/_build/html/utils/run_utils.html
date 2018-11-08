@@ -1,0 +1,468 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Run Utils &mdash; Spinning Up  documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../_static/openai_icon.ico"/>
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/modify.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Acknowledgements" href="../etc/acknowledgements.html" />
+    <link rel="prev" title="MPI Tools" href="mpi.html" /> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html">
+          
+
+          
+            
+            <img src="../_static/spinning-up-logo2.png" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">User Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../user/introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/algorithms.html">Algorithms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/running.html">Running Experiments</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/saving_and_loading.html">Experiment Outputs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/plotting.html">Plotting Results</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Introduction to RL</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../spinningup/rl_intro.html">Part 1: Key Concepts in RL</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../spinningup/rl_intro2.html">Part 2: Kinds of RL Algorithms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../spinningup/rl_intro3.html">Part 3: Intro to Policy Optimization</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Resources</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../spinningup/spinningup.html">Spinning Up as a Deep RL Researcher</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../spinningup/keypapers.html">Key Papers in Deep RL</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../spinningup/exercises.html">Exercises</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../spinningup/bench.html">Benchmarks for Spinning Up Implementations</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Algorithms Docs</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../algorithms/vpg.html">Vanilla Policy Gradient</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../algorithms/trpo.html">Trust Region Policy Optimization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../algorithms/ppo.html">Proximal Policy Optimization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../algorithms/ddpg.html">Deep Deterministic Policy Gradient</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../algorithms/td3.html">Twin Delayed DDPG</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../algorithms/sac.html">Soft Actor-Critic</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Utilities Docs</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="logger.html">Logger</a></li>
+<li class="toctree-l1"><a class="reference internal" href="plotter.html">Plotter</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mpi.html">MPI Tools</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Run Utils</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#experimentgrid">ExperimentGrid</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#calling-experiments">Calling Experiments</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption"><span class="caption-text">Etc.</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../etc/acknowledgements.html">Acknowledgements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../etc/author.html">About the Author</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Spinning Up</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+      <li>Run Utils</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/utils/run_utils.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="run-utils">
+<h1><a class="toc-backref" href="#id1">Run Utils</a><a class="headerlink" href="#run-utils" title="Permalink to this headline">¶</a></h1>
+<div class="contents topic" id="table-of-contents">
+<p class="topic-title first">Table of Contents</p>
+<ul class="simple">
+<li><a class="reference internal" href="#run-utils" id="id1">Run Utils</a><ul>
+<li><a class="reference internal" href="#experimentgrid" id="id2">ExperimentGrid</a></li>
+<li><a class="reference internal" href="#calling-experiments" id="id3">Calling Experiments</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="section" id="experimentgrid">
+<h2><a class="toc-backref" href="#id2">ExperimentGrid</a><a class="headerlink" href="#experimentgrid" title="Permalink to this headline">¶</a></h2>
+<p>Spinning Up ships with a tool called ExperimentGrid for making hyperparameter ablations easier. This is based on (but simpler than) <a class="reference external" href="https://github.com/rll/rllab/blob/master/rllab/misc/instrument.py#L173">the rllab tool</a> called VariantGenerator.</p>
+<dl class="class">
+<dt id="spinup.utils.run_utils.ExperimentGrid">
+<em class="property">class </em><code class="descclassname">spinup.utils.run_utils.</code><code class="descname">ExperimentGrid</code><span class="sig-paren">(</span><em>name=''</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/spinup/utils/run_utils.html#ExperimentGrid"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinup.utils.run_utils.ExperimentGrid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Tool for running many experiments given hyperparameter ranges.</p>
+<dl class="method">
+<dt id="spinup.utils.run_utils.ExperimentGrid.add">
+<code class="descname">add</code><span class="sig-paren">(</span><em>key</em>, <em>vals</em>, <em>shorthand=None</em>, <em>in_name=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/spinup/utils/run_utils.html#ExperimentGrid.add"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinup.utils.run_utils.ExperimentGrid.add" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a parameter (key) to the grid config, with potential values (vals).</p>
+<p>By default, if a shorthand isn&#8217;t given, one is automatically generated
+from the key using the first three letters of each colon-separated
+term. To disable this behavior, change <code class="docutils literal"><span class="pre">DEFAULT_SHORTHAND</span></code> in the
+<code class="docutils literal"><span class="pre">spinup/user_config.py</span></code> file to <code class="docutils literal"><span class="pre">False</span></code>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>key</strong> (<em>string</em>) &#8211; Name of parameter.</li>
+<li><strong>vals</strong> (<em>value</em><em> or </em><em>list of values</em>) &#8211; Allowed values of parameter.</li>
+<li><strong>shorthand</strong> (<em>string</em>) &#8211; Optional, shortened name of parameter. For
+example, maybe the parameter <code class="docutils literal"><span class="pre">steps_per_epoch</span></code> is shortened
+to <code class="docutils literal"><span class="pre">steps</span></code>.</li>
+<li><strong>in_name</strong> (<em>bool</em>) &#8211; When constructing variant names, force the
+inclusion of this parameter into the name.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="spinup.utils.run_utils.ExperimentGrid.print">
+<code class="descname">print</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/spinup/utils/run_utils.html#ExperimentGrid.print"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinup.utils.run_utils.ExperimentGrid.print" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print a helpful report about the experiment grid.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="spinup.utils.run_utils.ExperimentGrid.run">
+<code class="descname">run</code><span class="sig-paren">(</span><em>thunk</em>, <em>num_cpu=1</em>, <em>data_dir=None</em>, <em>datestamp=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/spinup/utils/run_utils.html#ExperimentGrid.run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinup.utils.run_utils.ExperimentGrid.run" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run each variant in the grid with function &#8216;thunk&#8217;.</p>
+<p>Note: &#8216;thunk&#8217; must be either a callable function, or a string. If it is
+a string, it must be the name of a parameter whose values are all
+callable functions.</p>
+<p>Uses <code class="docutils literal"><span class="pre">call_experiment</span></code> to actually launch each experiment, and gives
+each variant a name using <code class="docutils literal"><span class="pre">self.variant_name()</span></code>.</p>
+<p>Maintenance note: the args for ExperimentGrid.run should track closely
+to the args for call_experiment. However, <code class="docutils literal"><span class="pre">seed</span></code> is omitted because
+we presume the user may add it as a parameter in the grid.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="spinup.utils.run_utils.ExperimentGrid.variant_name">
+<code class="descname">variant_name</code><span class="sig-paren">(</span><em>variant</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/spinup/utils/run_utils.html#ExperimentGrid.variant_name"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinup.utils.run_utils.ExperimentGrid.variant_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given a variant (dict of valid param/value pairs), make an exp_name.</p>
+<p>A variant&#8217;s name is constructed as the grid name (if you&#8217;ve given it
+one), plus param names (or shorthands if available) and values
+separated by underscores.</p>
+<p>Note: if <code class="docutils literal"><span class="pre">seed</span></code> is a parameter, it is not included in the name.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="spinup.utils.run_utils.ExperimentGrid.variants">
+<code class="descname">variants</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/spinup/utils/run_utils.html#ExperimentGrid.variants"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinup.utils.run_utils.ExperimentGrid.variants" title="Permalink to this definition">¶</a></dt>
+<dd><p>Makes a list of dicts, where each dict is a valid config in the grid.</p>
+<p>There is special handling for variant parameters whose names take
+the form</p>
+<blockquote>
+<div><code class="docutils literal"><span class="pre">'full:param:name'</span></code>.</div></blockquote>
+<p>The colons are taken to indicate that these parameters should
+have a nested dict structure. eg, if there are two params,</p>
+<blockquote>
+<div><table border="1" class="docutils">
+<colgroup>
+<col width="87%" />
+<col width="13%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Key</th>
+<th class="head">Val</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">'base:param:one'</span></code></td>
+<td>1</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">'base:param:two'</span></code></td>
+<td>2</td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+<p>the variant dict will have the structure</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">variant</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="n">base</span><span class="p">:</span> <span class="p">{</span>
+        <span class="n">param</span> <span class="p">:</span> <span class="p">{</span>
+            <span class="n">a</span> <span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="n">b</span> <span class="p">:</span> <span class="mi">2</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="calling-experiments">
+<h2><a class="toc-backref" href="#id3">Calling Experiments</a><a class="headerlink" href="#calling-experiments" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="spinup.utils.run_utils.call_experiment">
+<code class="descclassname">spinup.utils.run_utils.</code><code class="descname">call_experiment</code><span class="sig-paren">(</span><em>exp_name</em>, <em>thunk</em>, <em>seed=0</em>, <em>num_cpu=1</em>, <em>data_dir=None</em>, <em>datestamp=False</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/spinup/utils/run_utils.html#call_experiment"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinup.utils.run_utils.call_experiment" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run a function (thunk) with hyperparameters (kwargs), plus configuration.</p>
+<p>This wraps a few pieces of functionality which are useful when you want
+to run many experiments in sequence, including logger configuration and
+splitting into multiple processes for MPI.</p>
+<p>There&#8217;s also a SpinningUp-specific convenience added into executing the
+thunk: if <code class="docutils literal"><span class="pre">env_name</span></code> is one of the kwargs passed to call_experiment, it&#8217;s
+assumed that the thunk accepts an argument called <code class="docutils literal"><span class="pre">env_fn</span></code>, and that
+the <code class="docutils literal"><span class="pre">env_fn</span></code> should make a gym environment with the given <code class="docutils literal"><span class="pre">env_name</span></code>.</p>
+<p>The way the experiment is actually executed is slightly complicated: the
+function is serialized to a string, and then <code class="docutils literal"><span class="pre">run_entrypoint.py</span></code> is
+executed in a subprocess call with the serialized string as an argument.
+<code class="docutils literal"><span class="pre">run_entrypoint.py</span></code> unserializes the function call and executes it.
+We choose to do it this way&#8212;instead of just calling the function
+directly here&#8212;to avoid leaking state between successive experiments.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>exp_name</strong> (<em>string</em>) &#8211; Name for experiment.</li>
+<li><strong>thunk</strong> (<em>callable</em>) &#8211; A python function.</li>
+<li><strong>seed</strong> (<em>int</em>) &#8211; Seed for random number generators.</li>
+<li><strong>num_cpu</strong> (<em>int</em>) &#8211; Number of MPI processes to split into. Also accepts
+&#8216;auto&#8217;, which will set up as many procs as there are cpus on
+the machine.</li>
+<li><strong>data_dir</strong> (<em>string</em>) &#8211; Used in configuring the logger, to decide where
+to store experiment results. Note: if left as None, data_dir will
+default to <code class="docutils literal"><span class="pre">DEFAULT_DATA_DIR</span></code> from <code class="docutils literal"><span class="pre">spinup/user_config.py</span></code>.</li>
+<li><strong>**kwargs</strong> &#8211; All kwargs to pass to thunk.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="spinup.utils.run_utils.setup_logger_kwargs">
+<code class="descclassname">spinup.utils.run_utils.</code><code class="descname">setup_logger_kwargs</code><span class="sig-paren">(</span><em>exp_name</em>, <em>seed=None</em>, <em>data_dir=None</em>, <em>datestamp=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/spinup/utils/run_utils.html#setup_logger_kwargs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spinup.utils.run_utils.setup_logger_kwargs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets up the output_dir for a logger and returns a dict for logger kwargs.</p>
+<p>If no seed is given and datestamp is false,</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">output_dir</span> <span class="o">=</span> <span class="n">data_dir</span><span class="o">/</span><span class="n">exp_name</span>
+</pre></div>
+</div>
+<p>If a seed is given and datestamp is false,</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">output_dir</span> <span class="o">=</span> <span class="n">data_dir</span><span class="o">/</span><span class="n">exp_name</span><span class="o">/</span><span class="n">exp_name_s</span><span class="p">[</span><span class="n">seed</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>If datestamp is true, amend to</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">output_dir</span> <span class="o">=</span> <span class="n">data_dir</span><span class="o">/</span><span class="n">YY</span><span class="o">-</span><span class="n">MM</span><span class="o">-</span><span class="n">DD_exp_name</span><span class="o">/</span><span class="n">YY</span><span class="o">-</span><span class="n">MM</span><span class="o">-</span><span class="n">DD_HH</span><span class="o">-</span><span class="n">MM</span><span class="o">-</span><span class="n">SS_exp_name_s</span><span class="p">[</span><span class="n">seed</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>You can force datestamp=True by setting <code class="docutils literal"><span class="pre">FORCE_DATESTAMP=True</span></code> in
+<code class="docutils literal"><span class="pre">spinup/user_config.py</span></code>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>exp_name</strong> (<em>string</em>) &#8211; Name for experiment.</li>
+<li><strong>seed</strong> (<em>int</em>) &#8211; Seed for random number generators used by experiment.</li>
+<li><strong>data_dir</strong> (<em>string</em>) &#8211; Path to folder where results should be saved.
+Default is the <code class="docutils literal"><span class="pre">DEFAULT_DATA_DIR</span></code> in <code class="docutils literal"><span class="pre">spinup/user_config.py</span></code>.</li>
+<li><strong>datestamp</strong> (<em>bool</em>) &#8211; Whether to include a date and timestamp in the
+name of the save directory.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">logger_kwargs, a dict containing output_dir and exp_name.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../etc/acknowledgements.html" class="btn btn-neutral float-right" title="Acknowledgements" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="mpi.html" class="btn btn-neutral" title="MPI Tools" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, OpenAI.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+
+  
+
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

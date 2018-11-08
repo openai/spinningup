@@ -1,0 +1,360 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Exercises &mdash; Spinning Up  documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../_static/openai_icon.ico"/>
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/modify.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Benchmarks for Spinning Up Implementations" href="bench.html" />
+    <link rel="prev" title="Key Papers in Deep RL" href="keypapers.html" /> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html">
+          
+
+          
+            
+            <img src="../_static/spinning-up-logo2.png" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">User Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../user/introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/algorithms.html">Algorithms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/running.html">Running Experiments</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/saving_and_loading.html">Experiment Outputs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/plotting.html">Plotting Results</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Introduction to RL</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="rl_intro.html">Part 1: Key Concepts in RL</a></li>
+<li class="toctree-l1"><a class="reference internal" href="rl_intro2.html">Part 2: Kinds of RL Algorithms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="rl_intro3.html">Part 3: Intro to Policy Optimization</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Resources</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="spinningup.html">Spinning Up as a Deep RL Researcher</a></li>
+<li class="toctree-l1"><a class="reference internal" href="keypapers.html">Key Papers in Deep RL</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Exercises</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#problem-set-1-basics-of-implementation">Problem Set 1: Basics of Implementation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#problem-set-2-algorithm-failure-modes">Problem Set 2: Algorithm Failure Modes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#challenges">Challenges</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="bench.html">Benchmarks for Spinning Up Implementations</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Algorithms Docs</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../algorithms/vpg.html">Vanilla Policy Gradient</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../algorithms/trpo.html">Trust Region Policy Optimization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../algorithms/ppo.html">Proximal Policy Optimization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../algorithms/ddpg.html">Deep Deterministic Policy Gradient</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../algorithms/td3.html">Twin Delayed DDPG</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../algorithms/sac.html">Soft Actor-Critic</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Utilities Docs</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../utils/logger.html">Logger</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../utils/plotter.html">Plotter</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../utils/mpi.html">MPI Tools</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../utils/run_utils.html">Run Utils</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Etc.</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../etc/acknowledgements.html">Acknowledgements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../etc/author.html">About the Author</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Spinning Up</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+      <li>Exercises</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/spinningup/exercises.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="exercises">
+<h1><a class="toc-backref" href="#id2">Exercises</a><a class="headerlink" href="#exercises" title="Permalink to this headline">¶</a></h1>
+<div class="contents topic" id="table-of-contents">
+<p class="topic-title first">Table of Contents</p>
+<ul class="simple">
+<li><a class="reference internal" href="#exercises" id="id2">Exercises</a><ul>
+<li><a class="reference internal" href="#problem-set-1-basics-of-implementation" id="id3">Problem Set 1: Basics of Implementation</a></li>
+<li><a class="reference internal" href="#problem-set-2-algorithm-failure-modes" id="id4">Problem Set 2: Algorithm Failure Modes</a></li>
+<li><a class="reference internal" href="#challenges" id="id5">Challenges</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="section" id="problem-set-1-basics-of-implementation">
+<h2><a class="toc-backref" href="#id3">Problem Set 1: Basics of Implementation</a><a class="headerlink" href="#problem-set-1-basics-of-implementation" title="Permalink to this headline">¶</a></h2>
+<div class="admonition-exercise-1-1-gaussian-log-likelihood admonition">
+<p class="first admonition-title">Exercise 1.1: Gaussian Log-Likelihood</p>
+<p><strong>Path to Exercise.</strong> <code class="docutils literal"><span class="pre">spinup/exercises/problem_set_1/exercise1_1.py</span></code></p>
+<p><strong>Path to Solution.</strong> <code class="docutils literal"><span class="pre">spinup/exercises/problem_set_1_solutions/exercise1_1_soln.py</span></code></p>
+<p><strong>Instructions.</strong> Write a function which takes in Tensorflow symbols for the means and log stds of a batch of diagonal Gaussian distributions, along with a Tensorflow placeholder for (previously-generated) samples from those distributions, and returns a Tensorflow symbol for computing the log likelihoods of those samples.</p>
+<p>You may find it useful to review the formula given in <a class="reference external" href="../spinningup/rl_intro.html#stochastic-policies">this section of the RL introduction</a>.</p>
+<p>Implement your solution in <code class="docutils literal"><span class="pre">exercise1_1.py</span></code>, and run that file to automatically check your work.</p>
+<p class="last"><strong>Evaluation Criteria.</strong> Your solution will be checked by comparing outputs against a known-good implementation, using a batch of random inputs.</p>
+</div>
+<div class="admonition-exercise-1-2-policy-for-ppo admonition">
+<p class="first admonition-title">Exercise 1.2: Policy for PPO</p>
+<p><strong>Path to Exercise.</strong> <code class="docutils literal"><span class="pre">spinup/exercises/problem_set_1/exercise1_2.py</span></code></p>
+<p><strong>Path to Solution.</strong> <code class="docutils literal"><span class="pre">spinup/exercises/problem_set_1_solutions/exercise1_2_soln.py</span></code></p>
+<p><strong>Instructions.</strong> Implement an MLP diagonal Gaussian policy for PPO.</p>
+<p>Implement your solution in <code class="docutils literal"><span class="pre">exercise1_2.py</span></code>, and run that file to automatically check your work.</p>
+<p class="last"><strong>Evaluation Criteria.</strong> Your solution will be evaluated by running for 20 epochs in the InvertedPendulum-v2 Gym environment, and this should take in the ballpark of 3-5 minutes (depending on your machine, and other processes you are running in the background). The bar for success is reaching an average score of over 500 in the last 5 epochs, or getting to a score of 1000 (the maximum possible score) in the last 5 epochs.</p>
+</div>
+<div class="admonition-exercise-1-3-computation-graph-for-td3 admonition">
+<p class="first admonition-title">Exercise 1.3: Computation Graph for TD3</p>
+<p><strong>Path to Exercise.</strong> <code class="docutils literal"><span class="pre">spinup/exercises/problem_set_1/exercise1_3.py</span></code></p>
+<p><strong>Path to Solution.</strong> <code class="docutils literal"><span class="pre">spinup/algos/td3/td3.py</span></code></p>
+<p><strong>Instructions.</strong> Implement the core computation graph for the TD3 algorithm.</p>
+<p>As starter code, you are given the entirety of the TD3 algorithm except for the computation graph. Find &#8220;YOUR CODE HERE&#8221; to begin.</p>
+<p>You may find it useful to review the pseudocode in our <a class="reference external" href="../algorithms/td3.html">page on TD3</a>.</p>
+<p>Implement your solution in <code class="docutils literal"><span class="pre">exercise1_3.py</span></code>, and run that file to see the results of your work. There is no automatic checking for this exercise.</p>
+<p><strong>Evaluation Criteria.</strong> Evaluate your code by running <code class="docutils literal"><span class="pre">exercise1_3.py</span></code> with HalfCheetah-v2, InvertedPendulum-v2, and one other Gym MuJoCo environment of your choosing (set via the <code class="docutils literal"><span class="pre">--env</span></code> flag). It is set up to use smaller neural networks (hidden sizes [128,128]) than typical for TD3, with a maximum episode length of 150, and to run for only 10 epochs. The goal is to see significant learning progress relatively quickly (in terms of wall clock time). Experiments will likely take on the order of ~10 minutes.</p>
+<p class="last">Use the <code class="docutils literal"><span class="pre">--use_soln</span></code> flag to run Spinning Up&#8217;s TD3 instead of your implementation. Anecdotally, within 10 epochs, the score in HalfCheetah should go over 300, and the score in InvertedPendulum should max out at 150.</p>
+</div>
+</div>
+<div class="section" id="problem-set-2-algorithm-failure-modes">
+<h2><a class="toc-backref" href="#id4">Problem Set 2: Algorithm Failure Modes</a><a class="headerlink" href="#problem-set-2-algorithm-failure-modes" title="Permalink to this headline">¶</a></h2>
+<div class="admonition-exercise-2-1-value-function-fitting-in-trpo admonition">
+<p class="first admonition-title">Exercise 2.1: Value Function Fitting in TRPO</p>
+<p><strong>Path to Exercise.</strong> (Not applicable, there is no code for this one.)</p>
+<p><strong>Path to Solution.</strong> <a class="reference external" href="../spinningup/exercise2_1_soln.html">Solution available here.</a></p>
+<p>Many factors can impact the performance of policy gradient algorithms, but few more drastically than the quality of the learned value function used for advantage estimation.</p>
+<p>In this exercise, you will compare results between runs of TRPO where you put lots of effort into fitting the value function (<code class="docutils literal"><span class="pre">train_v_iters=80</span></code>), versus where you put very little effort into fitting the value function (<code class="docutils literal"><span class="pre">train_v_iters=0</span></code>).</p>
+<p><strong>Instructions.</strong> Run the following command:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">spinup</span><span class="o">.</span><span class="n">run</span> <span class="n">trpo</span> <span class="o">--</span><span class="n">env</span> <span class="n">Hopper</span><span class="o">-</span><span class="n">v2</span> <span class="o">--</span><span class="n">train_v_iters</span><span class="p">[</span><span class="n">v</span><span class="p">]</span> <span class="mi">0</span> <span class="mi">80</span> <span class="o">--</span><span class="n">exp_name</span> <span class="n">ex2</span><span class="o">-</span><span class="mi">1</span> <span class="o">--</span><span class="n">epochs</span> <span class="mi">250</span> <span class="o">--</span><span class="n">steps_per_epoch</span> <span class="mi">4000</span> <span class="o">--</span><span class="n">seed</span> <span class="mi">0</span> <span class="mi">10</span> <span class="mi">20</span> <span class="o">--</span><span class="n">dt</span>
+</pre></div>
+</div>
+<p class="last">and plot the results. (These experiments might take ~10 minutes each, and this command runs six of them.) What do you find?</p>
+</div>
+<div class="admonition-exercise-2-2-silent-bug-in-ddpg admonition">
+<p class="first admonition-title">Exercise 2.2: Silent Bug in DDPG</p>
+<p><strong>Path to Exercise.</strong> <code class="docutils literal"><span class="pre">spinup/exercises/problem_set_2/exercise2_2.py</span></code></p>
+<p><strong>Path to Solution.</strong> <a class="reference external" href="../spinningup/exercise2_2_soln.html">Solution available here.</a></p>
+<p>The hardest part of writing RL code is dealing with bugs, because failures are frequently silent. The code will appear to run correctly, but the agent&#8217;s performance will degrade relative to a bug-free implementation&#8212;sometimes to the extent that it never learns anything.</p>
+<p>In this exercise, you will observe a bug in vivo and compare results against correct code.</p>
+<p><strong>Instructions.</strong> Run <code class="docutils literal"><span class="pre">exercise2_2.py</span></code>, which will launch DDPG experiments with and without a bug. The non-bugged version runs the default Spinning Up implementation of DDPG, using a default method for creating the actor and critic networks. The bugged version runs the same DDPG code, except uses a bugged method for creating the networks.</p>
+<p>There will be six experiments in all (three random seeds for each case), and each should take in the ballpark of 10 minutes. When they&#8217;re finished, plot the results. What is the difference in performance with and without the bug?</p>
+<p>Without referencing the correct actor-critic code (which is to say&#8212;don&#8217;t look in DDPG&#8217;s <code class="docutils literal"><span class="pre">core.py</span></code> file), try to figure out what the bug is and explain how it breaks things.</p>
+<p><strong>Hint.</strong> To figure out what&#8217;s going wrong, think about how the DDPG code implements the DDPG computation graph. Specifically, look at this excerpt:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="c1"># Bellman backup for Q function</span>
+<span class="n">backup</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">stop_gradient</span><span class="p">(</span><span class="n">r_ph</span> <span class="o">+</span> <span class="n">gamma</span><span class="o">*</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">d_ph</span><span class="p">)</span><span class="o">*</span><span class="n">q_pi_targ</span><span class="p">)</span>
+
+<span class="c1"># DDPG losses</span>
+<span class="n">pi_loss</span> <span class="o">=</span> <span class="o">-</span><span class="n">tf</span><span class="o">.</span><span class="n">reduce_mean</span><span class="p">(</span><span class="n">q_pi</span><span class="p">)</span>
+<span class="n">q_loss</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">reduce_mean</span><span class="p">((</span><span class="n">q</span><span class="o">-</span><span class="n">backup</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>How could a bug in the actor-critic code have an impact here?</p>
+<p class="last"><strong>Bonus.</strong> Are there any choices of hyperparameters which would have hidden the effects of the bug?</p>
+</div>
+</div>
+<div class="section" id="challenges">
+<h2><a class="toc-backref" href="#id5">Challenges</a><a class="headerlink" href="#challenges" title="Permalink to this headline">¶</a></h2>
+<div class="admonition-write-code-from-scratch admonition">
+<p class="first admonition-title">Write Code from Scratch</p>
+<p class="last">As we suggest in <a class="reference external" href="../spinningup/spinningup.html#learn-by-doing">the essay</a>, try reimplementing various deep RL algorithms from scratch.</p>
+</div>
+<div class="admonition-requests-for-research admonition">
+<p class="first admonition-title">Requests for Research</p>
+<p>If you feel comfortable with writing deep learning and deep RL code, consider trying to make progress on any of OpenAI&#8217;s standing requests for research:</p>
+<ul class="last simple">
+<li><a class="reference external" href="https://openai.com/requests-for-research/">Requests for Research 1</a></li>
+<li><a class="reference external" href="https://blog.openai.com/requests-for-research-2/">Requests for Research 2</a></li>
+</ul>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="bench.html" class="btn btn-neutral float-right" title="Benchmarks for Spinning Up Implementations" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="keypapers.html" class="btn btn-neutral" title="Key Papers in Deep RL" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, OpenAI.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+
+  
+
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

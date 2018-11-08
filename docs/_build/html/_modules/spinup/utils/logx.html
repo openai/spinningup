@@ -1,0 +1,584 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>spinup.utils.logx &mdash; Spinning Up  documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../../../_static/openai_icon.ico"/>
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/modify.css" type="text/css" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+
+  
+  <script src="../../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../../index.html">
+          
+
+          
+            
+            <img src="../../../_static/spinning-up-logo2.png" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">User Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../user/introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../user/installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../user/algorithms.html">Algorithms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../user/running.html">Running Experiments</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../user/saving_and_loading.html">Experiment Outputs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../user/plotting.html">Plotting Results</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Introduction to RL</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../spinningup/rl_intro.html">Part 1: Key Concepts in RL</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../spinningup/rl_intro2.html">Part 2: Kinds of RL Algorithms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../spinningup/rl_intro3.html">Part 3: Intro to Policy Optimization</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Resources</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../spinningup/spinningup.html">Spinning Up as a Deep RL Researcher</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../spinningup/keypapers.html">Key Papers in Deep RL</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../spinningup/exercises.html">Exercises</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../spinningup/bench.html">Benchmarks for Spinning Up Implementations</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Algorithms Docs</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../algorithms/vpg.html">Vanilla Policy Gradient</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../algorithms/trpo.html">Trust Region Policy Optimization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../algorithms/ppo.html">Proximal Policy Optimization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../algorithms/ddpg.html">Deep Deterministic Policy Gradient</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../algorithms/td3.html">Twin Delayed DDPG</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../algorithms/sac.html">Soft Actor-Critic</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Utilities Docs</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../utils/logger.html">Logger</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../utils/plotter.html">Plotter</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../utils/mpi.html">MPI Tools</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../utils/run_utils.html">Run Utils</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Etc.</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../etc/acknowledgements.html">Acknowledgements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../etc/author.html">About the Author</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Spinning Up</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>spinup.utils.logx</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for spinup.utils.logx</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">Some simple logging functionality, inspired by rllab&#39;s logging.</span>
+
+<span class="sd">Logs to a tab-separated-values file (path/to/output_directory/progress.txt)</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">joblib</span>
+<span class="kn">import</span> <span class="nn">shutil</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">tensorflow</span> <span class="k">as</span> <span class="nn">tf</span>
+<span class="kn">import</span> <span class="nn">os.path</span> <span class="k">as</span> <span class="nn">osp</span><span class="o">,</span> <span class="nn">time</span><span class="o">,</span> <span class="nn">atexit</span><span class="o">,</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">spinup.utils.mpi_tools</span> <span class="k">import</span> <span class="n">proc_id</span><span class="p">,</span> <span class="n">mpi_statistics_scalar</span>
+<span class="kn">from</span> <span class="nn">spinup.utils.serialization_utils</span> <span class="k">import</span> <span class="n">convert_json</span>
+
+<span class="n">color2num</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+    <span class="n">gray</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span>
+    <span class="n">red</span><span class="o">=</span><span class="mi">31</span><span class="p">,</span>
+    <span class="n">green</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span>
+    <span class="n">yellow</span><span class="o">=</span><span class="mi">33</span><span class="p">,</span>
+    <span class="n">blue</span><span class="o">=</span><span class="mi">34</span><span class="p">,</span>
+    <span class="n">magenta</span><span class="o">=</span><span class="mi">35</span><span class="p">,</span>
+    <span class="n">cyan</span><span class="o">=</span><span class="mi">36</span><span class="p">,</span>
+    <span class="n">white</span><span class="o">=</span><span class="mi">37</span><span class="p">,</span>
+    <span class="n">crimson</span><span class="o">=</span><span class="mi">38</span>
+<span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">colorize</span><span class="p">(</span><span class="n">string</span><span class="p">,</span> <span class="n">color</span><span class="p">,</span> <span class="n">bold</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">highlight</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Colorize a string.</span>
+
+<span class="sd">    This function was originally written by John Schulman.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">attr</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">num</span> <span class="o">=</span> <span class="n">color2num</span><span class="p">[</span><span class="n">color</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">highlight</span><span class="p">:</span> <span class="n">num</span> <span class="o">+=</span> <span class="mi">10</span>
+    <span class="n">attr</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">num</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">bold</span><span class="p">:</span> <span class="n">attr</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;1&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="s1">&#39;</span><span class="se">\x1b</span><span class="s1">[</span><span class="si">%s</span><span class="s1">m</span><span class="si">%s</span><span class="se">\x1b</span><span class="s1">[0m&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="s1">&#39;;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">attr</span><span class="p">),</span> <span class="n">string</span><span class="p">)</span>
+
+<div class="viewcode-block" id="restore_tf_graph"><a class="viewcode-back" href="../../../utils/logger.html#spinup.utils.logx.restore_tf_graph">[docs]</a><span class="k">def</span> <span class="nf">restore_tf_graph</span><span class="p">(</span><span class="n">sess</span><span class="p">,</span> <span class="n">fpath</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Loads graphs saved by Logger.</span>
+
+<span class="sd">    Will output a dictionary whose keys and values are from the &#39;inputs&#39; </span>
+<span class="sd">    and &#39;outputs&#39; dict you specified with logger.setup_tf_saver().</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        sess: A Tensorflow session.</span>
+<span class="sd">        fpath: Filepath to save directory.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A dictionary mapping from keys to tensors in the computation graph</span>
+<span class="sd">        loaded from ``fpath``. </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">tf</span><span class="o">.</span><span class="n">saved_model</span><span class="o">.</span><span class="n">loader</span><span class="o">.</span><span class="n">load</span><span class="p">(</span>
+                <span class="n">sess</span><span class="p">,</span>
+                <span class="p">[</span><span class="n">tf</span><span class="o">.</span><span class="n">saved_model</span><span class="o">.</span><span class="n">tag_constants</span><span class="o">.</span><span class="n">SERVING</span><span class="p">],</span>
+                <span class="n">fpath</span>
+            <span class="p">)</span>
+    <span class="n">model_info</span> <span class="o">=</span> <span class="n">joblib</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">osp</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">fpath</span><span class="p">,</span> <span class="s1">&#39;model_info.pkl&#39;</span><span class="p">))</span>
+    <span class="n">graph</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">get_default_graph</span><span class="p">()</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+    <span class="n">model</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">k</span><span class="p">:</span> <span class="n">graph</span><span class="o">.</span><span class="n">get_tensor_by_name</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="n">model_info</span><span class="p">[</span><span class="s1">&#39;inputs&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">()})</span>
+    <span class="n">model</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">k</span><span class="p">:</span> <span class="n">graph</span><span class="o">.</span><span class="n">get_tensor_by_name</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="n">model_info</span><span class="p">[</span><span class="s1">&#39;outputs&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">()})</span>
+    <span class="k">return</span> <span class="n">model</span></div>
+
+<div class="viewcode-block" id="Logger"><a class="viewcode-back" href="../../../utils/logger.html#spinup.utils.logx.Logger">[docs]</a><span class="k">class</span> <span class="nc">Logger</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A general-purpose logger.</span>
+
+<span class="sd">    Makes it easy to save diagnostics, hyperparameter configurations, the </span>
+<span class="sd">    state of a training run, and the trained model.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="Logger.__init__"><a class="viewcode-back" href="../../../utils/logger.html#spinup.utils.logx.Logger.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_dir</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">output_fname</span><span class="o">=</span><span class="s1">&#39;progress.txt&#39;</span><span class="p">,</span> <span class="n">exp_name</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize a Logger.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            output_dir (string): A directory for saving results to. If </span>
+<span class="sd">                ``None``, defaults to a temp directory of the form</span>
+<span class="sd">                ``/tmp/experiments/somerandomnumber``.</span>
+
+<span class="sd">            output_fname (string): Name for the tab-separated-value file </span>
+<span class="sd">                containing metrics logged throughout a training run. </span>
+<span class="sd">                Defaults to ``progress.txt``. </span>
+
+<span class="sd">            exp_name (string): Experiment name. If you run multiple training</span>
+<span class="sd">                runs and give them all the same ``exp_name``, the plotter</span>
+<span class="sd">                will know to group them. (Use case: if you run the same</span>
+<span class="sd">                hyperparameter configuration with multiple random seeds, you</span>
+<span class="sd">                should give them all the same ``exp_name``.)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">proc_id</span><span class="p">()</span><span class="o">==</span><span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">output_dir</span> <span class="o">=</span> <span class="n">output_dir</span> <span class="ow">or</span> <span class="s2">&quot;/tmp/experiments/</span><span class="si">%i</span><span class="s2">&quot;</span><span class="o">%</span><span class="nb">int</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">())</span>
+            <span class="k">if</span> <span class="n">osp</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">output_dir</span><span class="p">):</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Warning: Log dir </span><span class="si">%s</span><span class="s2"> already exists! Storing info there anyway.&quot;</span><span class="o">%</span><span class="bp">self</span><span class="o">.</span><span class="n">output_dir</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">output_dir</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">output_file</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">osp</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">output_dir</span><span class="p">,</span> <span class="n">output_fname</span><span class="p">),</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span>
+            <span class="n">atexit</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">output_file</span><span class="o">.</span><span class="n">close</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">colorize</span><span class="p">(</span><span class="s2">&quot;Logging data to </span><span class="si">%s</span><span class="s2">&quot;</span><span class="o">%</span><span class="bp">self</span><span class="o">.</span><span class="n">output_file</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="s1">&#39;green&#39;</span><span class="p">,</span> <span class="n">bold</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">output_dir</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">output_file</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">first_row</span><span class="o">=</span><span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log_headers</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log_current_row</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">exp_name</span> <span class="o">=</span> <span class="n">exp_name</span></div>
+
+<div class="viewcode-block" id="Logger.log"><a class="viewcode-back" href="../../../utils/logger.html#spinup.utils.logx.Logger.log">[docs]</a>    <span class="k">def</span> <span class="nf">log</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;green&#39;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Print a colorized message to stdout.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">proc_id</span><span class="p">()</span><span class="o">==</span><span class="mi">0</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">colorize</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">color</span><span class="p">,</span> <span class="n">bold</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="Logger.log_tabular"><a class="viewcode-back" href="../../../utils/logger.html#spinup.utils.logx.Logger.log_tabular">[docs]</a>    <span class="k">def</span> <span class="nf">log_tabular</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Log a value of some diagnostic.</span>
+
+<span class="sd">        Call this only once for each diagnostic quantity, each iteration.</span>
+<span class="sd">        After using ``log_tabular`` to store values for each diagnostic,</span>
+<span class="sd">        make sure to call ``dump_tabular`` to write them out to file and</span>
+<span class="sd">        stdout (otherwise they will not get saved anywhere).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">first_row</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">log_headers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">log_headers</span><span class="p">,</span> <span class="s2">&quot;Trying to introduce a new key </span><span class="si">%s</span><span class="s2"> that you didn&#39;t include in the first iteration&quot;</span><span class="o">%</span><span class="n">key</span>
+        <span class="k">assert</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">log_current_row</span><span class="p">,</span> <span class="s2">&quot;You already set </span><span class="si">%s</span><span class="s2"> this iteration. Maybe you forgot to call dump_tabular()&quot;</span><span class="o">%</span><span class="n">key</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log_current_row</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span></div>
+
+<div class="viewcode-block" id="Logger.save_config"><a class="viewcode-back" href="../../../utils/logger.html#spinup.utils.logx.Logger.save_config">[docs]</a>    <span class="k">def</span> <span class="nf">save_config</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Log an experiment configuration.</span>
+
+<span class="sd">        Call this once at the top of your experiment, passing in all important</span>
+<span class="sd">        config vars as a dict. This will serialize the config to JSON, while</span>
+<span class="sd">        handling anything which can&#39;t be serialized in a graceful way (writing</span>
+<span class="sd">        as informative a string as possible). </span>
+
+<span class="sd">        Example use:</span>
+
+<span class="sd">        .. code-block:: python</span>
+
+<span class="sd">            logger = EpochLogger(**logger_kwargs)</span>
+<span class="sd">            logger.save_config(locals())</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">config_json</span> <span class="o">=</span> <span class="n">convert_json</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">exp_name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">config_json</span><span class="p">[</span><span class="s1">&#39;exp_name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">exp_name</span>
+        <span class="k">if</span> <span class="n">proc_id</span><span class="p">()</span><span class="o">==</span><span class="mi">0</span><span class="p">:</span>
+            <span class="n">output</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">config_json</span><span class="p">,</span> <span class="n">separators</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">,</span><span class="s1">&#39;:</span><span class="se">\t</span><span class="s1">&#39;</span><span class="p">),</span> <span class="n">indent</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">sort_keys</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">colorize</span><span class="p">(</span><span class="s1">&#39;Saving config:</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;cyan&#39;</span><span class="p">,</span> <span class="n">bold</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">output</span><span class="p">)</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">osp</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">output_dir</span><span class="p">,</span> <span class="s2">&quot;config.json&quot;</span><span class="p">),</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">out</span><span class="p">:</span>
+                <span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">output</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Logger.save_state"><a class="viewcode-back" href="../../../utils/logger.html#spinup.utils.logx.Logger.save_state">[docs]</a>    <span class="k">def</span> <span class="nf">save_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state_dict</span><span class="p">,</span> <span class="n">itr</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Saves the state of an experiment.</span>
+
+<span class="sd">        To be clear: this is about saving *state*, not logging diagnostics.</span>
+<span class="sd">        All diagnostic logging is separate from this function. This function</span>
+<span class="sd">        will save whatever is in ``state_dict``---usually just a copy of the</span>
+<span class="sd">        environment---and the most recent parameters for the model you </span>
+<span class="sd">        previously set up saving for with ``setup_tf_saver``. </span>
+
+<span class="sd">        Call with any frequency you prefer. If you only want to maintain a</span>
+<span class="sd">        single state and overwrite it at each call with the most recent </span>
+<span class="sd">        version, leave ``itr=None``. If you want to keep all of the states you</span>
+<span class="sd">        save, provide unique (increasing) values for &#39;itr&#39;.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            state_dict (dict): Dictionary containing essential elements to</span>
+<span class="sd">                describe the current state of training.</span>
+
+<span class="sd">            itr: An int, or None. Current iteration of training.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">proc_id</span><span class="p">()</span><span class="o">==</span><span class="mi">0</span><span class="p">:</span>
+            <span class="n">fname</span> <span class="o">=</span> <span class="s1">&#39;vars.pkl&#39;</span> <span class="k">if</span> <span class="n">itr</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="s1">&#39;vars</span><span class="si">%d</span><span class="s1">.pkl&#39;</span><span class="o">%</span><span class="n">itr</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">joblib</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">state_dict</span><span class="p">,</span> <span class="n">osp</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">output_dir</span><span class="p">,</span> <span class="n">fname</span><span class="p">))</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s1">&#39;Warning: could not pickle state_dict.&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;red&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;tf_saver_elements&#39;</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_tf_simple_save</span><span class="p">(</span><span class="n">itr</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Logger.setup_tf_saver"><a class="viewcode-back" href="../../../utils/logger.html#spinup.utils.logx.Logger.setup_tf_saver">[docs]</a>    <span class="k">def</span> <span class="nf">setup_tf_saver</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sess</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">outputs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set up easy model saving for tensorflow.</span>
+
+<span class="sd">        Call once, after defining your computation graph but before training.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            sess: The Tensorflow session in which you train your computation</span>
+<span class="sd">                graph.</span>
+
+<span class="sd">            inputs (dict): A dictionary that maps from keys of your choice</span>
+<span class="sd">                to the tensorflow placeholders that serve as inputs to the </span>
+<span class="sd">                computation graph. Make sure that *all* of the placeholders</span>
+<span class="sd">                needed for your outputs are included!</span>
+
+<span class="sd">            outputs (dict): A dictionary that maps from keys of your choice</span>
+<span class="sd">                to the outputs from your computation graph.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tf_saver_elements</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">session</span><span class="o">=</span><span class="n">sess</span><span class="p">,</span> <span class="n">inputs</span><span class="o">=</span><span class="n">inputs</span><span class="p">,</span> <span class="n">outputs</span><span class="o">=</span><span class="n">outputs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tf_saver_info</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;inputs&#39;</span><span class="p">:</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span><span class="n">v</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="n">inputs</span><span class="o">.</span><span class="n">items</span><span class="p">()},</span>
+                              <span class="s1">&#39;outputs&#39;</span><span class="p">:</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span><span class="n">v</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="n">outputs</span><span class="o">.</span><span class="n">items</span><span class="p">()}}</span></div>
+
+    <span class="k">def</span> <span class="nf">_tf_simple_save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">itr</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Uses simple_save to save a trained model, plus info to make it easy</span>
+<span class="sd">        to associated tensors to variables after restore. </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">proc_id</span><span class="p">()</span><span class="o">==</span><span class="mi">0</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;tf_saver_elements&#39;</span><span class="p">),</span> \
+                <span class="s2">&quot;First have to setup saving with self.setup_tf_saver&quot;</span>
+            <span class="n">fpath</span> <span class="o">=</span> <span class="s1">&#39;simple_save&#39;</span> <span class="o">+</span> <span class="p">(</span><span class="s1">&#39;</span><span class="si">%d</span><span class="s1">&#39;</span><span class="o">%</span><span class="n">itr</span> <span class="k">if</span> <span class="n">itr</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+            <span class="n">fpath</span> <span class="o">=</span> <span class="n">osp</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">output_dir</span><span class="p">,</span> <span class="n">fpath</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">osp</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">fpath</span><span class="p">):</span>
+                <span class="c1"># simple_save refuses to be useful if fpath already exists,</span>
+                <span class="c1"># so just delete fpath if it&#39;s there.</span>
+                <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">fpath</span><span class="p">)</span>
+            <span class="n">tf</span><span class="o">.</span><span class="n">saved_model</span><span class="o">.</span><span class="n">simple_save</span><span class="p">(</span><span class="n">export_dir</span><span class="o">=</span><span class="n">fpath</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">tf_saver_elements</span><span class="p">)</span>
+            <span class="n">joblib</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tf_saver_info</span><span class="p">,</span> <span class="n">osp</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">fpath</span><span class="p">,</span> <span class="s1">&#39;model_info.pkl&#39;</span><span class="p">))</span>
+    
+<div class="viewcode-block" id="Logger.dump_tabular"><a class="viewcode-back" href="../../../utils/logger.html#spinup.utils.logx.Logger.dump_tabular">[docs]</a>    <span class="k">def</span> <span class="nf">dump_tabular</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Write all of the diagnostics from the current iteration.</span>
+
+<span class="sd">        Writes both to stdout, and to the output file.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">proc_id</span><span class="p">()</span><span class="o">==</span><span class="mi">0</span><span class="p">:</span>
+            <span class="n">vals</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">key_lens</span> <span class="o">=</span> <span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">key</span><span class="p">)</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">log_headers</span><span class="p">]</span>
+            <span class="n">max_key_len</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span><span class="nb">max</span><span class="p">(</span><span class="n">key_lens</span><span class="p">))</span>
+            <span class="n">keystr</span> <span class="o">=</span> <span class="s1">&#39;%&#39;</span><span class="o">+</span><span class="s1">&#39;</span><span class="si">%d</span><span class="s1">&#39;</span><span class="o">%</span><span class="n">max_key_len</span>
+            <span class="n">fmt</span> <span class="o">=</span> <span class="s2">&quot;| &quot;</span> <span class="o">+</span> <span class="n">keystr</span> <span class="o">+</span> <span class="s2">&quot;s | </span><span class="si">%15s</span><span class="s2"> |&quot;</span>
+            <span class="n">n_slashes</span> <span class="o">=</span> <span class="mi">22</span> <span class="o">+</span> <span class="n">max_key_len</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;-&quot;</span><span class="o">*</span><span class="n">n_slashes</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">log_headers</span><span class="p">:</span>
+                <span class="n">val</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">log_current_row</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+                <span class="n">valstr</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%8.3g</span><span class="s2">&quot;</span><span class="o">%</span><span class="n">val</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="s2">&quot;__float__&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="n">val</span>
+                <span class="nb">print</span><span class="p">(</span><span class="n">fmt</span><span class="o">%</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">valstr</span><span class="p">))</span>
+                <span class="n">vals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;-&quot;</span><span class="o">*</span><span class="n">n_slashes</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">output_file</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">first_row</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">output_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\t</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">log_headers</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">output_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\t</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span><span class="n">vals</span><span class="p">))</span><span class="o">+</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">output_file</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log_current_row</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">first_row</span><span class="o">=</span><span class="kc">False</span></div></div>
+
+<div class="viewcode-block" id="EpochLogger"><a class="viewcode-back" href="../../../utils/logger.html#spinup.utils.logx.EpochLogger">[docs]</a><span class="k">class</span> <span class="nc">EpochLogger</span><span class="p">(</span><span class="n">Logger</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A variant of Logger tailored for tracking average values over epochs.</span>
+
+<span class="sd">    Typical use case: there is some quantity which is calculated many times</span>
+<span class="sd">    throughout an epoch, and at the end of the epoch, you would like to </span>
+<span class="sd">    report the average / std / min / max value of that quantity.</span>
+
+<span class="sd">    With an EpochLogger, each time the quantity is calculated, you would</span>
+<span class="sd">    use </span>
+
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">        epoch_logger.store(NameOfQuantity=quantity_value)</span>
+
+<span class="sd">    to load it into the EpochLogger&#39;s state. Then at the end of the epoch, you </span>
+<span class="sd">    would use </span>
+
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">        epoch_logger.log_tabular(NameOfQuantity, **options)</span>
+
+<span class="sd">    to record the desired values.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">epoch_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+
+<div class="viewcode-block" id="EpochLogger.store"><a class="viewcode-back" href="../../../utils/logger.html#spinup.utils.logx.EpochLogger.store">[docs]</a>    <span class="k">def</span> <span class="nf">store</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Save something into the epoch_logger&#39;s current state.</span>
+
+<span class="sd">        Provide an arbitrary number of keyword arguments with numerical </span>
+<span class="sd">        values.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="ow">not</span><span class="p">(</span><span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">epoch_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">epoch_dict</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">epoch_dict</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">v</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="EpochLogger.log_tabular"><a class="viewcode-back" href="../../../utils/logger.html#spinup.utils.logx.EpochLogger.log_tabular">[docs]</a>    <span class="k">def</span> <span class="nf">log_tabular</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">with_min_and_max</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">average_only</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Log a value or possibly the mean/std/min/max values of a diagnostic.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            key (string): The name of the diagnostic. If you are logging a</span>
+<span class="sd">                diagnostic whose state has previously been saved with </span>
+<span class="sd">                ``store``, the key here has to match the key you used there.</span>
+
+<span class="sd">            val: A value for the diagnostic. If you have previously saved</span>
+<span class="sd">                values for this key via ``store``, do *not* provide a ``val``</span>
+<span class="sd">                here.</span>
+
+<span class="sd">            with_min_and_max (bool): If true, log min and max values of the </span>
+<span class="sd">                diagnostic over the epoch.</span>
+
+<span class="sd">            average_only (bool): If true, do not log the standard deviation</span>
+<span class="sd">                of the diagnostic over the epoch.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">val</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">log_tabular</span><span class="p">(</span><span class="n">key</span><span class="p">,</span><span class="n">val</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">v</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">epoch_dict</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+            <span class="n">vals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span><span class="o">&gt;</span><span class="mi">0</span> <span class="k">else</span> <span class="n">v</span>
+            <span class="n">stats</span> <span class="o">=</span> <span class="n">mpi_statistics_scalar</span><span class="p">(</span><span class="n">vals</span><span class="p">,</span> <span class="n">with_min_and_max</span><span class="o">=</span><span class="n">with_min_and_max</span><span class="p">)</span>
+            <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">log_tabular</span><span class="p">(</span><span class="n">key</span> <span class="k">if</span> <span class="n">average_only</span> <span class="k">else</span> <span class="s1">&#39;Average&#39;</span> <span class="o">+</span> <span class="n">key</span><span class="p">,</span> <span class="n">stats</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="k">if</span> <span class="ow">not</span><span class="p">(</span><span class="n">average_only</span><span class="p">):</span>
+                <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">log_tabular</span><span class="p">(</span><span class="s1">&#39;Std&#39;</span><span class="o">+</span><span class="n">key</span><span class="p">,</span> <span class="n">stats</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">with_min_and_max</span><span class="p">:</span>
+                <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">log_tabular</span><span class="p">(</span><span class="s1">&#39;Max&#39;</span><span class="o">+</span><span class="n">key</span><span class="p">,</span> <span class="n">stats</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span>
+                <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">log_tabular</span><span class="p">(</span><span class="s1">&#39;Min&#39;</span><span class="o">+</span><span class="n">key</span><span class="p">,</span> <span class="n">stats</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">epoch_dict</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span></div>
+
+<div class="viewcode-block" id="EpochLogger.get_stats"><a class="viewcode-back" href="../../../utils/logger.html#spinup.utils.logx.EpochLogger.get_stats">[docs]</a>    <span class="k">def</span> <span class="nf">get_stats</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Lets an algorithm ask the logger for mean/std/min/max of a diagnostic.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">v</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">epoch_dict</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+        <span class="n">vals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span><span class="o">&gt;</span><span class="mi">0</span> <span class="k">else</span> <span class="n">v</span>
+        <span class="k">return</span> <span class="n">mpi_statistics_scalar</span><span class="p">(</span><span class="n">vals</span><span class="p">)</span></div></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, OpenAI.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../../',
+            VERSION:'',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../../_static/doctools.js"></script>
+
+  
+
+  <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

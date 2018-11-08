@@ -1,0 +1,314 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Extra Material &mdash; Spinning Up  documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../_static/openai_icon.ico"/>
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/modify.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html">
+          
+
+          
+            
+            <img src="../_static/spinning-up-logo2.png" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">User Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../user/introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/algorithms.html">Algorithms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/running.html">Running Experiments</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/saving_and_loading.html">Experiment Outputs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/plotting.html">Plotting Results</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Introduction to RL</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="rl_intro.html">Part 1: Key Concepts in RL</a></li>
+<li class="toctree-l1"><a class="reference internal" href="rl_intro2.html">Part 2: Kinds of RL Algorithms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="rl_intro3.html">Part 3: Intro to Policy Optimization</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Resources</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="spinningup.html">Spinning Up as a Deep RL Researcher</a></li>
+<li class="toctree-l1"><a class="reference internal" href="keypapers.html">Key Papers in Deep RL</a></li>
+<li class="toctree-l1"><a class="reference internal" href="exercises.html">Exercises</a></li>
+<li class="toctree-l1"><a class="reference internal" href="bench.html">Benchmarks for Spinning Up Implementations</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Algorithms Docs</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../algorithms/vpg.html">Vanilla Policy Gradient</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../algorithms/trpo.html">Trust Region Policy Optimization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../algorithms/ppo.html">Proximal Policy Optimization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../algorithms/ddpg.html">Deep Deterministic Policy Gradient</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../algorithms/td3.html">Twin Delayed DDPG</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../algorithms/sac.html">Soft Actor-Critic</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Utilities Docs</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../utils/logger.html">Logger</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../utils/plotter.html">Plotter</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../utils/mpi.html">MPI Tools</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../utils/run_utils.html">Run Utils</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Etc.</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../etc/acknowledgements.html">Acknowledgements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../etc/author.html">About the Author</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Spinning Up</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+      <li>Extra Material</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/spinningup/extra_pg_proof1.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="extra-material">
+<h1>Extra Material<a class="headerlink" href="#extra-material" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="proof-for-don-t-let-the-past-distract-you">
+<h2>Proof for Don&#8217;t Let the Past Distract You<a class="headerlink" href="#proof-for-don-t-let-the-past-distract-you" title="Permalink to this headline">¶</a></h2>
+<p>In this subsection, we will prove that actions should not be reinforced for rewards obtained in the past.</p>
+<p>Expand out <img class="math" src="../_images/math/27905cd8b349a89eec129f7e3ac3d3ac4c82e501.svg" alt="R(\tau)"/> in the expression for the <a class="reference external" href="../spinningup/rl_intro3.html#deriving-the-simplest-policy-gradient">simplest policy gradient</a> to obtain:</p>
+<div class="math">
+<p><img src="../_images/math/7818594df25b99f9988ee974f6abcd31f0c09ce2.svg" alt="\nabla_{\theta} J(\pi_{\theta}) &amp;= \underE{\tau \sim \pi_{\theta}}{\sum_{t=0}^{T} \nabla_{\theta} \log \pi_{\theta}(a_t |s_t) R(\tau)} \\
+&amp;= \underE{\tau \sim \pi_{\theta}}{\sum_{t=0}^{T} \nabla_{\theta} \log \pi_{\theta}(a_t |s_t) \sum_{t'=0}^T R(s_{t'}, a_{t'}, s_{t'+1})} \\
+&amp;= \sum_{t=0}^{T} \sum_{t'=0}^T  \underE{\tau \sim \pi_{\theta}}{\nabla_{\theta} \log \pi_{\theta}(a_t |s_t) R(s_{t'}, a_{t'}, s_{t'+1})},"/></p>
+</div><p>and consider the term</p>
+<div class="math">
+<p><img src="../_images/math/581fc7d8d1216b5fab1a9c924b06cd1da119e291.svg" alt="\underE{\tau \sim \pi_{\theta}}{f(t,t')} = \underE{\tau \sim \pi_{\theta}}{\nabla_{\theta} \log \pi_{\theta}(a_t |s_t) R(s_{t'}, a_{t'}, s_{t'+1})}."/></p>
+</div><p>We will show that for the case of <img class="math" src="../_images/math/6eaedfaf97e432b165b59c1c5054d8794a4bb5e9.svg" alt="t' &lt; t"/> (the reward comes before the action being reinforced), this term is zero. This is a complete proof of the original claim, because after dropping terms with <img class="math" src="../_images/math/6eaedfaf97e432b165b59c1c5054d8794a4bb5e9.svg" alt="t' &lt; t"/> from the expression, we are left with the reward-to-go form of the policy gradient, as desired:</p>
+<div class="math">
+<p><img src="../_images/math/76cb7b9fdeaaf7b66001200b4ab83d9db53be3fa.svg" alt="\nabla_{\theta} J(\pi_{\theta}) = \underE{\tau \sim \pi_{\theta}}{\sum_{t=0}^{T} \nabla_{\theta} \log \pi_{\theta}(a_t |s_t) \sum_{t'=t}^T R(s_{t'}, a_{t'}, s_{t'+1})}"/></p>
+</div><p><strong>1. Using the Marginal Distribution.</strong> To proceed, we have to break down the expectation in <img class="math" src="../_images/math/296afe9434a159ee67686a964f276a7c1ec3a2b5.svg" alt="\underE{\tau \sim \pi_{\theta}}{f(t,t')}"/>. It&#8217;s an expectation over trajectories, but the expression inside the expectation only deals with a few states and actions: <img class="math" src="../_images/math/8b415ee5fdf45796473d9a05615664c67e20af3d.svg" alt="s_t"/>, <img class="math" src="../_images/math/8ddb1f258c0be380f1821db82450a8c1ed8bf138.svg" alt="a_t"/>, <img class="math" src="../_images/math/a69104bb669a8df9637fd7b194884e8be1c18b30.svg" alt="s_{t'}"/>, <img class="math" src="../_images/math/9e923119a513684f41e8ec9555650e6c0599f4ef.svg" alt="a_{t'}"/>, and <img class="math" src="../_images/math/a75bbd7648e0a8dca2cee4f7c11cf26a4825e091.svg" alt="s_{t'+1}"/>. So in computing the expectation, we only need to worry about the <a class="reference external" href="https://en.wikipedia.org/wiki/Marginal_distribution">marginal distribution</a> over these random variables.</p>
+<p>We derive:</p>
+<div class="math">
+<p><img src="../_images/math/95c0f36bf49fda4a0534b3fbdec674caab81312e.svg" alt="\underE{\tau \sim \pi_{\theta}}{f(t,t')} &amp;= \int_{\tau} P(\tau|\pi_{\theta}) f(t,t') \\
+&amp;= \int_{s_t, a_t, s_{t'}, a_{t'}, s_{t'+1}} P(s_t, a_t, s_{t'}, a_{t'}, s_{t'+1} | \pi_{\theta}) f(t,t') \\
+&amp;= \underE{s_t, a_t, s_{t'}, a_{t'}, s_{t'+1} \sim \pi_{\theta}}{f(t,t')}."/></p>
+</div><p><strong>2. Probability Chain Rule.</strong> Joint distributions can be calculated in terms of conditional and marginal probabilities via <a class="reference external" href="https://en.wikipedia.org/wiki/Chain_rule_(probability)">chain rule of probability</a>: <img class="math" src="../_images/math/401e2a88a845b1e172d267c41b776d593476ca6c.svg" alt="P(A,B) = P(B|A) P(A)"/>. Here, we use this rule to compute</p>
+<div class="math">
+<p><img src="../_images/math/3fe081e9c3a352eb6bfca06e441c6de8fddbc356.svg" alt="P(s_t, a_t, s_{t'}, a_{t'}, s_{t'+1} | \pi_{\theta}) = P(s_t, a_t | \pi_{\theta}, s_{t'}, a_{t'}, s_{t'+1}) P(s_{t'}, a_{t'}, s_{t'+1} | \pi_{\theta})"/></p>
+</div><p><strong>3. Separating Expectations Over Multiple Random Variables.</strong> If we have an expectation over two random variables <img class="math" src="../_images/math/c65f5e15bab0ef7ff195cf8d2f4be7b3f88799c1.svg" alt="A"/> and <img class="math" src="../_images/math/0cda8d34182dc5b0ec3b5464da997ca764ee285c.svg" alt="B"/>, we can split it into an inner and outer expectation, where the inner expectation treats the variable from the outer expectation as a constant. Our ability to make this split relies on probability chain rule. Mathematically:</p>
+<div class="math">
+<p><img src="../_images/math/6599c12ac88442ce383c48f3a297a0e35b28df5c.svg" alt="\underE{A,B}{f(A,B)} &amp;= \int_{A,B} P(A,B) f(A,B) \\
+&amp;= \int_{A} \int_B P(B|A) P(A) f(A,B) \\
+&amp;= \int_A P(A) \int_B P(B|A) f(A,B) \\
+&amp;= \int_A P(A) \underE{B}{f(A,B) \Big| A} \\
+&amp;= \underE{A}{\underE{B}{f(A,B) \Big| A} }"/></p>
+</div><p>An expectation over <img class="math" src="../_images/math/221f912764b6a21e98e845daaff1aa8091730d25.svg" alt="s_t, a_t, s_{t'}, a_{t'}, s_{t'+1}"/> can thus be expressed by</p>
+<div class="math">
+<p><img src="../_images/math/967e45a2250cd6f0fd66481a7fad26ec5b83ba13.svg" alt="\underE{\tau \sim \pi_{\theta}}{f(t,t')} &amp;= \underE{s_t, a_t, s_{t'}, a_{t'}, s_{t'+1} \sim \pi_{\theta}}{f(t,t')} \\
+&amp;= \underE{s_{t'}, a_{t'}, s_{t'+1} \sim \pi_{\theta}}{\underE{s_t, a_t \sim \pi_{\theta}}{f(t,t') \Big| s_{t'}, a_{t'}, s_{t'+1}}}"/></p>
+</div><p><strong>4. Constants Can Be Pulled Outside of Expectations.</strong> If a term inside an expectation is constant with respect to the variable being expected over, it can be pulled outside of the expectation. To give an example, consider again an expectation over two random variables <img class="math" src="../_images/math/c65f5e15bab0ef7ff195cf8d2f4be7b3f88799c1.svg" alt="A"/> and <img class="math" src="../_images/math/0cda8d34182dc5b0ec3b5464da997ca764ee285c.svg" alt="B"/>, where this time, <img class="math" src="../_images/math/b3fe5c4664f1a733fae49e2d7ac763440e215108.svg" alt="f(A,B) = h(A) g(B)"/>. Then, using the result from before:</p>
+<div class="math">
+<p><img src="../_images/math/8d48eaf78eab2baf0e4652cd4212f88ef3cebfe6.svg" alt="\underE{A,B}{f(A,B)} &amp;= \underE{A}{\underE{B}{f(A,B) \Big| A}} \\
+&amp;= \underE{A}{\underE{B}{h(A) g(B) \Big| A}}\\
+&amp;= \underE{A}{h(A) \underE{B}{g(B) \Big| A}}."/></p>
+</div><p>The function in our expectation decomposes this way, allowing us to write:</p>
+<div class="math">
+<p><img src="../_images/math/b20e3dfbcaf825c07e129855e4980cecf1c85681.svg" alt="\underE{\tau \sim \pi_{\theta}}{f(t,t')} &amp;= \underE{s_{t'}, a_{t'}, s_{t'+1} \sim \pi_{\theta}}{\underE{s_t, a_t \sim \pi_{\theta}}{f(t,t') \Big| s_{t'}, a_{t'}, s_{t'+1}}} \\
+&amp;= \underE{s_{t'}, a_{t'}, s_{t'+1} \sim \pi_{\theta}}{\underE{s_t, a_t \sim \pi_{\theta}}{\nabla_{\theta} \log \pi_{\theta}(a_t |s_t) R(s_{t'}, a_{t'}, s_{t'+1}) \Big| s_{t'}, a_{t'}, s_{t'+1}}} \\
+&amp;= \underE{s_{t'}, a_{t'}, s_{t'+1} \sim \pi_{\theta}}{R(s_{t'}, a_{t'}, s_{t'+1})  \underE{s_t, a_t \sim \pi_{\theta}}{\nabla_{\theta} \log \pi_{\theta}(a_t |s_t) \Big| s_{t'}, a_{t'}, s_{t'+1}}}."/></p>
+</div><p><strong>5. Applying the EGLP Lemma.</strong> The last step in our proof relies on the <a class="reference external" href="../spinningup/rl_intro3.html#expected-grad-log-prob-lemma">EGLP lemma</a>. At this point, we will only worry about the innermost expectation,</p>
+<div class="math">
+<p><img src="../_images/math/16e963d49c21e81dd85d2c253b13f4b8aee678fa.svg" alt="\underE{s_t, a_t \sim \pi_{\theta}}{\nabla_{\theta} \log \pi_{\theta}(a_t |s_t) \Big| s_{t'}, a_{t'}, s_{t'+1}} = \int_{s_t, a_t} P(s_t, a_t | \pi_{\theta}, s_{t'}, a_{t'}, s_{t'+1}) \nabla_{\theta} \log \pi_{\theta}(a_t |s_t)."/></p>
+</div><p>We now have to make a distinction between two cases: <img class="math" src="../_images/math/6eaedfaf97e432b165b59c1c5054d8794a4bb5e9.svg" alt="t' &lt; t"/>, the case where the reward happened before the action, and <img class="math" src="../_images/math/38eb538770758af924ea0fdcbfbb843480bcd83a.svg" alt="t' \geq t"/>, where it didn&#8217;t.</p>
+<p><strong>Case One: Reward Before Action.</strong> If <img class="math" src="../_images/math/6eaedfaf97e432b165b59c1c5054d8794a4bb5e9.svg" alt="t' &lt; t"/>, then the conditional probabilities for actions at <img class="math" src="../_images/math/8ddb1f258c0be380f1821db82450a8c1ed8bf138.svg" alt="a_t"/> come from the policy:</p>
+<div class="math">
+<p><img src="../_images/math/e73186fc0c0d37b9ed4cf5ef6d0389c74ef1432f.svg" alt="P(s_t, a_t | \pi_{\theta}, s_{t'}, a_{t'}, s_{t'+1}) &amp;= \pi_{\theta}(a_t | s_t) P(s_t | \pi_{\theta}, s_{t'}, a_{t'}, s_{t'+1}),"/></p>
+</div><p>the innermost expectation can be broken down farther into</p>
+<div class="math">
+<p><img src="../_images/math/9bb13c092324129a05212a09d576f078c32cc86f.svg" alt="\underE{s_t, a_t \sim \pi_{\theta}}{\nabla_{\theta} \log \pi_{\theta}(a_t |s_t) \Big| s_{t'}, a_{t'}, s_{t'+1}} &amp;= \int_{s_t, a_t} P(s_t, a_t | \pi_{\theta}, s_{t'}, a_{t'}, s_{t'+1}) \nabla_{\theta} \log \pi_{\theta}(a_t |s_t) \\
+&amp;= \int_{s_t} P(s_t | \pi_{\theta}, s_{t'}, a_{t'}, s_{t'+1}) \int_{a_t} \pi_{\theta}(a_t | s_t) \nabla_{\theta} \log \pi_{\theta}(a_t |s_t) \\
+&amp;= \underE{s_t \sim \pi_{\theta}}{ \underE{a_t \sim \pi_{\theta}}{\nabla_{\theta} \log \pi_{\theta}(a_t |s_t) \Big| s_t } \Big| s_{t'}, a_{t'}, s_{t'+1}}."/></p>
+</div><p>The EGLP lemma says that</p>
+<div class="math">
+<p><img src="../_images/math/51a2e45d9d10d9796ce3affc3732e3d74317dbdb.svg" alt="\underE{a_t \sim \pi_{\theta}}{\nabla_{\theta} \log \pi_{\theta}(a_t |s_t) \Big| s_t } = 0,"/></p>
+</div><p>allowing us to conclude that for <img class="math" src="../_images/math/6eaedfaf97e432b165b59c1c5054d8794a4bb5e9.svg" alt="t' &lt; t"/>, <img class="math" src="../_images/math/1b6a4f8f14b4e15c3dd129cb70deb19a56d76d33.svg" alt="\underE{\tau \sim \pi_{\theta}}{f(t,t')} = 0"/>.</p>
+<p><strong>Case Two: Reward After Action.</strong> What about the <img class="math" src="../_images/math/38eb538770758af924ea0fdcbfbb843480bcd83a.svg" alt="t' \geq t"/> case, though? Why doesn&#8217;t the same logic apply? In this case, the conditional probabilities for <img class="math" src="../_images/math/8ddb1f258c0be380f1821db82450a8c1ed8bf138.svg" alt="a_t"/> can&#8217;t be broken down the same way, because you&#8217;re conditioning <strong>on the future.</strong> Think about it like this: let&#8217;s say that every day, in the morning, you make a choice between going for a jog and going to work early, and you have a 50-50 chance of each option. If you condition on a future where you went to work early, what are the odds that you went for a jog? Clearly, you didn&#8217;t. But if you&#8217;re conditioning on the past&#8212;before you made the decision&#8212;what are the odds that you will later go for a jog? Now it&#8217;s back to 50-50.</p>
+<p>So in the case where <img class="math" src="../_images/math/38eb538770758af924ea0fdcbfbb843480bcd83a.svg" alt="t' \geq t"/>, the conditional distribution over actions <img class="math" src="../_images/math/8ddb1f258c0be380f1821db82450a8c1ed8bf138.svg" alt="a_t"/> is <strong>not</strong> <img class="math" src="../_images/math/1b4171ef73e95426ab2f60fa2391d649cbd14c33.svg" alt="\pi(a_t|s_t)"/>, and the EGLP lemma does not apply.</p>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, OpenAI.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+
+  
+
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

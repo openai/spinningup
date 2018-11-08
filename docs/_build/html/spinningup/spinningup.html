@@ -1,0 +1,626 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Spinning Up as a Deep RL Researcher &mdash; Spinning Up  documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../_static/openai_icon.ico"/>
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/modify.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Key Papers in Deep RL" href="keypapers.html" />
+    <link rel="prev" title="Part 3: Intro to Policy Optimization" href="rl_intro3.html" /> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html">
+          
+
+          
+            
+            <img src="../_static/spinning-up-logo2.png" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">User Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../user/introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/algorithms.html">Algorithms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/running.html">Running Experiments</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/saving_and_loading.html">Experiment Outputs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/plotting.html">Plotting Results</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Introduction to RL</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="rl_intro.html">Part 1: Key Concepts in RL</a></li>
+<li class="toctree-l1"><a class="reference internal" href="rl_intro2.html">Part 2: Kinds of RL Algorithms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="rl_intro3.html">Part 3: Intro to Policy Optimization</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Resources</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Spinning Up as a Deep RL Researcher</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#the-right-background">The Right Background</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#learn-by-doing">Learn by Doing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#developing-a-research-project">Developing a Research Project</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#doing-rigorous-research-in-rl">Doing Rigorous Research in RL</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#closing-thoughts">Closing Thoughts</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#ps-other-resources">PS: Other Resources</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#references">References</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="keypapers.html">Key Papers in Deep RL</a></li>
+<li class="toctree-l1"><a class="reference internal" href="exercises.html">Exercises</a></li>
+<li class="toctree-l1"><a class="reference internal" href="bench.html">Benchmarks for Spinning Up Implementations</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Algorithms Docs</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../algorithms/vpg.html">Vanilla Policy Gradient</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../algorithms/trpo.html">Trust Region Policy Optimization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../algorithms/ppo.html">Proximal Policy Optimization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../algorithms/ddpg.html">Deep Deterministic Policy Gradient</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../algorithms/td3.html">Twin Delayed DDPG</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../algorithms/sac.html">Soft Actor-Critic</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Utilities Docs</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../utils/logger.html">Logger</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../utils/plotter.html">Plotter</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../utils/mpi.html">MPI Tools</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../utils/run_utils.html">Run Utils</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Etc.</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../etc/acknowledgements.html">Acknowledgements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../etc/author.html">About the Author</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Spinning Up</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+      <li>Spinning Up as a Deep RL Researcher</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/spinningup/spinningup.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="spinning-up-as-a-deep-rl-researcher">
+<h1><a class="toc-backref" href="#id49">Spinning Up as a Deep RL Researcher</a><a class="headerlink" href="#spinning-up-as-a-deep-rl-researcher" title="Permalink to this headline">¶</a></h1>
+<p>By Joshua Achiam, October 13th, 2018</p>
+<div class="contents topic" id="table-of-contents">
+<p class="topic-title first">Table of Contents</p>
+<ul class="simple">
+<li><a class="reference internal" href="#spinning-up-as-a-deep-rl-researcher" id="id49">Spinning Up as a Deep RL Researcher</a><ul>
+<li><a class="reference internal" href="#the-right-background" id="id50">The Right Background</a></li>
+<li><a class="reference internal" href="#learn-by-doing" id="id51">Learn by Doing</a></li>
+<li><a class="reference internal" href="#developing-a-research-project" id="id52">Developing a Research Project</a></li>
+<li><a class="reference internal" href="#doing-rigorous-research-in-rl" id="id53">Doing Rigorous Research in RL</a></li>
+<li><a class="reference internal" href="#closing-thoughts" id="id54">Closing Thoughts</a></li>
+<li><a class="reference internal" href="#ps-other-resources" id="id55">PS: Other Resources</a></li>
+<li><a class="reference internal" href="#references" id="id56">References</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<p>If you’re an aspiring deep RL researcher, you’ve probably heard all kinds of things about deep RL by this point. You know that <a class="reference external" href="https://www.alexirpan.com/2018/02/14/rl-hard.html">it’s hard and it doesn’t always work</a>. That even when you’re following a recipe, <a class="reference external" href="https://arxiv.org/abs/1708.04133">reproducibility</a> <a class="reference external" href="https://arxiv.org/abs/1709.06560">is a challenge</a>. And that if you’re starting from scratch, <a class="reference external" href="http://amid.fish/reproducing-deep-rl">the learning curve is incredibly steep</a>. It’s also the case that there are a lot of <a class="reference external" href="http://www0.cs.ucl.ac.uk/staff/d.silver/web/Teaching.html">great</a> <a class="reference external" href="http://rll.berkeley.edu/deeprlcourse/">resources</a> <a class="reference external" href="https://sites.google.com/view/deep-rl-bootcamp/lectures">out</a> <a class="reference external" href="http://joschu.net/docs/nuts-and-bolts.pdf">there</a>, but the material is new enough that there’s not a clear, well-charted path to mastery. The goal of this column is to help you get past the initial hurdle, and give you a clear sense of how to spin up as a deep RL researcher. In particular, this will outline a useful curriculum for increasing raw knowledge, while interleaving it with the odds and ends that lead to better research.</p>
+<div class="section" id="the-right-background">
+<h2><a class="toc-backref" href="#id50">The Right Background</a><a class="headerlink" href="#the-right-background" title="Permalink to this headline">¶</a></h2>
+<p><strong>Build up a solid mathematical background.</strong> From probability and statistics, feel comfortable with random variables, Bayes’ theorem, chain rule of probability, expected values, standard deviations, and importance sampling. From multivariate calculus, understand gradients and (optionally, but it’ll help) Taylor series expansions.</p>
+<p><strong>Build up a general knowledge of deep learning.</strong> You don’t need to know every single special trick and architecture, but the basics help. Know about standard architectures (<a class="reference external" href="http://ufldl.stanford.edu/tutorial/supervised/MultiLayerNeuralNetworks/">MLP</a>, <a class="reference external" href="http://karpathy.github.io/2015/05/21/rnn-effectiveness/">vanilla RNN</a>, <a class="reference external" href="https://arxiv.org/abs/1503.04069">LSTM</a> (<a class="reference external" href="http://colah.github.io/posts/2015-08-Understanding-LSTMs/">also see this blog</a>), <a class="reference external" href="https://arxiv.org/abs/1412.3555v1">GRU</a>, <a class="reference external" href="http://colah.github.io/posts/2014-07-Conv-Nets-Modular/">conv</a> <a class="reference external" href="https://cs231n.github.io/convolutional-networks/">layers</a>, <a class="reference external" href="https://arxiv.org/abs/1512.03385">resnets</a>, <a class="reference external" href="https://arxiv.org/abs/1409.0473">attention</a> <a class="reference external" href="https://arxiv.org/abs/1706.03762">mechanisms</a>), common regularizers (<a class="reference external" href="https://papers.nips.cc/paper/563-a-simple-weight-decay-can-improve-generalization.pdf">weight decay</a>, <a class="reference external" href="http://jmlr.org/papers/volume15/srivastava14a.old/srivastava14a.pdf">dropout</a>), normalization (<a class="reference external" href="https://arxiv.org/abs/1502.03167">batch norm</a>, <a class="reference external" href="https://arxiv.org/abs/1607.06450">layer norm</a>, <a class="reference external" href="https://arxiv.org/abs/1602.07868">weight norm</a>), and optimizers (<a class="reference external" href="http://ufldl.stanford.edu/tutorial/supervised/OptimizationStochasticGradientDescent/">SGD, momentum SGD</a>, <a class="reference external" href="https://arxiv.org/abs/1412.6980">Adam</a>, <a class="reference external" href="https://arxiv.org/abs/1609.04747">others</a>). Know what the <a class="reference external" href="https://arxiv.org/abs/1312.6114">reparameterization trick</a> is.</p>
+<p><strong>Become familiar with at least one deep learning library.</strong> <a class="reference external" href="https://www.tensorflow.org/">Tensorflow</a> or <a class="reference external" href="http://pytorch.org/">PyTorch</a> would be a good place to start. You don’t need to know how to do everything, but you should feel pretty confident in implementing a simple program to do supervised learning.</p>
+<p><strong>Get comfortable with the main concepts and terminology in RL.</strong> Know what states, actions, trajectories, policies, rewards, value functions, and action-value functions are. If you&#8217;re unfamiliar, Spinning Up ships with <a class="reference external" href="../spinningup/rl_intro.html">an introduction</a> to this material; it&#8217;s also worth checking out the <a class="reference external" href="https://github.com/jachiam/rl-intro/blob/master/Presentation/rl_intro.pdf">RL-Intro</a> from the OpenAI Hackathon, or the exceptional and thorough <a class="reference external" href="https://lilianweng.github.io/lil-log/2018/02/19/a-long-peek-into-reinforcement-learning.html">overview by Lilian Weng</a>. Optionally, if you’re the sort of person who enjoys mathematical theory, study up on the math of <a class="reference external" href="http://joschu.net/docs/thesis.pdf">monotonic improvement theory</a> (which forms the basis for advanced policy gradient algorithms), or <a class="reference external" href="https://sites.ualberta.ca/~szepesva/papers/RLAlgsInMDPs.pdf">classical RL algorithms</a> (which despite being superseded by deep RL algorithms, contain valuable insights that sometimes drive new research).</p>
+</div>
+<div class="section" id="learn-by-doing">
+<h2><a class="toc-backref" href="#id51">Learn by Doing</a><a class="headerlink" href="#learn-by-doing" title="Permalink to this headline">¶</a></h2>
+<p><strong>Write your own implementations.</strong> You should implement as many of the core deep RL algorithms from scratch as you can, with the aim of writing the shortest correct implementation of each. This is by far the best way to develop an understanding of how they work, as well as intuitions for their specific performance characteristics.</p>
+<p><strong>Simplicity is critical.</strong> You should organize your efforts so that you implement the simplest algorithms first, and only gradually introduce complexity. If you start off trying to build something with too many moving parts, odds are good that it will break and you&#8217;ll lose weeks trying to debug it. This is a common failure mode for people who are new to deep RL, and if you find yourself stuck in it, don&#8217;t be discouraged&#8212;but do try to change tack and work on a simpler algorithm instead, before returning to the more complex thing later.</p>
+<p><strong>Which algorithms?</strong> You should probably start with vanilla policy gradient (also called <a class="reference external" href="https://arxiv.org/abs/1604.06778">REINFORCE</a>), <a class="reference external" href="https://www.cs.toronto.edu/~vmnih/docs/dqn.pdf">DQN</a>, <a class="reference external" href="https://blog.openai.com/baselines-acktr-a2c/">A2C</a> (the synchronous version of <a class="reference external" href="https://arxiv.org/abs/1602.01783">A3C</a>), <a class="reference external" href="https://arxiv.org/abs/1707.06347">PPO</a> (the variant with the clipped objective), and <a class="reference external" href="https://arxiv.org/abs/1509.02971">DDPG</a>, approximately in that order. The simplest versions of all of these can be written in just a few hundred lines of code (ballpark 250-300), and some of them even less (for example, <a class="reference external" href="https://github.com/jachiam/rl-intro/blob/master/pg_cartpole.py">a no-frills version of VPG</a> can be written in about 80 lines). Write single-threaded code before you try writing parallelized versions of these algorithms. (Do try to parallelize at least one.)</p>
+<p><strong>Focus on understanding.</strong> Writing working RL code requires clear, detail-oriented understanding of the algorithms. This is because <strong>broken RL code almost always fails silently,</strong> where the code appears to run fine except that the agent never learns how to solve the task. Usually the problem is that something is being calculated with the wrong equation, or on the wrong distribution, or data is being piped into the wrong place. Sometimes the only way to find these bugs is to read the code with a critical eye, know exactly what it should be doing, and find where it deviates from the correct behavior. Developing that knowledge requires you to engage with both academic literature and other existing implementations (when possible), so a good amount of your time should be spent on that reading.</p>
+<p><strong>What to look for in papers:</strong> When implementing an algorithm based on a paper, scour that paper, especially the ablation analyses and supplementary material (where available). The ablations will give you an intuition for what parameters or subroutines have the biggest impact on getting things to work, which will help you diagnose bugs. Supplementary material will often give information about specific details like network architecture and optimization hyperparameters, and you should try to align your implementation to these details to improve your chances of getting it working.</p>
+<p><strong>But don&#8217;t overfit to paper details.</strong> Sometimes, the paper prescribes the use of more tricks than are strictly necessary, so be a bit wary of this, and try out simplifications where possible. For example, the original DDPG paper suggests a complex neural network architecture and initialization scheme, as well as batch normalization. These aren&#8217;t strictly necessary, and some of the best-reported results for DDPG use simpler networks. As another example, the original A3C paper uses asynchronous updates from the various actor-learners, but it turns out that synchronous updates work about as well.</p>
+<p><strong>Don&#8217;t overfit to existing implementations either.</strong> Study <a class="reference external" href="https://github.com/openai/baselines">existing</a> <a class="reference external" href="https://github.com/rll/rllab">implementations</a> for inspiration, but be careful not to overfit to the engineering details of those implementations. RL libraries frequently make choices for abstraction that are good for code reuse between algorithms, but which are unnecessary if you&#8217;re only writing a single algorithm or supporting a single use case.</p>
+<p><strong>Iterate fast in simple environments.</strong> To debug your implementations, try them with simple environments where learning should happen quickly, like CartPole-v0, InvertedPendulum-v0, FrozenLake-v0, and HalfCheetah-v2 (with a short time horizon&#8212;only 100 or 250 steps instead of the full 1000) from the <a class="reference external" href="https://gym.openai.com/">OpenAI Gym</a>. Don’t try to run an algorithm in Atari or a complex Humanoid environment if you haven’t first verified that it works on the simplest possible toy task. Your ideal experiment turnaround-time at the debug stage is &lt;5 minutes (on your local machine) or slightly longer but not much. These small-scale experiments don&#8217;t require any special hardware, and can be run without too much trouble on CPUs.</p>
+<p><strong>If it doesn&#8217;t work, assume there&#8217;s a bug.</strong> Spend a lot of effort searching for bugs before you resort to tweaking hyperparameters: usually it’s a bug. Bad hyperparameters can significantly degrade RL performance, but if you&#8217;re using hyperparameters similar to the ones in papers and standard implementations, those will probably not be the issue. Also worth keeping in mind: sometimes things will work in one environment even when you have a breaking bug, so make sure to test in more than one environment once your results look promising.</p>
+<p><strong>Measure everything.</strong> Do a lot of instrumenting to see what’s going on under-the-hood. The more stats about the learning process you read out at each iteration, the easier it is to debug&#8212;after all, you can’t tell it’s broken if you can’t see that it’s breaking. I personally like to look at the mean/std/min/max for cumulative rewards, episode lengths, and value function estimates, along with the losses for the objectives, and the details of any exploration parameters (like mean entropy for stochastic policy optimization, or current epsilon for epsilon-greedy as in DQN). Also, watch videos of your agent’s performance every now and then; this will give you some insights you wouldn’t get otherwise.</p>
+<p><strong>Scale experiments when things work.</strong> After you have an implementation of an RL algorithm that seems to work correctly in the simplest environments, test it out on harder environments. Experiments at this stage will take longer&#8212;on the order of somewhere between a few hours and a couple of days, depending. Specialized hardware&#8212;like a beefy GPU or a 32-core machine&#8212;might be useful at this point, and you should consider looking into cloud computing resources like AWS or GCE.</p>
+<p><strong>Keep these habits!</strong> These habits are worth keeping beyond the stage where you’re just learning about deep RL&#8212;they will accelerate your research!</p>
+</div>
+<div class="section" id="developing-a-research-project">
+<h2><a class="toc-backref" href="#id52">Developing a Research Project</a><a class="headerlink" href="#developing-a-research-project" title="Permalink to this headline">¶</a></h2>
+<p>Once you feel reasonably comfortable with the basics in deep RL, you should start pushing on the boundaries and doing research. To get there, you&#8217;ll need an idea for a project.</p>
+<p><strong>Start by exploring the literature to become aware of topics in the field.</strong> There are a wide range of topics you might find interesting: sample efficiency, exploration, transfer learning, hierarchy, memory, model-based RL, meta learning, and multi-agent, to name a few. If you&#8217;re looking for inspiration, or just want to get a rough sense of what&#8217;s out there, check out Spinning Up&#8217;s <a class="reference external" href="../spinningup/keypapers.html">key papers</a> list. Find a paper that you enjoy on one of these subjects&#8212;something that inspires you&#8212;and read it thoroughly. Use the related work section and citations to find closely-related papers and do a deep dive in the literature. You’ll start to figure out where the unsolved problems are and where you can make an impact.</p>
+<p><strong>Approaches to idea-generation:</strong> There are a many different ways to start thinking about ideas for projects, and the frame you choose influences how the project might evolve and what risks it will face. Here are a few examples:</p>
+<p><strong>Frame 1: Improving on an Existing Approach.</strong> This is the incrementalist angle, where you try to get performance gains in an established problem setting by tweaking an existing algorithm. Reimplementing prior work is super helpful here, because it exposes you to the ways that existing algorithms are brittle and could be improved. A novice will find this the most accessible frame, but it can also be worthwhile for researchers at any level of experience. While some researchers find incrementalism less exciting, some of the most impressive achievements in machine learning have come from work of this nature.</p>
+<p>Because projects like these are tied to existing methods, they are by nature narrowly scoped and can wrap up quickly (a few months), which may be desirable (especially when starting out as a researcher). But this also sets up the risks: it&#8217;s possible that the tweaks you have in mind for an algorithm may fail to improve it, in which case, unless you come up with more tweaks, the project is just over and you have no clear signal on what to do next.</p>
+<p><strong>Frame 2: Focusing on Unsolved Benchmarks.</strong> Instead of thinking about how to improve an existing method, you aim to succeed on a task that no one has solved before. For example: achieving perfect generalization from training levels to test levels in the <a class="reference external" href="https://contest.openai.com/2018-1/">Sonic domain</a> or <a class="reference external" href="https://blog.openai.com/gym-retro/">Gym Retro</a>. When you hammer away at an unsolved task, you might try a wide variety of methods, including prior approaches and new ones that you invent for the project. It is possible for a novice to approch this kind of problem, but there will be a steeper learning curve.</p>
+<p>Projects in this frame have a broad scope and can go on for a while (several months to a year-plus). The main risk is that the benchmark is unsolvable without a substantial breakthrough, meaning that it would be easy to spend a lot of time without making any progress on it. But even if a project like this fails, it often leads the researcher to many new insights that become fertile soil for the next project.</p>
+<p><strong>Frame 3: Create a New Problem Setting.</strong> Instead of thinking about existing methods or current grand challenges, think of an entirely different conceptual problem that hasn&#8217;t been studied yet. Then, figure out how to make progress on it. For projects along these lines, a standard benchmark probably doesn&#8217;t exist yet, and you will have to design one. This can be a huge challenge, but it’s worth embracing&#8212;great benchmarks move the whole field forward.</p>
+<p>Problems in this frame come up when they come up&#8212;it&#8217;s hard to go looking for them.</p>
+<p><strong>Avoid reinventing the wheel.</strong> When you come up with a good idea that you want to start testing, that’s great! But while you’re still in the early stages with it, do the most thorough check you can to make sure it hasn’t already been done. It can be pretty disheartening to get halfway through a project, and only then discover that there&#8217;s already a paper about your idea. It&#8217;s especially frustrating when the work is concurrent, which happens from time to time! But don’t let that deter you&#8212;and definitely don’t let it motivate you to plant flags with not-quite-finished research and over-claim the merits of the partial work. Do good research and finish out your projects with complete and thorough investigations, because that’s what counts, and by far what matters most in the long run.</p>
+</div>
+<div class="section" id="doing-rigorous-research-in-rl">
+<h2><a class="toc-backref" href="#id53">Doing Rigorous Research in RL</a><a class="headerlink" href="#doing-rigorous-research-in-rl" title="Permalink to this headline">¶</a></h2>
+<p>Now you’ve come up with an idea, and you’re fairly certain it hasn’t been done. You use the skills you’ve developed to implement it and you start testing it out on standard domains. It looks like it works! But what does that mean, and how well does it have to work to be important? This is one of the hardest parts of research in deep RL. In order to validate that your proposal is a meaningful contribution, you have to rigorously prove that it actually gets a performance benefit over the strongest possible baseline algorithm&#8212;whatever currently achieves SOTA (state of the art) on your test domains. If you’ve invented a new test domain, so there’s no previous SOTA, you still need to try out whatever the most reliable algorithm in the literature is that could plausibly do well in the new test domain, and then you have to beat that.</p>
+<p><strong>Set up fair comparisons.</strong> If you implement your baseline from scratch&#8212;as opposed to comparing against another paper’s numbers directly&#8212;it’s important to spend as much time tuning your baseline as you spend tuning your own algorithm. This will make sure that comparisons are fair. Also, do your best to hold “all else equal” even if there are substantial differences between your algorithm and the baseline. For example, if you’re investigating architecture variants, keep the number of model parameters approximately equal between your model and the baseline. Under no circumstances handicap the baseline! It turns out that the baselines in RL are pretty strong, and getting big, consistent wins over them can be tricky or require some good insight in algorithm design.</p>
+<p><strong>Remove stochasticity as a confounder.</strong> Beware of random seeds making things look stronger or weaker than they really are, so run everything for many random seeds (at least 3, but if you want to be thorough, do 10 or more). This is really important and deserves a lot of emphasis: deep RL seems fairly brittle with respect to random seed in a lot of common use cases. There’s potentially enough variance that two different groups of random seeds can yield learning curves with differences so significant that they look like they don’t come from the same distribution at all (see <a class="reference external" href="https://arxiv.org/pdf/1708.04133.pdf">figure 10 here</a>).</p>
+<p><strong>Run high-integrity experiments.</strong> Don’t just take the results from the best or most interesting runs to use in your paper. Instead, launch new, final experiments&#8212;for all of the methods that you intend to compare (if you are comparing against your own baseline implementations)&#8212;and precommit to report on whatever comes out of that. This is to enforce a weak form of <a class="reference external" href="https://cos.io/prereg/">preregistration</a>: you use the tuning stage to come up with your hypotheses, and you use the final runs to come up with your conclusions.</p>
+<p><strong>Check each claim separately.</strong> Another critical aspect of doing research is to run an ablation analysis. Any method you propose is likely to have several key design decisions&#8212;like architecture choices or regularization techniques, for instance&#8212;each of which could separately impact performance. The claim you&#8217;ll make in your work is that those design decisions collectively help, but this is really a bundle of several claims in disguise: one for each such design element. By systematically evaluating what would happen if you were to swap them out with alternate design choices, or remove them entirely, you can figure out how to correctly attribute credit for the benefits your method confers. This lets you make each separate claim with a measure of confidence, and increases the overall strength of your work.</p>
+</div>
+<div class="section" id="closing-thoughts">
+<h2><a class="toc-backref" href="#id54">Closing Thoughts</a><a class="headerlink" href="#closing-thoughts" title="Permalink to this headline">¶</a></h2>
+<p>Deep RL is an exciting, fast-moving field, and we need as many people as possible to go through the open problems and make progress on them. Hopefully, you feel a bit more prepared to be a part of it after reading this! And whenever you’re ready, <a class="reference external" href="https://jobs.lever.co/openai">let us know</a>.</p>
+</div>
+<div class="section" id="ps-other-resources">
+<h2><a class="toc-backref" href="#id55">PS: Other Resources</a><a class="headerlink" href="#ps-other-resources" title="Permalink to this headline">¶</a></h2>
+<p>Consider reading through these other informative articles about growing as a researcher or engineer in this field:</p>
+<p><a class="reference external" href="https://rockt.github.io/2018/08/29/msc-advice">Advice for Short-term Machine Learning Research Projects</a>, by Tim Rocktäschel, Jakob Foerster and Greg Farquhar.</p>
+<p><a class="reference external" href="https://80000hours.org/articles/ml-engineering-career-transition-guide/">ML Engineering for AI Safety &amp; Robustness: a Google Brain Engineer’s Guide to Entering the Field</a>, by Catherine Olsson and 80,000 Hours.</p>
+</div>
+<div class="section" id="references">
+<h2><a class="toc-backref" href="#id56">References</a><a class="headerlink" href="#references" title="Permalink to this headline">¶</a></h2>
+<table class="docutils footnote" frame="void" id="id1" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[1]</td><td><a class="reference external" href="https://www.alexirpan.com/2018/02/14/rl-hard.html">Deep Reinforcement Learning Doesn&#8217;t Work Yet</a>, Alex Irpan, 2018</td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="id2" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[2]</td><td><a class="reference external" href="https://arxiv.org/abs/1708.04133">Reproducibility of Benchmarked Deep Reinforcement Learning Tasks for Continuous Control</a>, Islam et al, 2017</td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="id3" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[3]</td><td><a class="reference external" href="https://arxiv.org/abs/1709.06560">Deep Reinforcement Learning that Matters</a>, Henderson et al, 2017</td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="id4" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[4]</td><td><a class="reference external" href="http://amid.fish/reproducing-deep-rl">Lessons Learned Reproducing a Deep Reinforcement Learning Paper</a>, Matthew Rahtz, 2018</td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="id5" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[5]</td><td><a class="reference external" href="http://www0.cs.ucl.ac.uk/staff/d.silver/web/Teaching.html">UCL Course on RL</a></td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="id6" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[6]</td><td><a class="reference external" href="http://rll.berkeley.edu/deeprlcourse/">Berkeley Deep RL Course</a></td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="id7" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[7]</td><td><a class="reference external" href="https://sites.google.com/view/deep-rl-bootcamp/lectures">Deep RL Bootcamp</a></td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="id8" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[8]</td><td><a class="reference external" href="http://joschu.net/docs/nuts-and-bolts.pdf">Nuts and Bolts of Deep RL</a>, John Schulman</td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="id9" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[9]</td><td><a class="reference external" href="http://ufldl.stanford.edu/tutorial/supervised/MultiLayerNeuralNetworks/">Stanford Deep Learning Tutorial: Multi-Layer Neural Network</a></td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="id10" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[10]</td><td><a class="reference external" href="http://karpathy.github.io/2015/05/21/rnn-effectiveness/">The Unreasonable Effectiveness of Recurrent Neural Networks</a>, Andrej Karpathy, 2015</td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="id11" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[11]</td><td><a class="reference external" href="https://arxiv.org/abs/1503.04069">LSTM: A Search Space Odyssey</a>, Greff et al, 2015</td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="id12" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[12]</td><td><a class="reference external" href="http://colah.github.io/posts/2015-08-Understanding-LSTMs/">Understanding LSTM Networks</a>, Chris Olah, 2015</td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="id13" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[13]</td><td><a class="reference external" href="https://arxiv.org/abs/1412.3555v1">Empirical Evaluation of Gated Recurrent Neural Networks on Sequence Modeling</a>, Chung et al, 2014 (GRU paper)</td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="id14" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[14]</td><td><a class="reference external" href="http://colah.github.io/posts/2014-07-Conv-Nets-Modular/">Conv Nets: A Modular Perspective</a>, Chris Olah, 2014</td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="id15" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[15]</td><td><a class="reference external" href="https://cs231n.github.io/convolutional-networks/">Stanford CS231n, Convolutional Neural Networks for Visual Recognition</a></td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="id16" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[16]</td><td><a class="reference external" href="https://arxiv.org/abs/1512.03385">Deep Residual Learning for Image Recognition</a>, He et al, 2015 (ResNets)</td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="id17" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[17]</td><td><a class="reference external" href="https://arxiv.org/abs/1409.0473">Neural Machine Translation by Jointly Learning to Align and Translate</a>, Bahdanau et al, 2014 (Attention mechanisms)</td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="id18" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[18]</td><td><a class="reference external" href="https://arxiv.org/abs/1706.03762">Attention Is All You Need</a>, Vaswani et al, 2017</td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="id19" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[19]</td><td><a class="reference external" href="https://papers.nips.cc/paper/563-a-simple-weight-decay-can-improve-generalization.pdf">A Simple Weight Decay Can Improve Generalization</a>, Krogh and Hertz, 1992</td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="id20" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[20]</td><td><a class="reference external" href="http://jmlr.org/papers/volume15/srivastava14a.old/srivastava14a.pdf">Dropout:  A Simple Way to Prevent Neural Networks from Overfitting</a>, Srivastava et al, 2014</td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="id21" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[21]</td><td><a class="reference external" href="https://arxiv.org/abs/1502.03167">Batch Normalization: Accelerating Deep Network Training by Reducing Internal Covariate Shift</a>, Ioffe and Szegedy, 2015</td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="id22" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[22]</td><td><a class="reference external" href="https://arxiv.org/abs/1607.06450">Layer Normalization</a>, Ba et al, 2016</td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="id23" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[23]</td><td><a class="reference external" href="https://arxiv.org/abs/1602.07868">Weight Normalization: A Simple Reparameterization to Accelerate Training of Deep Neural Networks</a>, Salimans and Kingma, 2016</td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="id24" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[24]</td><td><a class="reference external" href="http://ufldl.stanford.edu/tutorial/supervised/OptimizationStochasticGradientDescent/">Stanford Deep Learning Tutorial: Stochastic Gradient Descent</a></td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="id25" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[25]</td><td><a class="reference external" href="https://arxiv.org/abs/1412.6980">Adam: A Method for Stochastic Optimization</a>, Kingma and Ba, 2014</td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="id26" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[26]</td><td><a class="reference external" href="https://arxiv.org/abs/1609.04747">An overview of gradient descent optimization algorithms</a>, Sebastian Ruder, 2016</td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="id27" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[27]</td><td><a class="reference external" href="https://arxiv.org/abs/1312.6114">Auto-Encoding Variational Bayes</a>, Kingma and Welling, 2013 (Reparameterization trick)</td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="id28" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[28]</td><td><a class="reference external" href="https://www.tensorflow.org/">Tensorflow</a></td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="id29" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[29]</td><td><a class="reference external" href="http://pytorch.org/">PyTorch</a></td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="id30" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[30]</td><td><a class="reference external" href="../spinningup/rl_intro.html">Spinning Up in Deep RL: Introduction to RL, Part 1</a></td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="id31" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[31]</td><td><a class="reference external" href="https://github.com/jachiam/rl-intro/blob/master/Presentation/rl_intro.pdf">RL-Intro</a> Slides from OpenAI Hackathon, Josh Achiam, 2018</td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="id32" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[32]</td><td><a class="reference external" href="https://lilianweng.github.io/lil-log/2018/02/19/a-long-peek-into-reinforcement-learning.html">A (Long) Peek into Reinforcement Learning</a>, Lilian Weng, 2018</td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="id33" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[33]</td><td><a class="reference external" href="http://joschu.net/docs/thesis.pdf">Optimizing Expectations</a>, John Schulman, 2016 (Monotonic improvement theory)</td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="id34" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[34]</td><td><a class="reference external" href="https://sites.ualberta.ca/~szepesva/papers/RLAlgsInMDPs.pdf">Algorithms for Reinforcement Learning</a>, Csaba Szepesvari, 2009 (Classic RL Algorithms)</td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="id35" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[35]</td><td><a class="reference external" href="https://arxiv.org/abs/1604.06778">Benchmarking Deep Reinforcement Learning for Continuous Control</a>, Duan et al, 2016</td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="id36" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[36]</td><td><a class="reference external" href="https://www.cs.toronto.edu/~vmnih/docs/dqn.pdf">Playing Atari with Deep Reinforcement Learning</a>, Mnih et al, 2013 (DQN)</td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="id37" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[37]</td><td><a class="reference external" href="https://blog.openai.com/baselines-acktr-a2c/">OpenAI Baselines: ACKTR &amp; A2C</a></td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="id38" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[38]</td><td><a class="reference external" href="https://arxiv.org/abs/1602.01783">Asynchronous Methods for Deep Reinforcement Learning</a>, Mnih et al, 2016 (A3C)</td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="id39" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[39]</td><td><a class="reference external" href="https://arxiv.org/abs/1707.06347">Proximal Policy Optimization Algorithms</a>, Schulman et al, 2017 (PPO)</td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="id40" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[40]</td><td><a class="reference external" href="https://arxiv.org/abs/1509.02971">Continuous Control with Deep Reinforcement Learning</a>, Lillicrap et al, 2015 (DDPG)</td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="id41" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[41]</td><td><a class="reference external" href="https://github.com/jachiam/rl-intro/blob/master/pg_cartpole.py">RL-Intro Policy Gradient Sample Code</a>, Josh Achiam, 2018</td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="id42" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[42]</td><td><a class="reference external" href="https://github.com/openai/baselines">OpenAI Baselines</a></td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="id43" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[43]</td><td><a class="reference external" href="https://github.com/rll/rllab">rllab</a></td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="id44" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[44]</td><td><a class="reference external" href="https://gym.openai.com/">OpenAI Gym</a></td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="id46" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[45]</td><td><a class="reference external" href="https://contest.openai.com/2018-1/">OpenAI Retro Contest</a></td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="id47" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[46]</td><td><a class="reference external" href="https://blog.openai.com/gym-retro/">OpenAI Gym Retro</a></td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="id48" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[47]</td><td><a class="reference external" href="https://cos.io/prereg/">Center for Open Science</a>, explaining what preregistration means in the context of scientific experiments.</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="keypapers.html" class="btn btn-neutral float-right" title="Key Papers in Deep RL" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="rl_intro3.html" class="btn btn-neutral" title="Part 3: Intro to Policy Optimization" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, OpenAI.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+
+  
+
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

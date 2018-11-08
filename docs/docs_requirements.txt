@@ -1,0 +1,16 @@
+cloudpickle==0.5.2
+gym>=0.10.8
+ipython
+joblib
+matplotlib
+numpy
+pandas
+pytest
+psutil
+scipy
+seaborn==0.8.1
+sphinx==1.5.6
+sphinx-autobuild==0.7.1       
+sphinx-rtd-theme==0.4.1 
+tensorflow>=1.8.0
+tqdm
