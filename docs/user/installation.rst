@@ -52,7 +52,7 @@ Next, go to the `Gym`_ github page, and follow the "Installing Everything" instr
 
 Make sure to install MuJoCo and mujoco-py *before* installing Gym, to ensure that the Gym mujoco environments are set up correctly. 
 
-.. _`mujoco-py`: https://github.com/openai/mujoco-py/tree/master/mujoco_py
+.. _`mujoco-py`: https://github.com/openai/mujoco-py
 .. _`MuJoCo license`: https://www.roboti.us/license.html
 .. _`Gym`: https://github.com/openai/gym
 
