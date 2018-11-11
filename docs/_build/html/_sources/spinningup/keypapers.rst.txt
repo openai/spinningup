@@ -277,7 +277,22 @@ b. Model is Given
 .. [#] `One-Shot High-Fidelity Imitation: Training Large-Scale Deep Nets with RL <https://arxiv.org/abs/1810.05017>`_, Le Paine et al, 2018. **Algorithm: MetaMimic.**
 
 
-12. Bonus: Classic Papers in RL Theory or Review
+12. Reproducibility, Analysis, and Critique
+===========================================
+
+.. [#] `Benchmarking Deep Reinforcement Learning for Continuous Control <https://arxiv.org/abs/1604.06778>`_, Duan et al, 2016. **Contribution: rllab.**
+
+.. [#] `Reproducibility of Benchmarked Deep Reinforcement Learning Tasks for Continuous Control <https://arxiv.org/abs/1708.04133>`_, Islam et al, 2017.
+
+.. [#] `Deep Reinforcement Learning that Matters <https://arxiv.org/abs/1709.06560>`_, Henderson et al, 2017. 
+
+.. [#] `Where Did My Optimum Go?: An Empirical Analysis of Gradient Descent Optimization in Policy Gradient Methods <https://arxiv.org/abs/1810.02525>`_, Henderson et al, 2018. 
+
+.. [#] `Are Deep Policy Gradient Algorithms Truly Policy Gradient Algorithms? <https://arxiv.org/abs/1811.02553>`_, Ilyas et al, 2018.
+
+.. [#] `Simple Random Search Provides a Competitive Approach to Reinforcement Learning <https://arxiv.org/abs/1803.07055>`_, Mania et al, 2018.
+
+13. Bonus: Classic Papers in RL Theory or Review
 ================================================
 
 .. [#] `Policy Gradient Methods for Reinforcement Learning with Function Approximation <https://papers.nips.cc/paper/1713-policy-gradient-methods-for-reinforcement-learning-with-function-approximation.pdf>`_, Sutton et al, 2000. **Contributions:** Established policy gradient theorem and showed convergence of policy gradient algorithm for arbitrary policy classes. 
