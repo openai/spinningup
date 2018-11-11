@@ -50,7 +50,7 @@ What to Learn in Model-Free RL
 
 There are two main approaches to representing and training agents with model-free RL:
 
-**Policy Optimization.** Methods in this family represent a policy explicitly as :math:`\pi_{\theta}(a|s)`. They optimize the parameters :math:`\theta` either directly by gradient ascent on the performance objective :math:`J(\pi_{\theta}`),  or indirectly, by maximizing local approximations of :math:`J(\pi_{\theta})`. This optimization is almost always performed **on-policy**, which means that each update only uses data collected while acting according to the most recent version of the policy. Policy optimization also usually involves learning an approximator :math:`V_{\phi}(s)` for the on-policy value function :math:`V^{\pi}(s)`, which gets used in figuring out how to update the policy.
+**Policy Optimization.** Methods in this family represent a policy explicitly as :math:`\pi_{\theta}(a|s)`. They optimize the parameters :math:`\theta` either directly by gradient ascent on the performance objective :math:`J(\pi_{\theta})`,  or indirectly, by maximizing local approximations of :math:`J(\pi_{\theta})`. This optimization is almost always performed **on-policy**, which means that each update only uses data collected while acting according to the most recent version of the policy. Policy optimization also usually involves learning an approximator :math:`V_{\phi}(s)` for the on-policy value function :math:`V^{\pi}(s)`, which gets used in figuring out how to update the policy.
 
 A couple of examples of policy optimization methods are:
 
