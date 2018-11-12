@@ -99,7 +99,7 @@ g. Other Directions for Combining Policy-Learning and Q-Learning
 .. [#] `Equivalence Between Policy Gradients and Soft Q-Learning <https://arxiv.org/abs/1704.06440>`_, Schulman et al, 2017. **Contribution:** Reveals a theoretical link between these two families of RL algorithms.
 
 
-g. Evolutionary Algorithms
+h. Evolutionary Algorithms
 --------------------------
 
 .. [#] `Evolution Strategies as a Scalable Alternative to Reinforcement Learning <https://arxiv.org/abs/1703.03864>`_, Salimans et al, 2017. **Algorithm: ES.**
