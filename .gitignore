@@ -4,5 +4,5 @@ __pycache__/
 data/
 **/*.egg-info
 .python-version
-# VS CODE settings dir
+.idea/
 .vscode/
