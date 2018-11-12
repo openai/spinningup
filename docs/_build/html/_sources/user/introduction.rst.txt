@@ -2,8 +2,6 @@
 Introduction
 ============
 
-(Current as of October 11th, 2018.)
-
 .. contents:: Table of Contents
 
 What This Is
@@ -82,7 +80,7 @@ Support Plan
 
 We plan to support Spinning Up to ensure that it serves as a helpful resource for learning about deep reinforcement learning. The exact nature of long-term (multi-year) support for Spinning Up is yet to be determined, but in the short run, we commit to:
 
-- High-bandwidth support for the first three weeks after release.
+- High-bandwidth support for the first three weeks after release (Nov 8, 2018 to Nov 29, 2018).
 
     + We'll move quickly on bug-fixes, question-answering, and modifications to the docs to clear up ambiguities.
     + We'll work hard to streamline the user experience, in order to make it as easy as possible to self-study with Spinning Up. 
