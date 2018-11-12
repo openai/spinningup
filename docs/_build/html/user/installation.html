@@ -202,33 +202,39 @@
            <div itemprop="articleBody">
             
   <div class="section" id="installation">
-<h1><a class="toc-backref" href="#id1">Installation</a><a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
+<h1><a class="toc-backref" href="#id3">Installation</a><a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
 <div class="contents topic" id="table-of-contents">
 <p class="topic-title first">Table of Contents</p>
 <ul class="simple">
-<li><a class="reference internal" href="#installation" id="id1">Installation</a><ul>
-<li><a class="reference internal" href="#installing-python" id="id2">Installing Python</a></li>
-<li><a class="reference internal" href="#installing-openmpi" id="id3">Installing OpenMPI</a><ul>
-<li><a class="reference internal" href="#ubuntu" id="id4">Ubuntu</a></li>
-<li><a class="reference internal" href="#mac-os-x" id="id5">Mac OS X</a></li>
+<li><a class="reference internal" href="#installation" id="id3">Installation</a><ul>
+<li><a class="reference internal" href="#installing-python" id="id4">Installing Python</a></li>
+<li><a class="reference internal" href="#installing-openmpi" id="id5">Installing OpenMPI</a><ul>
+<li><a class="reference internal" href="#ubuntu" id="id6">Ubuntu</a></li>
+<li><a class="reference internal" href="#mac-os-x" id="id7">Mac OS X</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#installing-spinning-up" id="id6">Installing Spinning Up</a></li>
-<li><a class="reference internal" href="#check-your-install" id="id7">Check Your Install</a></li>
-<li><a class="reference internal" href="#installing-mujoco-optional" id="id8">Installing MuJoCo (Optional)</a></li>
+<li><a class="reference internal" href="#installing-spinning-up" id="id8">Installing Spinning Up</a></li>
+<li><a class="reference internal" href="#check-your-install" id="id9">Check Your Install</a></li>
+<li><a class="reference internal" href="#installing-mujoco-optional" id="id10">Installing MuJoCo (Optional)</a></li>
 </ul>
 </li>
 </ul>
 </div>
 <p>Spinning Up requires Python3, OpenAI Gym, and OpenMPI.</p>
+<p>Spinning Up is currently only supported on Linux and OSX. It may be possible to install on Windows, though this hasn&#8217;t been extensively tested. <a class="footnote-reference" href="#id2" id="id1">[1]</a></p>
 <div class="admonition-you-should-know admonition">
 <p class="first admonition-title">You Should Know</p>
 <p>Many examples and benchmarks in Spinning Up refer to RL environments that use the <a class="reference external" href="http://www.mujoco.org/index.html">MuJoCo</a> physics engine. MuJoCo is a proprietary software that requires a license, which is free to trial and free for students, but otherwise is not free. As a result, installing it is optional, but because of its importance to the research community&#8212;it is the de facto standard for benchmarking deep RL algorithms in continuous control&#8212;it is preferred.</p>
 <p class="last">Don&#8217;t worry if you decide not to install MuJoCo, though. You can definitely get started in RL by running RL algorithms on the <a class="reference external" href="https://gym.openai.com/envs/#classic_control">Classic Control</a> and <a class="reference external" href="https://gym.openai.com/envs/#box2d">Box2d</a> environments in Gym, which are totally free to use.</p>
 </div>
-<p>Spinning Up is currently only supported on Linux and OSX. It may be possible to install on Windows, though this hasn&#8217;t been tested. (If you try this and succeed, please let us know how you did it!)</p>
+<table class="docutils footnote" frame="void" id="id2" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id1">[1]</a></td><td>It looks like at least one person has figured out <a class="reference external" href="https://github.com/openai/spinningup/issues/23">a workaround for running on Windows</a>. If you try another way and succeed, please let us know how you did it!</td></tr>
+</tbody>
+</table>
 <div class="section" id="installing-python">
-<h2><a class="toc-backref" href="#id2">Installing Python</a><a class="headerlink" href="#installing-python" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id4">Installing Python</a><a class="headerlink" href="#installing-python" title="Permalink to this headline">¶</a></h2>
 <p>We recommend installing Python through Anaconda. Anaconda is a library that includes Python and many useful packages for Python, as well as an environment manager called conda that makes package management simple.</p>
 <p>Follow <a class="reference external" href="https://docs.continuum.io/anaconda/install/">the installation instructions</a> for Anaconda here. Download and install Anaconda 3.x (at time of writing, 3.6). Then create a conda env for organizing packages used in Spinning Up:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">create</span> <span class="o">-</span><span class="n">n</span> <span class="n">spinningup</span> <span class="n">python</span><span class="o">=</span><span class="mf">3.6</span>
@@ -243,17 +249,21 @@
 <p>If you&#8217;re new to python environments and package management, this stuff can quickly get confusing or overwhelming, and you&#8217;ll probably hit some snags along the way. (Especially, you should expect problems like, &#8220;I just installed this thing, but it says it&#8217;s not found when I try to use it!&#8221;) You may want to read through some clean explanations about what package management is, why it&#8217;s a good idea, and what commands you&#8217;ll typically have to execute to correctly use it.</p>
 <p class="last"><a class="reference external" href="https://medium.freecodecamp.org/why-you-need-python-environments-and-how-to-manage-them-with-conda-85f155f4353c">FreeCodeCamp</a> has a good explanation worth reading. There&#8217;s a shorter description on <a class="reference external" href="https://towardsdatascience.com/environment-management-with-conda-python-2-3-b9961a8a5097">Towards Data Science</a> which is also helpful and informative. Finally, if you&#8217;re an extremely patient person, you may want to read the (dry, but very informative) <a class="reference external" href="https://conda.io/docs/user-guide/tasks/manage-environments.html">documentation page from Conda</a>.</p>
 </div>
+<div class="admonition caution">
+<p class="first admonition-title">Caution</p>
+<p class="last">As of November 2018, there appears to be a bug which prevents the Tensorflow pip package from working in Python 3.7. To track, see <a class="reference external" href="https://github.com/tensorflow/tensorflow/issues/20444">this Github issue for Tensorflow</a>. As a result, in order to use Spinning Up (which requires Tensorflow), you should use Python 3.6.</p>
+</div>
 </div>
 <div class="section" id="installing-openmpi">
-<h2><a class="toc-backref" href="#id3">Installing OpenMPI</a><a class="headerlink" href="#installing-openmpi" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id5">Installing OpenMPI</a><a class="headerlink" href="#installing-openmpi" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="ubuntu">
-<h3><a class="toc-backref" href="#id4">Ubuntu</a><a class="headerlink" href="#ubuntu" title="Permalink to this headline">¶</a></h3>
+<h3><a class="toc-backref" href="#id6">Ubuntu</a><a class="headerlink" href="#ubuntu" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">update</span> <span class="o">&amp;&amp;</span> <span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">install</span> <span class="n">libopenmpi</span><span class="o">-</span><span class="n">dev</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="mac-os-x">
-<h3><a class="toc-backref" href="#id5">Mac OS X</a><a class="headerlink" href="#mac-os-x" title="Permalink to this headline">¶</a></h3>
+<h3><a class="toc-backref" href="#id7">Mac OS X</a><a class="headerlink" href="#mac-os-x" title="Permalink to this headline">¶</a></h3>
 <p>Installation of system packages on Mac requires <a class="reference external" href="https://brew.sh">Homebrew</a>. With Homebrew installed, run the follwing:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">brew</span> <span class="n">install</span> <span class="n">openmpi</span>
 </pre></div>
@@ -261,7 +271,7 @@
 </div>
 </div>
 <div class="section" id="installing-spinning-up">
-<h2><a class="toc-backref" href="#id6">Installing Spinning Up</a><a class="headerlink" href="#installing-spinning-up" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id8">Installing Spinning Up</a><a class="headerlink" href="#installing-spinning-up" title="Permalink to this headline">¶</a></h2>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">openai</span><span class="o">/</span><span class="n">spinningup</span><span class="o">.</span><span class="n">git</span>
 <span class="n">cd</span> <span class="n">spinningup</span>
 <span class="n">pip</span> <span class="n">install</span> <span class="o">-</span><span class="n">e</span> <span class="o">.</span>
@@ -273,7 +283,7 @@
 </div>
 </div>
 <div class="section" id="check-your-install">
-<h2><a class="toc-backref" href="#id7">Check Your Install</a><a class="headerlink" href="#check-your-install" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id9">Check Your Install</a><a class="headerlink" href="#check-your-install" title="Permalink to this headline">¶</a></h2>
 <p>To see if you&#8217;ve successfully installed Spinning Up, try running PPO in the LunarLander-v2 environment with</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">spinup</span><span class="o">.</span><span class="n">run</span> <span class="n">ppo</span> <span class="o">--</span><span class="n">hid</span> <span class="s2">&quot;[32,32]&quot;</span> <span class="o">--</span><span class="n">env</span> <span class="n">LunarLander</span><span class="o">-</span><span class="n">v2</span> <span class="o">--</span><span class="n">exp_name</span> <span class="n">installtest</span> <span class="o">--</span><span class="n">gamma</span> <span class="mf">0.999</span>
 </pre></div>
@@ -289,7 +299,7 @@
 </div>
 </div>
 <div class="section" id="installing-mujoco-optional">
-<h2><a class="toc-backref" href="#id8">Installing MuJoCo (Optional)</a><a class="headerlink" href="#installing-mujoco-optional" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id10">Installing MuJoCo (Optional)</a><a class="headerlink" href="#installing-mujoco-optional" title="Permalink to this headline">¶</a></h2>
 <p>First, go to the <a class="reference external" href="https://github.com/openai/mujoco-py">mujoco-py</a> github page. Follow the installation instructions in the README, which describe how to install the MuJoCo physics engine and the mujoco-py package (which allows the use of MuJoCo from Python).</p>
 <div class="admonition-you-should-know admonition">
 <p class="first admonition-title">You Should Know</p>

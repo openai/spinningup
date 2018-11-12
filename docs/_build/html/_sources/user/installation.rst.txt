@@ -7,17 +7,20 @@ Installation
 
 Spinning Up requires Python3, OpenAI Gym, and OpenMPI. 
 
+Spinning Up is currently only supported on Linux and OSX. It may be possible to install on Windows, though this hasn't been extensively tested. [#]_ 
+
 .. admonition:: You Should Know
 
     Many examples and benchmarks in Spinning Up refer to RL environments that use the `MuJoCo`_ physics engine. MuJoCo is a proprietary software that requires a license, which is free to trial and free for students, but otherwise is not free. As a result, installing it is optional, but because of its importance to the research community---it is the de facto standard for benchmarking deep RL algorithms in continuous control---it is preferred. 
 
     Don't worry if you decide not to install MuJoCo, though. You can definitely get started in RL by running RL algorithms on the `Classic Control`_ and `Box2d`_ environments in Gym, which are totally free to use.
 
-Spinning Up is currently only supported on Linux and OSX. It may be possible to install on Windows, though this hasn't been tested. (If you try this and succeed, please let us know how you did it!)
+.. [#] It looks like at least one person has figured out `a workaround for running on Windows`_. If you try another way and succeed, please let us know how you did it!
 
 .. _`Classic Control`: https://gym.openai.com/envs/#classic_control
 .. _`Box2d`: https://gym.openai.com/envs/#box2d
 .. _`MuJoCo`: http://www.mujoco.org/index.html
+.. _`a workaround for running on Windows`: https://github.com/openai/spinningup/issues/23
 
 Installing Python
 =================
@@ -42,11 +45,16 @@ To use Python from the environment you just created, activate the environment wi
 
     `FreeCodeCamp`_ has a good explanation worth reading. There's a shorter description on `Towards Data Science`_ which is also helpful and informative. Finally, if you're an extremely patient person, you may want to read the (dry, but very informative) `documentation page from Conda`_.
 
+.. caution:: 
+
+    As of November 2018, there appears to be a bug which prevents the Tensorflow pip package from working in Python 3.7. To track, see `this Github issue for Tensorflow`_. As a result, in order to use Spinning Up (which requires Tensorflow), you should use Python 3.6. 
+
 
 .. _`the installation instructions`: https://docs.continuum.io/anaconda/install/
 .. _`FreeCodeCamp`: https://medium.freecodecamp.org/why-you-need-python-environments-and-how-to-manage-them-with-conda-85f155f4353c
 .. _`Towards Data Science`: https://towardsdatascience.com/environment-management-with-conda-python-2-3-b9961a8a5097
 .. _`documentation page from Conda`: https://conda.io/docs/user-guide/tasks/manage-environments.html
+.. _`this Github issue for Tensorflow`: https://github.com/tensorflow/tensorflow/issues/20444
 
 
 Installing OpenMPI

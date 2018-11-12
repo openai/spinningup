@@ -85,7 +85,7 @@ In DQN-based algorithms, the target network is just copied over from the main ne
 where :math:`\rho` is a hyperparameter between 0 and 1 (usually close to 1). (This hyperparameter is called ``polyak`` in our code).
 
 
-**DDPG Detail: Calculating the Max Over Actions in the Target.** As mentioned earlier: compuing the maximum over actions in the target is a challenge in continuous action spaces. DDPG deals with this by using a **target policy network** to compute an action which approximately maximizes :math:`Q_{\phi_{\text{targ}}}`. The target policy network is found the same way as the target Q-function: by polyak averaging the policy parameters over the course of training. 
+**DDPG Detail: Calculating the Max Over Actions in the Target.** As mentioned earlier: computing the maximum over actions in the target is a challenge in continuous action spaces. DDPG deals with this by using a **target policy network** to compute an action which approximately maximizes :math:`Q_{\phi_{\text{targ}}}`. The target policy network is found the same way as the target Q-function: by polyak averaging the policy parameters over the course of training. 
 
 Putting it all together, Q-learning in DDPG is performed by minimizing the following MSBE loss with stochastic gradient descent:
 
