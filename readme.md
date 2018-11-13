@@ -7,10 +7,10 @@ For the unfamiliar: [reinforcement learning](https://en.wikipedia.org/wiki/Reinf
 
 This module contains a variety of helpful resources, including:
 
-- a short [introduction](http://spinningup.openai.com/en/latest/spinningup/rl_intro.html) to RL terminology, kinds of algorithms, and basic theory,
-- an [essay](http://spinningup.openai.com/en/latest/spinningup/spinningup.html) about how to grow into an RL research role,
-- a [curated list](http://spinningup.openai.com/en/latest/spinningup/keypapers.html) of important papers organized by topic,
+- a short [introduction](https://spinningup.openai.com/en/latest/spinningup/rl_intro.html) to RL terminology, kinds of algorithms, and basic theory,
+- an [essay](https://spinningup.openai.com/en/latest/spinningup/spinningup.html) about how to grow into an RL research role,
+- a [curated list](https://spinningup.openai.com/en/latest/spinningup/keypapers.html) of important papers organized by topic,
 - a well-documented [code repo](https://github.com/openai/spinningup) of short, standalone implementations of key algorithms,
-- and a few [exercises](http://spinningup.openai.com/en/latest/spinningup/exercises.html) to serve as warm-ups.
+- and a few [exercises](https://spinningup.openai.com/en/latest/spinningup/exercises.html) to serve as warm-ups.
 
-Get started at [spinningup.openai.com](http://spinningup.openai.com)!
+Get started at [spinningup.openai.com](https://spinningup.openai.com)!
