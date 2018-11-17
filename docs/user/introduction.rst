@@ -66,7 +66,7 @@ The algorithm implementations in the Spinning Up repo are designed to be
     - as simple as possible while still being reasonably good, 
     - and highly-consistent with each other to expose fundamental similarities between algorithms.
 
-They are almost completely self-contained, with virtually no common code shared between them (except for logging, saving, loading, and MPI utilities), so that an interested person can study each algorithm separately without having to dig through an endless chain of dependencies to see how something is done. The implementations are patterned so that they come as close to pseudocode as possible, to minimize the gap between theory and code. 
+They are almost completely self-contained, with virtually no common code shared between them (except for logging, saving, loading, and `MPI <https://en.wikipedia.org/wiki/Message_Passing_Interface>`_ utilities), so that an interested person can study each algorithm separately without having to dig through an endless chain of dependencies to see how something is done. The implementations are patterned so that they come as close to pseudocode as possible, to minimize the gap between theory and code. 
 
 Importantly, they're all structured similarly, so if you clearly understand one, jumping into the next is painless. 
 
