@@ -70,7 +70,7 @@ def train(env_name='CartPole-v0', hidden_sizes=[32], lr=1e-2,
         while True:
 
             # rendering
-            if not(finished_rendering_this_epoch):
+            if (not finished_rendering_this_epoch) and render:
                 env.render()
 
             # save obs
