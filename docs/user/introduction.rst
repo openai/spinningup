@@ -36,7 +36,7 @@ However, while there are many resources to help people quickly ramp up on deep l
 
 The high-level view is hard to come by because of how new the field is. There is not yet a standard deep RL textbook, so most of the knowledge is locked up in either papers or lecture series, which can take a long time to parse and digest. And learning to implement deep RL algorithms is typically painful, because either 
 
-- the paper that publishes an algorithm omits or inadvertantly obscures key design details,
+- the paper that publishes an algorithm omits or inadvertently obscures key design details,
 - or widely-public implementations of an algorithm are hard to read, hiding how the code lines up with the algorithm.
 
 While fantastic repos like rllab_, Baselines_, and rllib_ make it easier for researchers who are already in the field to make progress, they build algorithms into frameworks in ways that involve many non-obvious choices and trade-offs, which makes them hard to learn from. Consequently, the field of deep RL has a pretty high barrier to entry---for new researchers as well as practitioners and hobbyists. 
