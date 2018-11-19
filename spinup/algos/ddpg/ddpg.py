@@ -42,9 +42,9 @@ class ReplayBuffer:
 Deep Deterministic Policy Gradient (DDPG)
 
 """
-def ddpg(env_fn, actor_critic=core.mlp_actor_critic, ac_kwargs=dict(), seed=0, 
-         steps_per_epoch=5000, epochs=100, replay_size=int(1e6), gamma=0.99, 
-         polyak=0.995, pi_lr=1e-3, q_lr=1e-3, batch_size=100, start_steps=10000, 
+def ddpg(env_fn, actor_critic=core.mlp_actor_critic, ac_kwargs=dict(), seed=0,
+         steps_per_epoch=5000, epochs=100, replay_size=int(1e6), gamma=0.99,
+         polyak=0.995, pi_lr=1e-3, q_lr=1e-3, batch_size=100, start_steps=10000,
          act_noise=0.1, max_ep_len=1000, logger_kwargs=dict(), save_freq=1):
     """
 
@@ -52,8 +52,8 @@ def ddpg(env_fn, actor_critic=core.mlp_actor_critic, ac_kwargs=dict(), seed=0,
         env_fn : A function which creates a copy of the environment.
             The environment must satisfy the OpenAI Gym API.
 
-        actor_critic: A function which takes in placeholder symbols 
-            for state, ``x_ph``, and action, ``a_ph``, and returns the main 
+        actor_critic: A function which takes in placeholder symbols
+            for state, ``x_ph``, and action, ``a_ph``, and returns the main
             outputs from the agent's Tensorflow computation graph:
 
             ===========  ================  ======================================
@@ -61,20 +61,20 @@ def ddpg(env_fn, actor_critic=core.mlp_actor_critic, ac_kwargs=dict(), seed=0,
             ===========  ================  ======================================
             ``pi``       (batch, act_dim)  | Deterministically computes actions
                                            | from policy given states.
-            ``q``        (batch,)          | Gives the current estimate of Q* for 
+            ``q``        (batch,)          | Gives the current estimate of Q* for
                                            | states in ``x_ph`` and actions in
                                            | ``a_ph``.
-            ``q_pi``     (batch,)          | Gives the composition of ``q`` and 
-                                           | ``pi`` for states in ``x_ph``: 
+            ``q_pi``     (batch,)          | Gives the composition of ``q`` and
+                                           | ``pi`` for states in ``x_ph``:
                                            | q(x, pi(x)).
             ===========  ================  ======================================
 
-        ac_kwargs (dict): Any kwargs appropriate for the actor_critic 
+        ac_kwargs (dict): Any kwargs appropriate for the actor_critic
             function you provided to DDPG.
 
         seed (int): Seed for random number generators.
 
-        steps_per_epoch (int): Number of steps of interaction (state-action pairs) 
+        steps_per_epoch (int): Number of steps of interaction (state-action pairs)
             for the agent and the environment in each epoch.
 
         epochs (int): Number of epochs to run and train agent.
@@ -83,14 +83,14 @@ def ddpg(env_fn, actor_critic=core.mlp_actor_critic, ac_kwargs=dict(), seed=0,
 
         gamma (float): Discount factor. (Always between 0 and 1.)
 
-        polyak (float): Interpolation factor in polyak averaging for target 
-            networks. Target networks are updated towards main networks 
+        polyak (float): Interpolation factor in polyak averaging for target
+            networks. Target networks are updated towards main networks
             according to:
 
-            .. math:: \\theta_{\\text{targ}} \\leftarrow 
+            .. math:: \\theta_{\\text{targ}} \\leftarrow
                 \\rho \\theta_{\\text{targ}} + (1-\\rho) \\theta
 
-            where :math:`\\rho` is polyak. (Always between 0 and 1, usually 
+            where :math:`\\rho` is polyak. (Always between 0 and 1, usually
             close to 1.)
 
         pi_lr (float): Learning rate for policy.
@@ -102,7 +102,7 @@ def ddpg(env_fn, actor_critic=core.mlp_actor_critic, ac_kwargs=dict(), seed=0,
         start_steps (int): Number of steps for uniform-random action selection,
             before running real policy. Helps exploration.
 
-        act_noise (float): Stddev for Gaussian exploration noise added to 
+        act_noise (float): Stddev for Gaussian exploration noise added to
             policy at training time. (At test time, no noise is added.)
 
         max_ep_len (int): Maximum length of trajectory / episode / rollout.
@@ -136,10 +136,10 @@ def ddpg(env_fn, actor_critic=core.mlp_actor_critic, ac_kwargs=dict(), seed=0,
     # Main outputs from computation graph
     with tf.variable_scope('main'):
         pi, q, q_pi = actor_critic(x_ph, a_ph, **ac_kwargs)
-    
+
     # Target networks
     with tf.variable_scope('target'):
-        # Note that the action placeholder going to actor_critic here is 
+        # Note that the action placeholder going to actor_critic here is
         # irrelevant, because we only need q_targ(s, pi_targ(s)).
         pi_targ, _, q_pi_targ  = actor_critic(x2_ph, a_ph, **ac_kwargs)
 
@@ -179,7 +179,7 @@ def ddpg(env_fn, actor_critic=core.mlp_actor_critic, ac_kwargs=dict(), seed=0,
     logger.setup_tf_saver(sess, inputs={'x': x_ph, 'a': a_ph}, outputs={'pi': pi, 'q': q})
 
     def get_action(o, noise_scale):
-        a = sess.run(pi, feed_dict={x_ph: o.reshape(1,-1)})
+        a = sess.run(pi, feed_dict={x_ph: o.reshape(1,-1)})[0]
         a += noise_scale * np.random.randn(act_dim)
         return np.clip(a, -act_limit, act_limit)
 
@@ -202,8 +202,8 @@ def ddpg(env_fn, actor_critic=core.mlp_actor_critic, ac_kwargs=dict(), seed=0,
 
         """
         Until start_steps have elapsed, randomly sample actions
-        from a uniform distribution for better exploration. Afterwards, 
-        use the learned policy (with some noise, via act_noise). 
+        from a uniform distribution for better exploration. Afterwards,
+        use the learned policy (with some noise, via act_noise).
         """
         if t > start_steps:
             a = get_action(o, act_noise)
@@ -223,7 +223,7 @@ def ddpg(env_fn, actor_critic=core.mlp_actor_critic, ac_kwargs=dict(), seed=0,
         # Store experience to replay buffer
         replay_buffer.store(o, a, r, o2, d)
 
-        # Super critical, easy to overlook step: make sure to update 
+        # Super critical, easy to overlook step: make sure to update
         # most recent observation!
         o = o2
 
