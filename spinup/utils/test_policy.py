@@ -5,6 +5,8 @@ import os.path as osp
 import tensorflow as tf
 from spinup import EpochLogger
 from spinup.utils.logx import restore_tf_graph
+import gym
+import pybullet_envs
 
 def load_policy(fpath, itr='last', deterministic=False):
 
@@ -35,7 +37,10 @@ def load_policy(fpath, itr='last', deterministic=False):
     # (sometimes this will fail because the environment could not be pickled)
     try:
         state = joblib.load(osp.join(fpath, 'vars'+itr+'.pkl'))
-        env = state['env']
+        if 'env' in state:
+            env = state['env']
+        elif 'spec' in state:
+            env = gym.make(state['spec'].id)
     except:
         env = None
 
@@ -50,6 +55,11 @@ def run_policy(env, get_action, max_ep_len=None, num_episodes=100, render=True):
         "page on Experiment Outputs for how to handle this situation."
 
     logger = EpochLogger()
+
+    # Bullet requires us to render here
+    if render:
+        env.render("human")
+
     o, r, d, ep_ret, ep_len, n = env.reset(), 0, False, 0, 0, 0
     while n < num_episodes:
         if render:
@@ -82,7 +92,7 @@ if __name__ == '__main__':
     parser.add_argument('--itr', '-i', type=int, default=-1)
     parser.add_argument('--deterministic', '-d', action='store_true')
     args = parser.parse_args()
-    env, get_action = load_policy(args.fpath, 
+    env, get_action = load_policy(args.fpath,
                                   args.itr if args.itr >=0 else 'last',
                                   args.deterministic)
     run_policy(env, get_action, args.len, args.episodes, not(args.norender))

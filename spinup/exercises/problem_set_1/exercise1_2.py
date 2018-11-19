@@ -6,7 +6,7 @@ from spinup.exercises.problem_set_1 import exercise1_1
 
 Exercise 1.2: PPO Gaussian Policy
 
-Implement an MLP diagonal Gaussian policy for PPO. 
+Implement an MLP diagonal Gaussian policy for PPO.
 
 Log-likelihoods will be computed using your answer to Exercise 1.1,
 so make sure to complete that exercise before beginning this one.
@@ -62,13 +62,13 @@ def mlp_gaussian_policy(x, a, hidden_sizes, activation, output_activation, actio
             environment this agent will interact with.
 
     Returns:
-        pi: A symbol for sampling stochastic actions from a Gaussian 
+        pi: A symbol for sampling stochastic actions from a Gaussian
             distribution.
 
-        logp: A symbol for computing log-likelihoods of actions from a Gaussian 
+        logp: A symbol for computing log-likelihoods of actions from a Gaussian
             distribution.
 
-        logp_pi: A symbol for computing log-likelihoods of actions in pi from a 
+        logp_pi: A symbol for computing log-likelihoods of actions in pi from a
             Gaussian distribution.
 
     """
@@ -77,9 +77,9 @@ def mlp_gaussian_policy(x, a, hidden_sizes, activation, output_activation, actio
     #   YOUR CODE HERE    #
     #                     #
     #######################
-    # mu = 
-    # log_std = 
-    # pi = 
+    # mu =
+    # log_std =
+    # pi =
 
     logp = exercise1_1.gaussian_likelihood(a, mu, log_std)
     logp_pi = exercise1_1.gaussian_likelihood(pi, mu, log_std)
@@ -93,14 +93,16 @@ if __name__ == '__main__':
 
     from spinup import ppo
     from spinup.exercises.common import print_result
+    from spinup.user_config import INVERTEDPENDULUM_ENV
     import gym
     import os
     import pandas as pd
     import psutil
     import time
+    import pybullet_envs
 
     logdir = "/tmp/experiments/%i"%int(time.time())
-    ppo(env_fn = lambda : gym.make('InvertedPendulum-v2'),
+    ppo(env_fn = lambda : gym.make(INVERTEDPENDULUM_ENV),
         ac_kwargs=dict(policy=mlp_gaussian_policy, hidden_sizes=(64,)),
         steps_per_epoch=4000, epochs=20, logger_kwargs=dict(output_dir=logdir))
 

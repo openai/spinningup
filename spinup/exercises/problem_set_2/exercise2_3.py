@@ -7,6 +7,7 @@ from spinup.algos.td3.td3 import ReplayBuffer
 from spinup.algos.td3.core import get_vars
 from spinup.utils.logx import EpochLogger
 from spinup.utils.run_utils import ExperimentGrid
+from spinup.user_config import HALFCHEETAH_ENV
 
 
 """
@@ -14,18 +15,18 @@ from spinup.utils.run_utils import ExperimentGrid
 Exercise 2.3: Details Matter
 
 In this exercise, you will run TD3 with a tiny implementation difference,
-pertaining to how target actions are calculated. Your goal is to determine 
+pertaining to how target actions are calculated. Your goal is to determine
 whether or not there is any change in performance, and if so, explain why.
 
 You do NOT need to write code for this exercise.
 
 """
 
-def td3(env_fn, actor_critic=core.mlp_actor_critic, ac_kwargs=dict(), seed=0, 
-        steps_per_epoch=5000, epochs=100, replay_size=int(1e6), gamma=0.99, 
-        polyak=0.995, pi_lr=1e-3, q_lr=1e-3, batch_size=100, start_steps=10000, 
-        act_noise=0.1, target_noise=0.2, noise_clip=0.5, policy_delay=2, 
-        max_ep_len=1000, logger_kwargs=dict(), save_freq=1, 
+def td3(env_fn, actor_critic=core.mlp_actor_critic, ac_kwargs=dict(), seed=0,
+        steps_per_epoch=5000, epochs=100, replay_size=int(1e6), gamma=0.99,
+        polyak=0.995, pi_lr=1e-3, q_lr=1e-3, batch_size=100, start_steps=10000,
+        act_noise=0.1, target_noise=0.2, noise_clip=0.5, policy_delay=2,
+        max_ep_len=1000, logger_kwargs=dict(), save_freq=1,
         remove_action_clip=False):
     """
 
@@ -33,8 +34,8 @@ def td3(env_fn, actor_critic=core.mlp_actor_critic, ac_kwargs=dict(), seed=0,
         env_fn : A function which creates a copy of the environment.
             The environment must satisfy the OpenAI Gym API.
 
-        actor_critic: A function which takes in placeholder symbols 
-            for state, ``x_ph``, and action, ``a_ph``, and returns the main 
+        actor_critic: A function which takes in placeholder symbols
+            for state, ``x_ph``, and action, ``a_ph``, and returns the main
             outputs from the agent's Tensorflow computation graph:
 
             ===========  ================  ======================================
@@ -42,23 +43,23 @@ def td3(env_fn, actor_critic=core.mlp_actor_critic, ac_kwargs=dict(), seed=0,
             ===========  ================  ======================================
             ``pi``       (batch, act_dim)  | Deterministically computes actions
                                            | from policy given states.
-            ``q1``       (batch,)          | Gives one estimate of Q* for 
+            ``q1``       (batch,)          | Gives one estimate of Q* for
                                            | states in ``x_ph`` and actions in
                                            | ``a_ph``.
-            ``q2``       (batch,)          | Gives another estimate of Q* for 
+            ``q2``       (batch,)          | Gives another estimate of Q* for
                                            | states in ``x_ph`` and actions in
                                            | ``a_ph``.
-            ``q1_pi``    (batch,)          | Gives the composition of ``q1`` and 
-                                           | ``pi`` for states in ``x_ph``: 
+            ``q1_pi``    (batch,)          | Gives the composition of ``q1`` and
+                                           | ``pi`` for states in ``x_ph``:
                                            | q1(x, pi(x)).
             ===========  ================  ======================================
 
-        ac_kwargs (dict): Any kwargs appropriate for the actor_critic 
+        ac_kwargs (dict): Any kwargs appropriate for the actor_critic
             function you provided to TD3.
 
         seed (int): Seed for random number generators.
 
-        steps_per_epoch (int): Number of steps of interaction (state-action pairs) 
+        steps_per_epoch (int): Number of steps of interaction (state-action pairs)
             for the agent and the environment in each epoch.
 
         epochs (int): Number of epochs to run and train agent.
@@ -67,14 +68,14 @@ def td3(env_fn, actor_critic=core.mlp_actor_critic, ac_kwargs=dict(), seed=0,
 
         gamma (float): Discount factor. (Always between 0 and 1.)
 
-        polyak (float): Interpolation factor in polyak averaging for target 
-            networks. Target networks are updated towards main networks 
+        polyak (float): Interpolation factor in polyak averaging for target
+            networks. Target networks are updated towards main networks
             according to:
 
-            .. math:: \\theta_{\\text{targ}} \\leftarrow 
+            .. math:: \\theta_{\\text{targ}} \\leftarrow
                 \\rho \\theta_{\\text{targ}} + (1-\\rho) \\theta
 
-            where :math:`\\rho` is polyak. (Always between 0 and 1, usually 
+            where :math:`\\rho` is polyak. (Always between 0 and 1, usually
             close to 1.)
 
         pi_lr (float): Learning rate for policy.
@@ -86,16 +87,16 @@ def td3(env_fn, actor_critic=core.mlp_actor_critic, ac_kwargs=dict(), seed=0,
         start_steps (int): Number of steps for uniform-random action selection,
             before running real policy. Helps exploration.
 
-        act_noise (float): Stddev for Gaussian exploration noise added to 
+        act_noise (float): Stddev for Gaussian exploration noise added to
             policy at training time. (At test time, no noise is added.)
 
-        target_noise (float): Stddev for smoothing noise added to target 
+        target_noise (float): Stddev for smoothing noise added to target
             policy.
 
-        noise_clip (float): Limit for absolute value of target policy 
+        noise_clip (float): Limit for absolute value of target policy
             smoothing noise.
 
-        policy_delay (int): Policy will only be updated once every 
+        policy_delay (int): Policy will only be updated once every
             policy_delay times for each update of the Q-networks.
 
         max_ep_len (int): Maximum length of trajectory / episode / rollout.
@@ -132,11 +133,11 @@ def td3(env_fn, actor_critic=core.mlp_actor_critic, ac_kwargs=dict(), seed=0,
     # Main outputs from computation graph
     with tf.variable_scope('main'):
         pi, q1, q2, q1_pi = actor_critic(x_ph, a_ph, **ac_kwargs)
-    
+
     # Target policy network
     with tf.variable_scope('target'):
         pi_targ, _, _, _  = actor_critic(x2_ph, a_ph, **ac_kwargs)
-    
+
     # Target Q networks
     with tf.variable_scope('target', reuse=True):
 
@@ -212,8 +213,8 @@ def td3(env_fn, actor_critic=core.mlp_actor_critic, ac_kwargs=dict(), seed=0,
 
         """
         Until start_steps have elapsed, randomly sample actions
-        from a uniform distribution for better exploration. Afterwards, 
-        use the learned policy (with some noise, via act_noise). 
+        from a uniform distribution for better exploration. Afterwards,
+        use the learned policy (with some noise, via act_noise).
         """
         if t > start_steps:
             a = get_action(o, act_noise)
@@ -233,7 +234,7 @@ def td3(env_fn, actor_critic=core.mlp_actor_critic, ac_kwargs=dict(), seed=0,
         # Store experience to replay buffer
         replay_buffer.store(o, a, r, o2, d)
 
-        # Super critical, easy to overlook step: make sure to update 
+        # Super critical, easy to overlook step: make sure to update
         # most recent observation!
         o = o2
 
@@ -291,7 +292,7 @@ def td3(env_fn, actor_critic=core.mlp_actor_critic, ac_kwargs=dict(), seed=0,
 if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser()
-    parser.add_argument('--env', type=str, default='HalfCheetah-v2')
+    parser.add_argument('--env', type=str, default=HALFCHEETAH_ENV)
     parser.add_argument('--h', type=int, default=300)
     parser.add_argument('--l', type=int, default=1)
     parser.add_argument('--num_runs', '-n', type=int, default=3)
@@ -300,7 +301,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     def td3_with_actor_critic(**kwargs):
-        td3(ac_kwargs=dict(hidden_sizes=[args.h]*args.l), 
+        td3(ac_kwargs=dict(hidden_sizes=[args.h]*args.l),
             start_steps=5000,
             max_ep_len=150,
             batch_size=64,

@@ -1,5 +1,6 @@
 from spinup.user_config import DEFAULT_DATA_DIR, FORCE_DATESTAMP, \
-                               DEFAULT_SHORTHAND, WAIT_BEFORE_LAUNCH
+                               DEFAULT_SHORTHAND, WAIT_BEFORE_LAUNCH, \
+                               PYTHON_NAME
 from spinup.utils.logx import colorize
 from spinup.utils.mpi_tools import mpi_fork, msg
 from spinup.utils.serialization_utils import convert_json
@@ -26,7 +27,7 @@ def setup_logger_kwargs(exp_name, seed=None, data_dir=None, datestamp=False):
     """
     Sets up the output_dir for a logger and returns a dict for logger kwargs.
 
-    If no seed is given and datestamp is false, 
+    If no seed is given and datestamp is false,
 
     ::
 
@@ -44,8 +45,8 @@ def setup_logger_kwargs(exp_name, seed=None, data_dir=None, datestamp=False):
 
         output_dir = data_dir/YY-MM-DD_exp_name/YY-MM-DD_HH-MM-SS_exp_name_s[seed]
 
-    You can force datestamp=True by setting ``FORCE_DATESTAMP=True`` in 
-    ``spinup/user_config.py``. 
+    You can force datestamp=True by setting ``FORCE_DATESTAMP=True`` in
+    ``spinup/user_config.py``.
 
     Args:
 
@@ -70,7 +71,7 @@ def setup_logger_kwargs(exp_name, seed=None, data_dir=None, datestamp=False):
     # Make base path
     ymd_time = time.strftime("%Y-%m-%d_") if datestamp else ''
     relpath = ''.join([ymd_time, exp_name])
-    
+
     if seed is not None:
         # Make a seed-specific subfolder in the experiment directory.
         if datestamp:
@@ -81,30 +82,30 @@ def setup_logger_kwargs(exp_name, seed=None, data_dir=None, datestamp=False):
         relpath = osp.join(relpath, subfolder)
 
     data_dir = data_dir or DEFAULT_DATA_DIR
-    logger_kwargs = dict(output_dir=osp.join(data_dir, relpath), 
+    logger_kwargs = dict(output_dir=osp.join(data_dir, relpath),
                          exp_name=exp_name)
     return logger_kwargs
 
 
-def call_experiment(exp_name, thunk, seed=0, num_cpu=1, data_dir=None, 
+def call_experiment(exp_name, thunk, seed=0, num_cpu=1, data_dir=None,
                     datestamp=False, **kwargs):
     """
     Run a function (thunk) with hyperparameters (kwargs), plus configuration.
 
     This wraps a few pieces of functionality which are useful when you want
     to run many experiments in sequence, including logger configuration and
-    splitting into multiple processes for MPI. 
+    splitting into multiple processes for MPI.
 
     There's also a SpinningUp-specific convenience added into executing the
     thunk: if ``env_name`` is one of the kwargs passed to call_experiment, it's
     assumed that the thunk accepts an argument called ``env_fn``, and that
-    the ``env_fn`` should make a gym environment with the given ``env_name``. 
+    the ``env_fn`` should make a gym environment with the given ``env_name``.
 
     The way the experiment is actually executed is slightly complicated: the
     function is serialized to a string, and then ``run_entrypoint.py`` is
     executed in a subprocess call with the serialized string as an argument.
     ``run_entrypoint.py`` unserializes the function call and executes it.
-    We choose to do it this way---instead of just calling the function 
+    We choose to do it this way---instead of just calling the function
     directly here---to avoid leaking state between successive experiments.
 
     Args:
@@ -121,7 +122,7 @@ def call_experiment(exp_name, thunk, seed=0, num_cpu=1, data_dir=None,
 
         data_dir (string): Used in configuring the logger, to decide where
             to store experiment results. Note: if left as None, data_dir will
-            default to ``DEFAULT_DATA_DIR`` from ``spinup/user_config.py``. 
+            default to ``DEFAULT_DATA_DIR`` from ``spinup/user_config.py``.
 
         **kwargs: All kwargs to pass to thunk.
 
@@ -151,6 +152,7 @@ def call_experiment(exp_name, thunk, seed=0, num_cpu=1, data_dir=None,
         # Make 'env_fn' from 'env_name'
         if 'env_name' in kwargs:
             import gym
+            import pybullet_envs
             env_name = kwargs['env_name']
             kwargs['env_fn'] = lambda : gym.make(env_name)
             del kwargs['env_name']
@@ -166,7 +168,7 @@ def call_experiment(exp_name, thunk, seed=0, num_cpu=1, data_dir=None,
     encoded_thunk = base64.b64encode(zlib.compress(pickled_thunk)).decode('utf-8')
 
     entrypoint = osp.join(osp.abspath(osp.dirname(__file__)),'run_entrypoint.py')
-    cmd = ['python', entrypoint, encoded_thunk]
+    cmd = [PYTHON_NAME, entrypoint, encoded_thunk]
     try:
         subprocess.check_call(cmd, env=os.environ)
     except CalledProcessError:
@@ -174,9 +176,9 @@ def call_experiment(exp_name, thunk, seed=0, num_cpu=1, data_dir=None,
 
             There appears to have been an error in your experiment.
 
-            Check the traceback above to see what actually went wrong. The 
+            Check the traceback above to see what actually went wrong. The
             traceback below, included for completeness (but probably not useful
-            for diagnosing the error), shows the stack leading up to the 
+            for diagnosing the error), shows the stack leading up to the
             experiment launch.
 
             """) + '='*DIV_LINE_WIDTH + '\n'*3
@@ -186,10 +188,10 @@ def call_experiment(exp_name, thunk, seed=0, num_cpu=1, data_dir=None,
     # Tell the user about where results are, and how to check them
     logger_kwargs = kwargs['logger_kwargs']
 
-    plot_cmd = 'python -m spinup.run plot '+logger_kwargs['output_dir']
+    plot_cmd = PYTHON_NAME + ' -m spinup.run plot ' + logger_kwargs['output_dir']
     plot_cmd = colorize(plot_cmd, 'green')
 
-    test_cmd = 'python -m spinup.run test_policy '+logger_kwargs['output_dir']
+    test_cmd = PYTHON_NAME + ' -m spinup.run test_policy '+logger_kwargs['output_dir']
     test_cmd = colorize(test_cmd, 'green')
 
     output_msg = '\n'*5 + '='*DIV_LINE_WIDTH +'\n' + dedent("""\
@@ -215,7 +217,7 @@ def all_bools(vals):
     return all([isinstance(v,bool) for v in vals])
 
 def valid_str(v):
-    """ 
+    """
     Convert a value or values to a string which could go in a filepath.
 
     Partly based on `this gist`_.
@@ -230,7 +232,7 @@ def valid_str(v):
         return '-'.join([valid_str(x) for x in v])
 
     # Valid characters are '-', '_', and alphanumeric. Replace invalid chars
-    # with '-'. 
+    # with '-'.
     str_v = str(v).lower()
     valid_chars = "-_%s%s" % (string.ascii_letters, string.digits)
     str_v = ''.join(c if c in valid_chars else '-' for c in str_v)
@@ -293,7 +295,7 @@ class ExperimentGrid:
 
 
     def _default_shorthand(self, key):
-        # Create a default shorthand for the key, built from the first 
+        # Create a default shorthand for the key, built from the first
         # three letters of each colon-separated part.
         # But if the first three letters contains something which isn't
         # alphanumeric, shear that off.
@@ -310,16 +312,16 @@ class ExperimentGrid:
         By default, if a shorthand isn't given, one is automatically generated
         from the key using the first three letters of each colon-separated
         term. To disable this behavior, change ``DEFAULT_SHORTHAND`` in the
-        ``spinup/user_config.py`` file to ``False``. 
+        ``spinup/user_config.py`` file to ``False``.
 
         Args:
             key (string): Name of parameter.
 
             vals (value or list of values): Allowed values of parameter.
 
-            shorthand (string): Optional, shortened name of parameter. For 
+            shorthand (string): Optional, shortened name of parameter. For
                 example, maybe the parameter ``steps_per_epoch`` is shortened
-                to ``steps``. 
+                to ``steps``.
 
             in_name (bool): When constructing variant names, force the
                 inclusion of this parameter into the name.
@@ -340,8 +342,8 @@ class ExperimentGrid:
         """
         Given a variant (dict of valid param/value pairs), make an exp_name.
 
-        A variant's name is constructed as the grid name (if you've given it 
-        one), plus param names (or shorthands if available) and values 
+        A variant's name is constructed as the grid name (if you've given it
+        one), plus param names (or shorthands if available) and values
         separated by underscores.
 
         Note: if ``seed`` is a parameter, it is not included in the name.
@@ -349,7 +351,7 @@ class ExperimentGrid:
 
         def get_val(v, k):
             # Utility method for getting the correct value out of a variant
-            # given as a nested dict. Assumes that a parameter name, k, 
+            # given as a nested dict. Assumes that a parameter name, k,
             # describes a path into the nested dict, such that k='a:b:c'
             # corresponds to value=variant['a']['b']['c']. Uses recursion
             # to get this.
@@ -370,7 +372,7 @@ class ExperimentGrid:
             # Include a parameter in a name if either 1) it can take multiple
             # values, or 2) the user specified that it must appear in the name.
             # Except, however, when the parameter is 'seed'. Seed is handled
-            # differently so that runs of the same experiment, with different 
+            # differently so that runs of the same experiment, with different
             # seeds, will be grouped by experiment name.
             if (len(v)>1 or inn) and not(k=='seed'):
 
@@ -382,7 +384,7 @@ class ExperimentGrid:
                 variant_val = get_val(variant, k)
 
                 # Append to name
-                if all_bools(v): 
+                if all_bools(v):
                     # If this is a param which only takes boolean values,
                     # only include in the name if it's True for this variant.
                     var_name += ('_' + param_name) if variant_val else ''
@@ -438,13 +440,13 @@ class ExperimentGrid:
                         a : 1,
                         b : 2
                         }
-                    }    
+                    }
                 }
         """
         flat_variants = self._variants(self.keys, self.vals)
 
         def unflatten_var(var):
-            """ 
+            """
             Build the full nested dict version of var, based on key names.
             """
             new_var = dict()
@@ -482,11 +484,11 @@ class ExperimentGrid:
         Run each variant in the grid with function 'thunk'.
 
         Note: 'thunk' must be either a callable function, or a string. If it is
-        a string, it must be the name of a parameter whose values are all 
+        a string, it must be the name of a parameter whose values are all
         callable functions.
 
         Uses ``call_experiment`` to actually launch each experiment, and gives
-        each variant a name using ``self.variant_name()``. 
+        each variant a name using ``self.variant_name()``.
 
         Maintenance note: the args for ExperimentGrid.run should track closely
         to the args for call_experiment. However, ``seed`` is omitted because
@@ -503,7 +505,7 @@ class ExperimentGrid:
         var_names = set([self.variant_name(var) for var in variants])
         var_names = sorted(list(var_names))
         line = '='*DIV_LINE_WIDTH
-        preparing = colorize('Preparing to run the following experiments...', 
+        preparing = colorize('Preparing to run the following experiments...',
                              color='green', bold=True)
         joined_var_names = '\n'.join(var_names)
         announcement = f"\n{preparing}\n\n{joined_var_names}\n\n{line}"
@@ -520,8 +522,8 @@ class ExperimentGrid:
             """), color='cyan', bold=True)+line
             print(delay_msg)
             wait, steps = WAIT_BEFORE_LAUNCH, 100
-            prog_bar = trange(steps, desc='Launching in...', 
-                              leave=False, ncols=DIV_LINE_WIDTH, 
+            prog_bar = trange(steps, desc='Launching in...',
+                              leave=False, ncols=DIV_LINE_WIDTH,
                               mininterval=0.25,
                               bar_format='{desc}: {bar}| {remaining} {elapsed}')
             for _ in prog_bar:
@@ -534,7 +536,7 @@ class ExperimentGrid:
             # Figure out what the thunk is.
             if isinstance(thunk, str):
                 # Assume one of the variant parameters has the same
-                # name as the string you passed for thunk, and that 
+                # name as the string you passed for thunk, and that
                 # variant[thunk] is a valid callable function.
                 thunk_ = var[thunk]
                 del var[thunk]
@@ -542,7 +544,7 @@ class ExperimentGrid:
                 # Assume thunk is given as a function.
                 thunk_ = thunk
 
-            call_experiment(exp_name, thunk_, num_cpu=num_cpu, 
+            call_experiment(exp_name, thunk_, num_cpu=num_cpu,
                             data_dir=data_dir, datestamp=datestamp, **var)
 
 
