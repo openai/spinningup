@@ -7,7 +7,8 @@ from spinup.algos.td3.td3 import ReplayBuffer
 from spinup.algos.td3.core import get_vars
 from spinup.utils.logx import EpochLogger
 from spinup.utils.run_utils import ExperimentGrid
-from spinup.user_config import HALFCHEETAH_ENV
+from spinup.user_config import HALFCHEETAH_ENV, import_pybullet_envs
+import_pybullet_envs()
 
 """
 

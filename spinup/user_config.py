@@ -22,6 +22,11 @@ if sys.version_info[0] == 3:
     PYTHON_NAME = 'python3'
 
 HAS_MUJOCO = (importlib.find_loader('mujoco_py') != None)
+HAS_PYBULLET = (importlib.find_loader('pybullet_envs') != None)
+
+def import_pybullet_envs():
+    if HAS_PYBULLET:
+        import pybullet_envs
 
 HALFCHEETAH_ENV = 'HalfCheetah-v2'
 INVERTEDPENDULUM_ENV = 'InvertedPendulum-v0'

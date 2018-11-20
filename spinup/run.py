@@ -1,5 +1,5 @@
 import spinup
-from spinup.user_config import PYTHON_NAME
+from spinup.user_config import PYTHON_NAME, import_pybullet_envs
 from spinup.utils.run_utils import ExperimentGrid
 from spinup.utils.serialization_utils import convert_json
 import argparse
@@ -11,7 +11,7 @@ import string
 import tensorflow as tf
 from textwrap import dedent
 
-import pybullet_envs
+import_pybullet_envs()
 
 # Command line args that will go to ExperimentGrid.run, and must possess unique
 # values (therefore must be treated separately).

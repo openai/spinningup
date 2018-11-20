@@ -93,13 +93,13 @@ if __name__ == '__main__':
 
     from spinup import ppo
     from spinup.exercises.common import print_result
-    from spinup.user_config import INVERTEDPENDULUM_ENV
+    from spinup.user_config import INVERTEDPENDULUM_ENV, import_pybullet_envs
     import gym
     import os
     import pandas as pd
     import psutil
     import time
-    import pybullet_envs
+    import_pybullet_envs()
 
     logdir = "/tmp/experiments/%i"%int(time.time())
     ppo(env_fn = lambda : gym.make(INVERTEDPENDULUM_ENV),
