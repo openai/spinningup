@@ -44,9 +44,9 @@ Soft Actor-Critic
 (With slight variations that bring it closer to TD3)
 
 """
-def sac(env_fn, actor_critic=core.mlp_actor_critic, ac_kwargs=dict(), seed=0,
-        steps_per_epoch=5000, epochs=100, replay_size=int(1e6), gamma=0.99,
-        polyak=0.995, lr=1e-3, alpha=0.2, batch_size=100, start_steps=10000,
+def sac(env_fn, actor_critic=core.mlp_actor_critic, ac_kwargs=dict(), seed=0, 
+        steps_per_epoch=5000, epochs=100, replay_size=int(1e6), gamma=0.99, 
+        polyak=0.995, lr=1e-3, alpha=0.2, batch_size=100, start_steps=10000, 
         max_ep_len=1000, logger_kwargs=dict(), save_freq=1):
     """
 
@@ -54,8 +54,8 @@ def sac(env_fn, actor_critic=core.mlp_actor_critic, ac_kwargs=dict(), seed=0,
         env_fn : A function which creates a copy of the environment.
             The environment must satisfy the OpenAI Gym API.
 
-        actor_critic: A function which takes in placeholder symbols
-            for state, ``x_ph``, and action, ``a_ph``, and returns the main
+        actor_critic: A function which takes in placeholder symbols 
+            for state, ``x_ph``, and action, ``a_ph``, and returns the main 
             outputs from the agent's Tensorflow computation graph:
 
             ===========  ================  ======================================
@@ -63,35 +63,35 @@ def sac(env_fn, actor_critic=core.mlp_actor_critic, ac_kwargs=dict(), seed=0,
             ===========  ================  ======================================
             ``mu``       (batch, act_dim)  | Computes mean actions from policy
                                            | given states.
-            ``pi``       (batch, act_dim)  | Samples actions from policy given
+            ``pi``       (batch, act_dim)  | Samples actions from policy given 
                                            | states.
             ``logp_pi``  (batch,)          | Gives log probability, according to
                                            | the policy, of the action sampled by
                                            | ``pi``. Critical: must be differentiable
                                            | with respect to policy parameters all
                                            | the way through action sampling.
-            ``q1``       (batch,)          | Gives one estimate of Q* for
+            ``q1``       (batch,)          | Gives one estimate of Q* for 
                                            | states in ``x_ph`` and actions in
                                            | ``a_ph``.
-            ``q2``       (batch,)          | Gives another estimate of Q* for
+            ``q2``       (batch,)          | Gives another estimate of Q* for 
                                            | states in ``x_ph`` and actions in
                                            | ``a_ph``.
-            ``q1_pi``    (batch,)          | Gives the composition of ``q1`` and
-                                           | ``pi`` for states in ``x_ph``:
+            ``q1_pi``    (batch,)          | Gives the composition of ``q1`` and 
+                                           | ``pi`` for states in ``x_ph``: 
                                            | q1(x, pi(x)).
-            ``q2_pi``    (batch,)          | Gives the composition of ``q2`` and
-                                           | ``pi`` for states in ``x_ph``:
+            ``q2_pi``    (batch,)          | Gives the composition of ``q2`` and 
+                                           | ``pi`` for states in ``x_ph``: 
                                            | q2(x, pi(x)).
             ``v``        (batch,)          | Gives the value estimate for states
-                                           | in ``x_ph``.
+                                           | in ``x_ph``. 
             ===========  ================  ======================================
 
-        ac_kwargs (dict): Any kwargs appropriate for the actor_critic
+        ac_kwargs (dict): Any kwargs appropriate for the actor_critic 
             function you provided to SAC.
 
         seed (int): Seed for random number generators.
 
-        steps_per_epoch (int): Number of steps of interaction (state-action pairs)
+        steps_per_epoch (int): Number of steps of interaction (state-action pairs) 
             for the agent and the environment in each epoch.
 
         epochs (int): Number of epochs to run and train agent.
@@ -100,19 +100,19 @@ def sac(env_fn, actor_critic=core.mlp_actor_critic, ac_kwargs=dict(), seed=0,
 
         gamma (float): Discount factor. (Always between 0 and 1.)
 
-        polyak (float): Interpolation factor in polyak averaging for target
-            networks. Target networks are updated towards main networks
+        polyak (float): Interpolation factor in polyak averaging for target 
+            networks. Target networks are updated towards main networks 
             according to:
 
-            .. math:: \\theta_{\\text{targ}} \\leftarrow
+            .. math:: \\theta_{\\text{targ}} \\leftarrow 
                 \\rho \\theta_{\\text{targ}} + (1-\\rho) \\theta
 
-            where :math:`\\rho` is polyak. (Always between 0 and 1, usually
+            where :math:`\\rho` is polyak. (Always between 0 and 1, usually 
             close to 1.)
 
         lr (float): Learning rate (used for both policy and value learning).
 
-        alpha (float): Entropy regularization coefficient. (Equivalent to
+        alpha (float): Entropy regularization coefficient. (Equivalent to 
             inverse of reward scale in the original SAC paper.)
 
         batch_size (int): Minibatch size for SGD.
@@ -151,7 +151,7 @@ def sac(env_fn, actor_critic=core.mlp_actor_critic, ac_kwargs=dict(), seed=0,
     # Main outputs from computation graph
     with tf.variable_scope('main'):
         mu, pi, logp_pi, q1, q2, q1_pi, q2_pi, v = actor_critic(x_ph, a_ph, **ac_kwargs)
-
+    
     # Target value network
     with tf.variable_scope('target'):
         _, _, _, _, _, _, _, v_targ  = actor_critic(x2_ph, a_ph, **ac_kwargs)
@@ -160,7 +160,7 @@ def sac(env_fn, actor_critic=core.mlp_actor_critic, ac_kwargs=dict(), seed=0,
     replay_buffer = ReplayBuffer(obs_dim=obs_dim, act_dim=act_dim, size=replay_size)
 
     # Count variables
-    var_counts = tuple(core.count_vars(scope) for scope in
+    var_counts = tuple(core.count_vars(scope) for scope in 
                        ['main/pi', 'main/q1', 'main/q2', 'main/v', 'main'])
     print(('\nNumber of parameters: \t pi: %d, \t' + \
            'q1: %d, \t q2: %d, \t v: %d, \t total: %d\n')%var_counts)
@@ -179,7 +179,7 @@ def sac(env_fn, actor_critic=core.mlp_actor_critic, ac_kwargs=dict(), seed=0,
     v_loss = 0.5 * tf.reduce_mean((v_backup - v)**2)
     value_loss = q1_loss + q2_loss + v_loss
 
-    # Policy train op
+    # Policy train op 
     # (has to be separate from value train op, because q1_pi appears in pi_loss)
     pi_optimizer = tf.train.AdamOptimizer(learning_rate=lr)
     train_pi_op = pi_optimizer.minimize(pi_loss, var_list=get_vars('main/pi'))
@@ -198,7 +198,7 @@ def sac(env_fn, actor_critic=core.mlp_actor_critic, ac_kwargs=dict(), seed=0,
                                   for v_main, v_targ in zip(get_vars('main'), get_vars('target'))])
 
     # All ops to call during one training step
-    step_ops = [pi_loss, q1_loss, q2_loss, v_loss, q1, q2, v, logp_pi,
+    step_ops = [pi_loss, q1_loss, q2_loss, v_loss, q1, q2, v, logp_pi, 
                 train_pi_op, train_value_op, target_update]
 
     # Initializing targets to match main variables
@@ -210,7 +210,7 @@ def sac(env_fn, actor_critic=core.mlp_actor_critic, ac_kwargs=dict(), seed=0,
     sess.run(target_init)
 
     # Setup model saving
-    logger.setup_tf_saver(sess, inputs={'x': x_ph, 'a': a_ph},
+    logger.setup_tf_saver(sess, inputs={'x': x_ph, 'a': a_ph}, 
                                 outputs={'mu': mu, 'pi': pi, 'q1': q1, 'q2': q2, 'v': v})
 
     def get_action(o, deterministic=False):
@@ -222,7 +222,7 @@ def sac(env_fn, actor_critic=core.mlp_actor_critic, ac_kwargs=dict(), seed=0,
         for j in range(n):
             o, r, d, ep_ret, ep_len = test_env.reset(), 0, False, 0, 0
             while not(d or (ep_len == max_ep_len)):
-                # Take deterministic actions at test time
+                # Take deterministic actions at test time 
                 o, r, d, _ = test_env.step(get_action(o, True))
                 ep_ret += r
                 ep_len += 1
@@ -237,8 +237,8 @@ def sac(env_fn, actor_critic=core.mlp_actor_critic, ac_kwargs=dict(), seed=0,
 
         """
         Until start_steps have elapsed, randomly sample actions
-        from a uniform distribution for better exploration. Afterwards,
-        use the learned policy.
+        from a uniform distribution for better exploration. Afterwards, 
+        use the learned policy. 
         """
         if t > start_steps:
             a = get_action(o)
@@ -258,7 +258,7 @@ def sac(env_fn, actor_critic=core.mlp_actor_critic, ac_kwargs=dict(), seed=0,
         # Store experience to replay buffer
         replay_buffer.store(o, a, r, o2, d)
 
-        # Super critical, easy to overlook step: make sure to update
+        # Super critical, easy to overlook step: make sure to update 
         # most recent observation!
         o = o2
 
@@ -303,9 +303,9 @@ def sac(env_fn, actor_critic=core.mlp_actor_critic, ac_kwargs=dict(), seed=0,
             logger.log_tabular('EpLen', average_only=True)
             logger.log_tabular('TestEpLen', average_only=True)
             logger.log_tabular('TotalEnvInteracts', t)
-            logger.log_tabular('Q1Vals', with_min_and_max=True)
-            logger.log_tabular('Q2Vals', with_min_and_max=True)
-            logger.log_tabular('VVals', with_min_and_max=True)
+            logger.log_tabular('Q1Vals', with_min_and_max=True) 
+            logger.log_tabular('Q2Vals', with_min_and_max=True) 
+            logger.log_tabular('VVals', with_min_and_max=True) 
             logger.log_tabular('LogPi', with_min_and_max=True)
             logger.log_tabular('LossPi', average_only=True)
             logger.log_tabular('LossQ1', average_only=True)
