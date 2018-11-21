@@ -1,3 +1,5 @@
+**Status:** Active (under active development, breaking changes may occur)
+
 Welcome to Spinning Up in Deep RL! 
 ==================================
 
