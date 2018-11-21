@@ -220,13 +220,13 @@ def sac(env_fn, actor_critic=core.mlp_actor_critic, ac_kwargs=dict(), seed=0,
     def test_agent(n=10):
         global sess, mu, pi, q1, q2, q1_pi, q2_pi
         for j in range(n):
-            o, r, d, ep_ret, ep_len = test_env.reset(), 0, False, 0, 0
-            while not(d or (ep_len == max_ep_len)):
+            o_test, r_test, d_test, ep_ret_test, ep_len_test = test_env.reset(), 0, False, 0, 0
+            while not(d_test or (ep_len_test == max_ep_len)):
                 # Take deterministic actions at test time 
-                o, r, d, _ = test_env.step(get_action(o, True))
-                ep_ret += r
-                ep_len += 1
-            logger.store(TestEpRet=ep_ret, TestEpLen=ep_len)
+                o_test, r_test, d_test, _ = test_env.step(get_action(o_test, True))
+                ep_ret_test += r_test
+                ep_len_test += 1
+            logger.store(TestEpRet=ep_ret_test, TestEpLen=ep_len_test)
 
     start_time = time.time()
     o, r, d, ep_ret, ep_len = env.reset(), 0, False, 0, 0
