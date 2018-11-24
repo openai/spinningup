@@ -16,7 +16,7 @@ The following algorithms are implemented in the Spinning Up package:
 - `Twin Delayed DDPG`_ (TD3)
 - `Soft Actor-Critic`_ (SAC)
 
-They are all implemented with MLP (non-recurrent) actor-critics, making them suitable for fully-observed, non-image-based RL environments, eg the `Gym Mujoco`_ environments.
+They are all implemented with `MLP`_ (non-recurrent) actor-critics, making them suitable for fully-observed, non-image-based RL environments, eg the `Gym Mujoco`_ environments.
 
 .. _`Gym Mujoco`: https://gym.openai.com/envs/#mujoco
 .. _`Vanilla Policy Gradient`: ../algorithms/vpg.html
@@ -25,6 +25,7 @@ They are all implemented with MLP (non-recurrent) actor-critics, making them sui
 .. _`Deep Deterministic Policy Gradient`: ../algorithms/ddpg.html
 .. _`Twin Delayed DDPG`: ../algorithms/td3.html
 .. _`Soft Actor-Critic`: ../algorithms/sac.html
+.. _`MLP`: https://en.wikipedia.org/wiki/Multilayer_perceptron
 
 
 Why These Algorithms?
