@@ -1,15 +1,4 @@
-import sys
-try:
-    import seaborn as sns
-except ImportError as e:
-    if "Python is not installed as a framework" in str(e):
-        print("It looks like you are using OSX and Anaconda setup, without "
-              "Matplotlib properly configured. \nIssuing this from the command "
-              "line should fix the problem:\n"
-              "echo \"backend: TkAgg\" >> ~/.matplotlib/matplotlibrc\n"
-              "For more info see "
-              "https://github.com/openai/spinningup/issues/1\n")
-        sys.exit(2)
+import seaborn as sns
 import pandas as pd
 import matplotlib.pyplot as plt
 import json
