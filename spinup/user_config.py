@@ -14,3 +14,8 @@ DEFAULT_SHORTHAND = True
 # Tells the GridSearch how many seconds to pause for before launching 
 # experiments.
 WAIT_BEFORE_LAUNCH = 5
+
+# Call python3 explicitly if version is 3
+PYTHON_NAME = 'python'
+if sys.version_info[0] == 3:
+    PYTHON_NAME = 'python3'

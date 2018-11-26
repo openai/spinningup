@@ -1,5 +1,6 @@
 from spinup.user_config import DEFAULT_DATA_DIR, FORCE_DATESTAMP, \
-                               DEFAULT_SHORTHAND, WAIT_BEFORE_LAUNCH
+                               DEFAULT_SHORTHAND, WAIT_BEFORE_LAUNCH, \
+                               PYTHON_NAME
 from spinup.utils.logx import colorize
 from spinup.utils.mpi_tools import mpi_fork, msg
 from spinup.utils.serialization_utils import convert_json
@@ -166,7 +167,7 @@ def call_experiment(exp_name, thunk, seed=0, num_cpu=1, data_dir=None,
     encoded_thunk = base64.b64encode(zlib.compress(pickled_thunk)).decode('utf-8')
 
     entrypoint = osp.join(osp.abspath(osp.dirname(__file__)),'run_entrypoint.py')
-    cmd = ['python', entrypoint, encoded_thunk]
+    cmd = [PYTHON_NAME, entrypoint, encoded_thunk]
     try:
         subprocess.check_call(cmd, env=os.environ)
     except CalledProcessError:
@@ -186,10 +187,10 @@ def call_experiment(exp_name, thunk, seed=0, num_cpu=1, data_dir=None,
     # Tell the user about where results are, and how to check them
     logger_kwargs = kwargs['logger_kwargs']
 
-    plot_cmd = 'python -m spinup.run plot '+logger_kwargs['output_dir']
+    plot_cmd = PYTHON_NAME + ' -m spinup.run plot '+logger_kwargs['output_dir']
     plot_cmd = colorize(plot_cmd, 'green')
 
-    test_cmd = 'python -m spinup.run test_policy '+logger_kwargs['output_dir']
+    test_cmd = PYTHON_NAME + ' -m spinup.run test_policy '+logger_kwargs['output_dir']
     test_cmd = colorize(test_cmd, 'green')
 
     output_msg = '\n'*5 + '='*DIV_LINE_WIDTH +'\n' + dedent("""\

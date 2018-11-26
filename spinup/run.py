@@ -1,4 +1,5 @@
 import spinup
+from spinup.user_config import PYTHON_NAME
 from spinup.utils.run_utils import ExperimentGrid
 from spinup.utils.serialization_utils import convert_json
 import argparse
@@ -221,7 +222,7 @@ if __name__ == '__main__':
     elif cmd in valid_utils:
         # Execute the correct utility file.
         runfile = osp.join(osp.abspath(osp.dirname(__file__)), 'utils', cmd +'.py')
-        args = ['python', runfile] + sys.argv[2:]
+        args = [PYTHON_NAME, runfile] + sys.argv[2:]
         subprocess.check_call(args, env=os.environ)
     else:
         # Assume that the user plans to execute an algorithm. Run custom
