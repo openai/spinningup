@@ -246,7 +246,8 @@ def ddpg(env_fn, actor_critic=core.mlp_actor_critic, ac_kwargs=dict(), seed=0,
                 logger.store(LossQ=outs[0], QVals=outs[1])
 
                 # Policy update
-                outs = sess.run([pi_loss, train_pi_op, target_update], feed_dict)
+                outs = sess.run([pi_loss, train_pi_op], feed_dict)
+                sess.run([target_update])
                 logger.store(LossPi=outs[0])
 
             logger.store(EpRet=ep_ret, EpLen=ep_len)
