@@ -42,6 +42,10 @@ Each algorithm is set up to save a training run's hyperparameter configuration, 
 |                | | which should get stored. Currently, all algorithms only use |
 |                | | this to save a copy of the environment.                     |
 +----------------+---------------------------------------------------------------+
+|``events.out.`` | | A tensorboard event file with algorithm dependent           |
+|``tfevents.``   | | performance and loss values. Visualize by running           |
+|``time.user``   | | ``tensorboard --logdir path/to/logs`` in the command line.  |
++----------------+---------------------------------------------------------------+
 
 .. admonition:: You Should Know
 

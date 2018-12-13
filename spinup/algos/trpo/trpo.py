@@ -255,6 +255,9 @@ def trpo(env_fn, actor_critic=core.mlp_actor_critic, ac_kwargs=dict(), seed=0,
 
     sess = tf.Session()
     sess.run(tf.global_variables_initializer())
+    
+    # Tensorboard
+    summary_writer = tf.summary.FileWriter(logger_kwargs['output_dir'],tf.get_default_graph())
 
     # Sync params across processes
     sess.run(sync_all_params())
@@ -360,6 +363,22 @@ def trpo(env_fn, actor_critic=core.mlp_actor_critic, ac_kwargs=dict(), seed=0,
 
         # Perform TRPO or NPG update!
         update()
+        
+        # Update tensorboard
+        log_perf_board = ['EpRet','EpLen','VVals']
+        log_loss_board = ['LossPi','LossV','DeltaLossPi','DeltaLossV','KL']
+        log_board = {'Performance': log_perf_board, 'Loss': log_loss_board}
+        summary = tf.Summary()
+        for key,value in log_board.items():
+            for val in value:
+                mean, std = logger.get_stats(val)
+                if key=='Performance':
+                    summary.value.add(tag=key+'/Average'+val, simple_value=mean)
+                    summary.value.add(tag=key+'/Std'+val, simple_value=std)
+                else:
+                    summary.value.add(tag=key+'/'+val, simple_value=mean)
+        summary_writer.add_summary(summary, epoch)
+        summary_writer.flush()
 
         # Log info about epoch
         logger.log_tabular('Epoch', epoch)
