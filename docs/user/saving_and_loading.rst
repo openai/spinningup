@@ -20,32 +20,32 @@ Algorithm Outputs
 
 Each algorithm is set up to save a training run's hyperparameter configuration, learning progress, trained agent and value functions, and a copy of the environment if possible (to make it easy to load up the agent and environment simultaneously). The output directory contains the following:
 
-+--------------------------------------------------------------------------------+
-| **Output Directory Structure**                                                 |
-+----------------+---------------------------------------------------------------+
-|``simple_save/``| | A directory containing everything needed to restore the     |
-|                | | trained agent and value functions. (`Details below.`_)      |
-+----------------+---------------------------------------------------------------+
-|``config.json`` | | A dict containing an as-complete-as-possible description    |
-|                | | of the args and kwargs you used to launch the training      |
-|                | | function. If you passed in something which can't be         |
-|                | | serialized to JSON, it should get handled gracefully by the |
-|                | | logger, and the config file will represent it with a string.|
-|                | | Note: this is meant for record-keeping only. Launching an   |
-|                | | experiment from a config file is not currently supported.   |
-+----------------+---------------------------------------------------------------+
-|``progress.txt``| | A tab-separated value file containing records of the metrics|
-|                | | recorded by the logger throughout training. eg, ``Epoch``,  |
-|                | | ``AverageEpRet``, etc.                                      |
-+----------------+---------------------------------------------------------------+
-|``vars.pkl``    | | A pickle file containing anything about the algorithm state |
-|                | | which should get stored. Currently, all algorithms only use |
-|                | | this to save a copy of the environment.                     |
-+----------------+---------------------------------------------------------------+
-|``events.out.`` | | A tensorboard event file with algorithm dependent           |
-|``tfevents.``   | | performance and loss values. Visualize by running           |
-|``time.user``   | | ``tensorboard --logdir path/to/logs`` in the command line.  |
-+----------------+---------------------------------------------------------------+
++-------------------------------------------------------------------------------------------------+
+| **Output Directory Structure**                                                                  |
++---------------------------------+---------------------------------------------------------------+
+|``simple_save/``                 | | A directory containing everything needed to restore the     |
+|                                 | | trained agent and value functions. (`Details below.`_)      |
++---------------------------------+---------------------------------------------------------------+
+|``config.json``                  | | A dict containing an as-complete-as-possible description    |
+|                                 | | of the args and kwargs you used to launch the training      |
+|                                 | | function. If you passed in something which can't be         |
+|                                 | | serialized to JSON, it should get handled gracefully by the |
+|                                 | | logger, and the config file will represent it with a string.|
+|                                 | | Note: this is meant for record-keeping only. Launching an   |
+|                                 | | experiment from a config file is not currently supported.   |
++---------------------------------+---------------------------------------------------------------+
+|``progress.txt``                 | | A tab-separated value file containing records of the metrics|
+|                                 | | recorded by the logger throughout training. eg, ``Epoch``,  |
+|                                 | | ``AverageEpRet``, etc.                                      |
++---------------------------------+---------------------------------------------------------------+
+|``vars.pkl``                     | | A pickle file containing anything about the algorithm state |
+|                                 | | which should get stored. Currently, all algorithms only use |
+|                                 | | this to save a copy of the environment.                     |
++---------------------------------+---------------------------------------------------------------+
+|``events.out.tfevents.time.user``| | A tensorboard event file with algorithm dependent           |
+|                                 | | performance and loss values. Visualize by running           |
+|                                 | | ``tensorboard --logdir path/to/logs`` in the command line.  |
++---------------------------------+---------------------------------------------------------------+
 
 .. admonition:: You Should Know
 
