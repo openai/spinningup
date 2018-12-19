@@ -215,7 +215,7 @@ def sac(env_fn, actor_critic=core.mlp_actor_critic, ac_kwargs=dict(), seed=0,
 
     def get_action(o, deterministic=False):
         act_op = mu if deterministic else pi
-        return sess.run(act_op, feed_dict={x_ph: o.reshape(1,-1)})
+        return sess.run(act_op, feed_dict={x_ph: o.reshape(1,-1)})[0]
 
     def test_agent(n=10):
         global sess, mu, pi, q1, q2, q1_pi, q2_pi

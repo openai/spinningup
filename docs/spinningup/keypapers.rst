@@ -99,7 +99,7 @@ g. Other Directions for Combining Policy-Learning and Q-Learning
 .. [#] `Equivalence Between Policy Gradients and Soft Q-Learning <https://arxiv.org/abs/1704.06440>`_, Schulman et al, 2017. **Contribution:** Reveals a theoretical link between these two families of RL algorithms.
 
 
-g. Evolutionary Algorithms
+h. Evolutionary Algorithms
 --------------------------
 
 .. [#] `Evolution Strategies as a Scalable Alternative to Reinforcement Learning <https://arxiv.org/abs/1703.03864>`_, Salimans et al, 2017. **Algorithm: ES.**
@@ -191,7 +191,7 @@ a. Model is Learned
 
 .. [#] `Neural Network Dynamics for Model-Based Deep Reinforcement Learning with Model-Free Fine-Tuning <https://arxiv.org/abs/1708.02596>`_, Nagabandi et al, 2017. **Algorithm: MBMF.**
 
-.. [#] `Model-Based Value Estimation for Efficient Model-Free Reinforcement Learning <https://arxiv.org/abs/1803.00101>`_, Feinberg et al, 2018. **Algorithm: MBVE.**
+.. [#] `Model-Based Value Expansion for Efficient Model-Free Reinforcement Learning <https://arxiv.org/abs/1803.00101>`_, Feinberg et al, 2018. **Algorithm: MVE.**
 
 .. [#] `Sample-Efficient Reinforcement Learning with Stochastic Ensemble Value Expansion <https://arxiv.org/abs/1807.01675>`_, Buckman et al, 2018. **Algorithm: STEVE.**
 
@@ -277,7 +277,22 @@ b. Model is Given
 .. [#] `One-Shot High-Fidelity Imitation: Training Large-Scale Deep Nets with RL <https://arxiv.org/abs/1810.05017>`_, Le Paine et al, 2018. **Algorithm: MetaMimic.**
 
 
-12. Bonus: Classic Papers in RL Theory or Review
+12. Reproducibility, Analysis, and Critique
+===========================================
+
+.. [#] `Benchmarking Deep Reinforcement Learning for Continuous Control <https://arxiv.org/abs/1604.06778>`_, Duan et al, 2016. **Contribution: rllab.**
+
+.. [#] `Reproducibility of Benchmarked Deep Reinforcement Learning Tasks for Continuous Control <https://arxiv.org/abs/1708.04133>`_, Islam et al, 2017.
+
+.. [#] `Deep Reinforcement Learning that Matters <https://arxiv.org/abs/1709.06560>`_, Henderson et al, 2017. 
+
+.. [#] `Where Did My Optimum Go?: An Empirical Analysis of Gradient Descent Optimization in Policy Gradient Methods <https://arxiv.org/abs/1810.02525>`_, Henderson et al, 2018. 
+
+.. [#] `Are Deep Policy Gradient Algorithms Truly Policy Gradient Algorithms? <https://arxiv.org/abs/1811.02553>`_, Ilyas et al, 2018.
+
+.. [#] `Simple Random Search Provides a Competitive Approach to Reinforcement Learning <https://arxiv.org/abs/1803.07055>`_, Mania et al, 2018.
+
+13. Bonus: Classic Papers in RL Theory or Review
 ================================================
 
 .. [#] `Policy Gradient Methods for Reinforcement Learning with Function Approximation <https://papers.nips.cc/paper/1713-policy-gradient-methods-for-reinforcement-learning-with-function-approximation.pdf>`_, Sutton et al, 2000. **Contributions:** Established policy gradient theorem and showed convergence of policy gradient algorithm for arbitrary policy classes. 

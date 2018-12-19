@@ -29,6 +29,9 @@ eg:
 .. _`experiment outputs`: ../user/saving_and_loading.html
 .. _`plotting`: ../user/plotting.html
 
+.. admonition:: You Should Know
+
+    If you are using ZShell: ZShell interprets square brackets as special characters. Spinning Up uses square brackets in a few ways for command line arguments; make sure to escape them, or try the solution recommended `here <http://kinopyo.com/en/blog/escape-square-bracket-by-default-in-zsh>`_ if you want to escape them by default.
 
 .. admonition:: Detailed Quickstart Guide
 

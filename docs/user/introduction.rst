@@ -2,8 +2,6 @@
 Introduction
 ============
 
-(Current as of October 11th, 2018.)
-
 .. contents:: Table of Contents
 
 What This Is
@@ -38,7 +36,7 @@ However, while there are many resources to help people quickly ramp up on deep l
 
 The high-level view is hard to come by because of how new the field is. There is not yet a standard deep RL textbook, so most of the knowledge is locked up in either papers or lecture series, which can take a long time to parse and digest. And learning to implement deep RL algorithms is typically painful, because either 
 
-- the paper that publishes an algorithm omits or inadvertantly obscures key design details,
+- the paper that publishes an algorithm omits or inadvertently obscures key design details,
 - or widely-public implementations of an algorithm are hard to read, hiding how the code lines up with the algorithm.
 
 While fantastic repos like rllab_, Baselines_, and rllib_ make it easier for researchers who are already in the field to make progress, they build algorithms into frameworks in ways that involve many non-obvious choices and trade-offs, which makes them hard to learn from. Consequently, the field of deep RL has a pretty high barrier to entry---for new researchers as well as practitioners and hobbyists. 
@@ -68,7 +66,7 @@ The algorithm implementations in the Spinning Up repo are designed to be
     - as simple as possible while still being reasonably good, 
     - and highly-consistent with each other to expose fundamental similarities between algorithms.
 
-They are almost completely self-contained, with virtually no common code shared between them (except for logging, saving, loading, and MPI utilities), so that an interested person can study each algorithm separately without having to dig through an endless chain of dependencies to see how something is done. The implementations are patterned so that they come as close to pseudocode as possible, to minimize the gap between theory and code. 
+They are almost completely self-contained, with virtually no common code shared between them (except for logging, saving, loading, and `MPI <https://en.wikipedia.org/wiki/Message_Passing_Interface>`_ utilities), so that an interested person can study each algorithm separately without having to dig through an endless chain of dependencies to see how something is done. The implementations are patterned so that they come as close to pseudocode as possible, to minimize the gap between theory and code. 
 
 Importantly, they're all structured similarly, so if you clearly understand one, jumping into the next is painless. 
 
@@ -82,7 +80,7 @@ Support Plan
 
 We plan to support Spinning Up to ensure that it serves as a helpful resource for learning about deep reinforcement learning. The exact nature of long-term (multi-year) support for Spinning Up is yet to be determined, but in the short run, we commit to:
 
-- High-bandwidth support for the first three weeks after release.
+- High-bandwidth support for the first three weeks after release (Nov 8, 2018 to Nov 29, 2018).
 
     + We'll move quickly on bug-fixes, question-answering, and modifications to the docs to clear up ambiguities.
     + We'll work hard to streamline the user experience, in order to make it as easy as possible to self-study with Spinning Up. 

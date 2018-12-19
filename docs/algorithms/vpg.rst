@@ -40,7 +40,7 @@ The policy gradient algorithm works by updating policy parameters via stochastic
 
     \theta_{k+1} = \theta_k + \alpha \nabla_{\theta} J(\pi_{\theta_k})
 
-Policy gradient implementations typically compute advantage function estimates based on the infinite-horizon discounted return, despite otherwise use the finite-horizon undiscounted policy gradient formula. 
+Policy gradient implementations typically compute advantage function estimates based on the infinite-horizon discounted return, despite otherwise using the finite-horizon undiscounted policy gradient formula. 
 
 Exploration vs. Exploitation
 ----------------------------
