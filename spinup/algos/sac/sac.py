@@ -139,9 +139,6 @@ def sac(env_fn, actor_critic=core.mlp_actor_critic, ac_kwargs=dict(), seed=0,
     obs_dim = env.observation_space.shape[0]
     act_dim = env.action_space.shape[0]
 
-    # Action limit for clamping: critically, assumes all dimensions share the same bound!
-    act_limit = env.action_space.high[0]
-
     # Share information about action space with policy architecture
     ac_kwargs['action_space'] = env.action_space
 
@@ -173,7 +170,7 @@ def sac(env_fn, actor_critic=core.mlp_actor_critic, ac_kwargs=dict(), seed=0,
     v_backup = tf.stop_gradient(min_q_pi - alpha * logp_pi)
 
     # Soft actor-critic losses
-    pi_loss = tf.reduce_mean(alpha * logp_pi - q1_pi)
+    pi_loss = tf.reduce_mean(alpha * logp_pi - min_q_pi)
     q1_loss = 0.5 * tf.reduce_mean((q_backup - q1)**2)
     q2_loss = 0.5 * tf.reduce_mean((q_backup - q2)**2)
     v_loss = 0.5 * tf.reduce_mean((v_backup - v)**2)
@@ -219,7 +216,7 @@ def sac(env_fn, actor_critic=core.mlp_actor_critic, ac_kwargs=dict(), seed=0,
 
     def test_agent(n=10):
         global sess, mu, pi, q1, q2, q1_pi, q2_pi
-        for j in range(n):
+        for _ in range(n):
             o, r, d, ep_ret, ep_len = test_env.reset(), 0, False, 0, 0
             while not(d or (ep_len == max_ep_len)):
                 # Take deterministic actions at test time 
@@ -268,7 +265,7 @@ def sac(env_fn, actor_critic=core.mlp_actor_critic, ac_kwargs=dict(), seed=0,
             This is a slight difference from the SAC specified in the
             original paper.
             """
-            for j in range(ep_len):
+            for _ in range(ep_len):
                 batch = replay_buffer.sample_batch(batch_size)
                 feed_dict = {x_ph: batch['obs1'],
                              x2_ph: batch['obs2'],
