@@ -39,7 +39,7 @@ The high-level view is hard to come by because of how new the field is. There is
 - the paper that publishes an algorithm omits or inadvertently obscures key design details,
 - or widely-public implementations of an algorithm are hard to read, hiding how the code lines up with the algorithm.
 
-While fantastic repos like rllab_, Baselines_, and rllib_ make it easier for researchers who are already in the field to make progress, they build algorithms into frameworks in ways that involve many non-obvious choices and trade-offs, which makes them hard to learn from. Consequently, the field of deep RL has a pretty high barrier to entry---for new researchers as well as practitioners and hobbyists. 
+While fantastic repos like garage_, Baselines_, and rllib_ make it easier for researchers who are already in the field to make progress, they build algorithms into frameworks in ways that involve many non-obvious choices and trade-offs, which makes them hard to learn from. Consequently, the field of deep RL has a pretty high barrier to entry---for new researchers as well as practitioners and hobbyists. 
 
 So our package here is designed to serve as the missing middle step for people who are excited by deep RL, and would like to learn how to use it or make a contribution, but don't have a clear sense of what to study or how to transmute algorithms into code. We've tried to make this as helpful a launching point as possible.
 
@@ -96,7 +96,7 @@ Additionally, as discussed in the blog post, we are using Spinning Up in the cur
 .. _`curated list`: ../spinningup/keypapers.html
 .. _`code repo`: https://github.com/openai/spinningup
 .. _`exercises`: ../spinningup/exercises.html
-.. _`rllab`: https://github.com/rll/rllab
+.. _`garage`: https://github.com/rlworkgroup/garage
 .. _`Baselines`: https://github.com/openai/baselines
 .. _`rllib`: https://github.com/ray-project/ray/tree/master/python/ray/rllib
 .. _`mission`: https://blog.openai.com/openai-charter/
