@@ -31,7 +31,7 @@ They are all implemented with `MLP`_ (non-recurrent) actor-critics, making them 
 Why These Algorithms?
 =====================
 
-We chose the core deep RL algorithms in this package to reflect useful progressions of ideas from the recent history of the field, culminating in two algorithms in particular---PPO and SAC---which are close to SOTA on reliability and sample efficiency among policy-learning algorithms. They also expose some of the trade-offs that get made in designing and using algorithms in deep RL.
+We chose the core deep RL algorithms in this package to reflect useful progressions of ideas from the recent history of the field, culminating in two algorithms in particular---PPO and SAC---which are close to state of the art on reliability and sample efficiency among policy-learning algorithms. They also expose some of the trade-offs that get made in designing and using algorithms in deep RL.
 
 The On-Policy Algorithms
 ------------------------
