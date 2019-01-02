@@ -83,7 +83,7 @@ Next, there is a single function which runs the algorithm, performing the follow
     
     10) Setting up model saving through the logger
     
-    11) Defining functions needed for running the main loop of the algorithm (eg the core update function, get action function, and test agent function, depending on the algorithm)
+    11) Defining functions needed for running the main loop of the algorithm (e.g. the core update function, get action function, and test agent function, depending on the algorithm)
     
     12) Running the main loop of the algorithm:
     
