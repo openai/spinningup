@@ -44,7 +44,7 @@ Deep Q Network (DQN)
 
 """
 def dqn(env_fn, actor_critic=core.mlp_actor_critic, ac_kwargs=dict(), seed=0,
-        steps_per_epoch=500, epochs=100, replay_size=int(1e6), gamma=0.99,
+        steps_per_epoch=100, epochs=150, replay_size=int(1e6), gamma=0.99,
         epsilon_start=1, epsilon_step=1e-4, epsilon_end=0.1,
         q_lr=1e-3, batch_size=100, start_steps=5000,
         act_noise=0.1, max_ep_len=1000, logger_kwargs=dict(), save_freq=1):
@@ -121,7 +121,8 @@ def dqn(env_fn, actor_critic=core.mlp_actor_critic, ac_kwargs=dict(), seed=0,
 
     # Main outputs from computation graph
     with tf.variable_scope('main'):
-        q = actor_critic(x_ph, a_ph, **ac_kwargs)
+        q = actor_critic(x_ph, **ac_kwargs)
+        q_2 = actor_critic(x2_ph, **ac_kwargs)
 
     # Experience buffer
     replay_buffer = ReplayBuffer(obs_dim=obs_dim, act_dim=act_dim, size=replay_size)
@@ -132,7 +133,7 @@ def dqn(env_fn, actor_critic=core.mlp_actor_critic, ac_kwargs=dict(), seed=0,
 
     # Bellman backup for Q function
     q_a = tf.reduce_sum(tf.one_hot(a_ph, depth=env.action_space.n)*q, axis=1)
-    backup = r_ph + gamma*(1-d_ph)*tf.stop_gradient(tf.reduce_max(q, axis=1))
+    backup = r_ph + gamma*(1-d_ph)*tf.stop_gradient(tf.reduce_max(q_2, axis=1))
 
     # DQN losses
     q_loss = tf.reduce_mean((q_a-backup)**2)
@@ -145,16 +146,18 @@ def dqn(env_fn, actor_critic=core.mlp_actor_critic, ac_kwargs=dict(), seed=0,
     sess.run(tf.global_variables_initializer())
 
     # Setup model saving
-    logger.setup_tf_saver(sess, inputs={'x': x_ph, 'a': a_ph}, outputs={'q': q})
+    logger.setup_tf_saver(sess, inputs={'x': x_ph, 'a': a_ph},
+                          outputs={'q': q,
+                                   'pi': tf.argmax(q, axis=1)})
 
-    def get_action(o, epsilon):
-        if np.random.random() < epsilon:
+    def get_action(obs, eps):
+        if np.random.random() < eps:
             a = env.action_space.sample()
         else:
             # t = time.time()
             action = tf.squeeze(tf.argmax(q, axis=1))
-            a = sess.run(action, feed_dict={x_ph: o.reshape(1, -1)})
-            # print('Time to pick action: {}'.format(time.time() - t))
+            a = sess.run(action, feed_dict={x_ph: obs.reshape(1, -1)})
+            # print('Time to pick action: {}, obs size'.format(time.time() - t))
         return a
 
     def test_agent(n=10):
@@ -240,17 +243,21 @@ def dqn(env_fn, actor_critic=core.mlp_actor_critic, ac_kwargs=dict(), seed=0,
             test_agent()
 
             # Log info about epoch
-            logger.log_tabular('Epoch', epoch)
-            logger.log_tabular('EpRet', with_min_and_max=True)
-            logger.log_tabular('TestEpRet', with_min_and_max=True)
-            logger.log_tabular('EpLen', average_only=True)
-            logger.log_tabular('TestEpLen', average_only=True)
-            logger.log_tabular('TotalEnvInteracts', t)
-            logger.log_tabular('QVals', with_min_and_max=True)
-            logger.log_tabular('LossQ', average_only=True)
-            logger.log_tabular('Time', time.time()-start_time)
-            logger.log_tabular('Epsilon', epsilon)
-            logger.dump_tabular()
+            try:
+                logger.log_tabular('Epoch', epoch)
+                logger.log_tabular('EpRet', with_min_and_max=True)
+                logger.log_tabular('TestEpRet', with_min_and_max=True)
+                logger.log_tabular('EpLen', average_only=True)
+                logger.log_tabular('TestEpLen', average_only=True)
+                logger.log_tabular('TotalEnvInteracts', t)
+                logger.log_tabular('QVals', with_min_and_max=True)
+                logger.log_tabular('LossQ', average_only=True)
+                logger.log_tabular('Epsilon', epsilon)
+                logger.log_tabular('Time', time.time()-start_time)
+                logger.dump_tabular()
+            except Exception as e:
+                import ipdb;ipdb.set_trace()
+                print(e)
 
 if __name__ == '__main__':
     import argparse

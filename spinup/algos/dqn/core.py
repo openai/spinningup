@@ -47,10 +47,10 @@ def count_vars(scope):
 """
 Actor-Critics
 """
-def mlp_actor_critic(x, a, hidden_sizes=(64, 64), activation=tf.nn.relu,
-                     output_activation=tf.tanh, action_space=None):
+def mlp_actor_critic(x, hidden_sizes=(64, 64), activation=tf.nn.relu,
+                     output_activation=None, action_space=None):
     act_dim = action_space.n
-    with tf.variable_scope('q'):
+    with tf.variable_scope('q', reuse=tf.AUTO_REUSE):
         # Q value for each action
         q = mlp(x, list(hidden_sizes)+[act_dim], activation, output_activation)
     return q
