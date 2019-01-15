@@ -44,9 +44,9 @@ Deep Q Network (DQN)
 
 """
 def dqn(env_fn, actor_critic=core.mlp_actor_critic, ac_kwargs=dict(), seed=0,
-        steps_per_epoch=5000, epochs=100, replay_size=int(1e6), gamma=0.99,
-        epsilon_start=1, epsilon_step=1e-3, epsilon_end=0.1,
-        q_lr=1e-3, batch_size=100, start_steps=10000,
+        steps_per_epoch=500, epochs=100, replay_size=int(1e6), gamma=0.99,
+        epsilon_start=1, epsilon_step=1e-4, epsilon_end=0.1,
+        q_lr=1e-3, batch_size=100, start_steps=5000,
         act_noise=0.1, max_ep_len=1000, logger_kwargs=dict(), save_freq=1):
     ## step is 1e-6
     """
@@ -126,20 +126,16 @@ def dqn(env_fn, actor_critic=core.mlp_actor_critic, ac_kwargs=dict(), seed=0,
     # Experience buffer
     replay_buffer = ReplayBuffer(obs_dim=obs_dim, act_dim=act_dim, size=replay_size)
 
-    # Action
-    # not sure if we need this, if we need an initial action, sample from action space
-    # initially
     # Count variables
     var_counts = tuple(core.count_vars(scope) for scope in ['main/q', 'main'])
-    print('\nNumber of parameters: \t q: %d, \t total: %d\n'%var_counts)
+    print('\nNumber of parameters: \t q: %d, \t total: %d\n' % var_counts)
 
     # Bellman backup for Q function
     q_a = tf.reduce_sum(tf.one_hot(a_ph, depth=env.action_space.n)*q, axis=1)
-    backup = tf.stop_gradient(r_ph + gamma*(1-d_ph)*q_a)
+    backup = r_ph + gamma*(1-d_ph)*tf.stop_gradient(tf.reduce_max(q, axis=1))
 
     # DQN losses
-    q_max = tf.reduce_max(q, axis=1)
-    q_loss = tf.reduce_mean((q_max-backup)**2)
+    q_loss = tf.reduce_mean((q_a-backup)**2)
 
     # Train ops for q
     q_optimizer = tf.train.AdamOptimizer(learning_rate=q_lr)
@@ -155,8 +151,10 @@ def dqn(env_fn, actor_critic=core.mlp_actor_critic, ac_kwargs=dict(), seed=0,
         if np.random.random() < epsilon:
             a = env.action_space.sample()
         else:
+            # t = time.time()
             action = tf.squeeze(tf.argmax(q, axis=1))
             a = sess.run(action, feed_dict={x_ph: o.reshape(1, -1)})
+            # print('Time to pick action: {}'.format(time.time() - t))
         return a
 
     def test_agent(n=10):
@@ -181,8 +179,11 @@ def dqn(env_fn, actor_critic=core.mlp_actor_critic, ac_kwargs=dict(), seed=0,
         With epsilon probabilty we choose a random action for
         better exploration.
         """
+        if t % 500 == 0:
+            print('t: {}'.format(t))
         epsilon = epsilon_start - (t * epsilon_step)
-        o = env.reset()
+        if epsilon < epsilon_end:
+            epsilon = epsilon_end
         a = get_action(o, epsilon)
 
         # Step the env
@@ -204,29 +205,32 @@ def dqn(env_fn, actor_critic=core.mlp_actor_critic, ac_kwargs=dict(), seed=0,
 
         if d or (ep_len == max_ep_len):
             """
-            Perform all DDPG updates at the end of the trajectory,
+            Perform all DQN updates at the end of the trajectory,
             in accordance with tuning done by TD3 paper authors.
             """
-            for _ in range(ep_len):
-                batch = replay_buffer.sample_batch(batch_size)
-                feed_dict = {
-                    x_ph: batch['obs1'],
-                    x2_ph: batch['obs2'],
-                    a_ph: batch['acts'],
-                    r_ph: batch['rews'],
-                    d_ph: batch['done']
-                }
-
-                # Q-learning update
-                outs = sess.run([q_loss, q, train_q_op], feed_dict)
-                logger.store(LossQ=outs[0], QVals=outs[1])
-
             logger.store(EpRet=ep_ret, EpLen=ep_len)
             o, r, d, ep_ret, ep_len = env.reset(), 0, False, 0, 0
 
+        if t > start_steps:
+            batch = replay_buffer.sample_batch(batch_size)
+            feed_dict = {
+                x_ph: batch['obs1'],
+                x2_ph: batch['obs2'],
+                a_ph: batch['acts'],
+                r_ph: batch['rews'],
+                d_ph: batch['done']
+            }
+
+            # Q-learning update
+            # t = time.time()
+            outs = sess.run([q_loss, q, train_q_op], feed_dict)
+            # print('Outs time: {}'.format(time.time() - t))
+            logger.store(LossQ=outs[0], QVals=outs[1])
+
+
         # End of epoch wrap-up
-        if t > 0 and t % steps_per_epoch == 0:
-            epoch = t // steps_per_epoch
+        if t > start_steps and (t - start_steps) % steps_per_epoch == 0:
+            epoch = (t - start_steps) // steps_per_epoch
 
             # Save model
             if (epoch % save_freq == 0) or (epoch == epochs-1):
@@ -245,6 +249,7 @@ def dqn(env_fn, actor_critic=core.mlp_actor_critic, ac_kwargs=dict(), seed=0,
             logger.log_tabular('QVals', with_min_and_max=True)
             logger.log_tabular('LossQ', average_only=True)
             logger.log_tabular('Time', time.time()-start_time)
+            logger.log_tabular('Epsilon', epsilon)
             logger.dump_tabular()
 
 if __name__ == '__main__':
