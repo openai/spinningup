@@ -44,11 +44,10 @@ Deep Q Network (DQN)
 
 """
 def dqn(env_fn, actor_critic=core.mlp_actor_critic, ac_kwargs=dict(), seed=0,
-        steps_per_epoch=100, epochs=150, replay_size=int(1e6), gamma=0.99,
+        steps_per_epoch=500, epochs=100, replay_size=int(1e6), gamma=0.99,
         epsilon_start=1, epsilon_step=1e-4, epsilon_end=0.1,
         q_lr=1e-3, batch_size=100, start_steps=5000,
         act_noise=0.1, max_ep_len=1000, logger_kwargs=dict(), save_freq=1):
-    ## step is 1e-6
     """
 
     Args:
@@ -154,10 +153,8 @@ def dqn(env_fn, actor_critic=core.mlp_actor_critic, ac_kwargs=dict(), seed=0,
         if np.random.random() < eps:
             a = env.action_space.sample()
         else:
-            # t = time.time()
-            action = tf.squeeze(tf.argmax(q, axis=1))
-            a = sess.run(action, feed_dict={x_ph: obs.reshape(1, -1)})
-            # print('Time to pick action: {}, obs size'.format(time.time() - t))
+            q_vals = sess.run(q, feed_dict={x_ph: obs.reshape(1, -1)})
+            a = np.squeeze(np.argmax(q_vals, axis=1))
         return a
 
     def test_agent(n=10):
@@ -225,9 +222,7 @@ def dqn(env_fn, actor_critic=core.mlp_actor_critic, ac_kwargs=dict(), seed=0,
             }
 
             # Q-learning update
-            # t = time.time()
             outs = sess.run([q_loss, q, train_q_op], feed_dict)
-            # print('Outs time: {}'.format(time.time() - t))
             logger.store(LossQ=outs[0], QVals=outs[1])
 
 
@@ -243,21 +238,18 @@ def dqn(env_fn, actor_critic=core.mlp_actor_critic, ac_kwargs=dict(), seed=0,
             test_agent()
 
             # Log info about epoch
-            try:
-                logger.log_tabular('Epoch', epoch)
-                logger.log_tabular('EpRet', with_min_and_max=True)
-                logger.log_tabular('TestEpRet', with_min_and_max=True)
-                logger.log_tabular('EpLen', average_only=True)
-                logger.log_tabular('TestEpLen', average_only=True)
-                logger.log_tabular('TotalEnvInteracts', t)
-                logger.log_tabular('QVals', with_min_and_max=True)
-                logger.log_tabular('LossQ', average_only=True)
-                logger.log_tabular('Epsilon', epsilon)
-                logger.log_tabular('Time', time.time()-start_time)
-                logger.dump_tabular()
-            except Exception as e:
-                import ipdb;ipdb.set_trace()
-                print(e)
+            logger.log_tabular('Epoch', epoch)
+            logger.log_tabular('EpRet', with_min_and_max=True)
+            logger.log_tabular('TestEpRet', with_min_and_max=True)
+            logger.log_tabular('EpLen', average_only=True)
+            logger.log_tabular('TestEpLen', average_only=True)
+            logger.log_tabular('TotalEnvInteracts', t)
+            logger.log_tabular('QVals', with_min_and_max=True)
+            logger.log_tabular('LossQ', average_only=True)
+            logger.log_tabular('Epsilon', epsilon)
+            logger.log_tabular('Time', time.time()-start_time)
+            logger.dump_tabular()
+
 
 if __name__ == '__main__':
     import argparse
