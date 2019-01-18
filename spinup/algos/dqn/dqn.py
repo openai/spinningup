@@ -47,7 +47,7 @@ def dqn(env_fn, actor_critic=core.mlp_actor_critic, ac_kwargs=dict(), seed=0,
         steps_per_epoch=500, epochs=100, replay_size=int(1e6), gamma=0.99,
         epsilon_start=1, epsilon_step=1e-4, epsilon_end=0.1,
         q_lr=1e-3, batch_size=100, start_steps=5000,
-        act_noise=0.1, max_ep_len=1000, logger_kwargs=dict(), save_freq=1):
+        max_ep_len=1000, logger_kwargs=dict(), save_freq=1):
     """
 
     Args:
@@ -80,15 +80,19 @@ def dqn(env_fn, actor_critic=core.mlp_actor_critic, ac_kwargs=dict(), seed=0,
 
         gamma (float): Discount factor. (Always between 0 and 1.)
 
+        epsilon_start (float): Starting value of epsilon (probability with which
+            we take random action, always between 0 and 1)
+
+        epsilon_step (float): Reduce epsilon by this amount every step.
+
+        epsilon_end (float): Stop at this value of epsilon.
+
         q_lr (float): Learning rate for Q-networks.
 
         batch_size (int): Minibatch size for SGD.
 
         start_steps (int): Number of steps for uniform-random action selection,
             before running real policy. Helps exploration.
-
-        act_noise (float): Stddev for Gaussian exploration noise added to
-            policy at training time. (At test time, no noise is added.)
 
         max_ep_len (int): Maximum length of trajectory / episode / rollout.
 
@@ -179,8 +183,6 @@ def dqn(env_fn, actor_critic=core.mlp_actor_critic, ac_kwargs=dict(), seed=0,
         With epsilon probabilty we choose a random action for
         better exploration.
         """
-        if t % 500 == 0:
-            print('t: {}'.format(t))
         epsilon = epsilon_start - (t * epsilon_step)
         if epsilon < epsilon_end:
             epsilon = epsilon_end
