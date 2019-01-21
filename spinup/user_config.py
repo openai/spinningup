@@ -1,5 +1,4 @@
 import os
-import sys
 import importlib
 import os.path as osp
 
