@@ -17,19 +17,14 @@ DEFAULT_SHORTHAND = True
 # experiments.
 WAIT_BEFORE_LAUNCH = 5
 
-PYTHON_NAME = 'python'
-if sys.version_info[0] == 3:
-    PYTHON_NAME = 'python3'
+IMPORT_USER_MODULES = []
 
 HAS_MUJOCO = (importlib.find_loader('mujoco_py') != None)
 HAS_PYBULLET = (importlib.find_loader('pybullet_envs') != None)
 
-def import_pybullet_envs():
-    if HAS_PYBULLET:
-        import pybullet_envs
-
 HALFCHEETAH_ENV = 'HalfCheetah-v2'
 INVERTEDPENDULUM_ENV = 'InvertedPendulum-v0'
 if not HAS_MUJOCO:
+    IMPORT_USER_MODULES.append('pybullet_envs')
     HALFCHEETAH_ENV = 'HalfCheetahBulletEnv-v0'
     INVERTEDPENDULUM_ENV = 'InvertedPendulumBulletEnv-v0'

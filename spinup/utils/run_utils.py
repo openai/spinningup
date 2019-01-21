@@ -1,9 +1,10 @@
 from spinup.user_config import DEFAULT_DATA_DIR, FORCE_DATESTAMP, \
                                DEFAULT_SHORTHAND, WAIT_BEFORE_LAUNCH, \
-                               PYTHON_NAME, import_pybullet_envs
+                               IMPORT_USER_MODULES
 from spinup.utils.logx import colorize
 from spinup.utils.mpi_tools import mpi_fork, msg
 from spinup.utils.serialization_utils import convert_json
+import importlib
 import base64
 from copy import deepcopy
 import cloudpickle
@@ -152,7 +153,8 @@ def call_experiment(exp_name, thunk, seed=0, num_cpu=1, data_dir=None,
         # Make 'env_fn' from 'env_name'
         if 'env_name' in kwargs:
             import gym
-            import_pybullet_envs()
+            for module in IMPORT_USER_MODULES:
+                importlib.import_module(module)
             env_name = kwargs['env_name']
             kwargs['env_fn'] = lambda : gym.make(env_name)
             del kwargs['env_name']
