@@ -7,7 +7,7 @@ from spinup.algos.td3.td3 import ReplayBuffer
 from spinup.algos.td3.core import get_vars
 from spinup.utils.logx import EpochLogger
 from spinup.utils.run_utils import ExperimentGrid
-from spinup.user_config import HALFCHEETAH_ENV, IMPORT_USER_MODULES
+from spinup.user_config import IMPORT_USER_MODULES
 
 import importlib
 for module in IMPORT_USER_MODULES:
@@ -295,7 +295,7 @@ def td3(env_fn, actor_critic=core.mlp_actor_critic, ac_kwargs=dict(), seed=0,
 if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser()
-    parser.add_argument('--env', type=str, default=HALFCHEETAH_ENV)
+    parser.add_argument('--env', type=str, default='HalfCheetah-v2')
     parser.add_argument('--h', type=int, default=300)
     parser.add_argument('--l', type=int, default=1)
     parser.add_argument('--num_runs', '-n', type=int, default=3)

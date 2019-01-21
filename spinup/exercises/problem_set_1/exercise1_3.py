@@ -6,7 +6,7 @@ from spinup.algos.td3 import core
 from spinup.algos.td3.td3 import td3 as true_td3
 from spinup.algos.td3.core import get_vars
 from spinup.utils.logx import EpochLogger
-from spinup.user_config import HALFCHEETAH_ENV, IMPORT_USER_MODULES
+from spinup.user_config import IMPORT_USER_MODULES
 
 import importlib
 for module in IMPORT_USER_MODULES:
@@ -365,7 +365,7 @@ def td3(env_fn, actor_critic=core.mlp_actor_critic, ac_kwargs=dict(), seed=0,
 if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser()
-    parser.add_argument('--env', type=str, default=HALFCHEETAH_ENV)
+    parser.add_argument('--env', type=str, default='HalfCheetah-v2')
     parser.add_argument('--seed', '-s', type=int, default=0)
     parser.add_argument('--exp_name', type=str, default='ex13-td3')
     parser.add_argument('--use_soln', action='store_true')
