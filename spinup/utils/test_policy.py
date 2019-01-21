@@ -41,10 +41,7 @@ def load_policy(fpath, itr='last', deterministic=False):
     # (sometimes this will fail because the environment could not be pickled)
     try:
         state = joblib.load(osp.join(fpath, 'vars'+itr+'.pkl'))
-        if 'env' in state:
-            env = state['env']
-        elif 'spec' in state:
-            env = gym.make(state['spec'].id)
+        env = state['env']
     except:
         env = None
 
@@ -59,11 +56,6 @@ def run_policy(env, get_action, max_ep_len=None, num_episodes=100, render=True):
         "page on Experiment Outputs for how to handle this situation."
 
     logger = EpochLogger()
-
-    # Bullet requires us to render here
-    if render:
-        env.render("human")
-
     o, r, d, ep_ret, ep_len, n = env.reset(), 0, False, 0, 0, 0
     while n < num_episodes:
         if render:
