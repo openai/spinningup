@@ -1,8 +1,6 @@
 import spinup
-from spinup.user_config import IMPORT_USER_MODULES
 from spinup.utils.run_utils import ExperimentGrid
 from spinup.utils.serialization_utils import convert_json
-import importlib
 import argparse
 import gym
 import json
@@ -11,9 +9,6 @@ import os.path as osp
 import string
 import tensorflow as tf
 from textwrap import dedent
-
-for module in IMPORT_USER_MODULES:
-    importlib.import_module(module)
 
 # Command line args that will go to ExperimentGrid.run, and must possess unique
 # values (therefore must be treated separately).

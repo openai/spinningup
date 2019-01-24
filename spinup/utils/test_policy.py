@@ -5,12 +5,6 @@ import os.path as osp
 import tensorflow as tf
 from spinup import EpochLogger
 from spinup.utils.logx import restore_tf_graph
-from spinup.user_config import IMPORT_USER_MODULES
-import gym
-
-import importlib
-for module in IMPORT_USER_MODULES:
-    importlib.import_module(module)
 
 def load_policy(fpath, itr='last', deterministic=False):
 

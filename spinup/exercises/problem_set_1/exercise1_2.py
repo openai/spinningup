@@ -93,17 +93,12 @@ if __name__ == '__main__':
 
     from spinup import ppo
     from spinup.exercises.common import print_result
-    from spinup.user_config import IMPORT_USER_MODULES
     import gym
     import os
     import pandas as pd
     import psutil
     import time
     
-    import importlib
-    for module in IMPORT_USER_MODULES:
-        importlib.import_module(module)
-
     logdir = "/tmp/experiments/%i"%int(time.time())
     ppo(env_fn = lambda : gym.make('InvertedPendulum-v2'),
         ac_kwargs=dict(policy=mlp_gaussian_policy, hidden_sizes=(64,)),
