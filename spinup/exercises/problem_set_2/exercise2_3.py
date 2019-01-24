@@ -8,6 +8,7 @@ from spinup.algos.td3.core import get_vars
 from spinup.utils.logx import EpochLogger
 from spinup.utils.run_utils import ExperimentGrid
 
+
 """
 
 Exercise 2.3: Details Matter
