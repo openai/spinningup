@@ -48,7 +48,7 @@ Soft Actor-Critic
 
 
 class SAC:
-    def __init__(self, env_fn, actor_critic=core.mlp_actor_critic, ac_kwargs=dict(), seed=0,
+    def __init__(self, sess, env_fn, actor_critic=core.mlp_actor_critic, ac_kwargs=dict(), seed=0,
                  steps_per_epoch=5000, epochs=100, replay_size=int(1e6), gamma=0.99,
                  polyak=0.995, lr=1e-3, alpha=0.2, batch_size=100, start_steps=10000,
                  max_ep_len=1000, logger_kwargs=dict(), save_freq=1, name='sac'):
@@ -133,8 +133,10 @@ class SAC:
 
         """
 
+        params = locals()
+        params.pop('sess')
         logger = EpochLogger(**logger_kwargs)
-        logger.save_config(locals())
+        logger.save_config(params)
 
         tf.set_random_seed(seed)
         np.random.seed(seed)
@@ -210,7 +212,7 @@ class SAC:
         target_init = tf.group([tf.assign(v_targ, v_main)
                                 for v_main, v_targ in zip(get_vars('%s/main' % name), get_vars('%s/target' % name))])
 
-        sess = tf.Session()
+        # sess = tf.Session()
         sess.run(tf.global_variables_initializer())
         sess.run(target_init)
 
@@ -375,16 +377,19 @@ if __name__ == '__main__':
 
     from spinup.utils.run_utils import setup_logger_kwargs
 
-    logger_kwargs = setup_logger_kwargs(args.exp_name, args.seed)
+    logger_kwargs_1 = setup_logger_kwargs(args.exp_name + '-a1', args.seed)
+    logger_kwargs_2 = setup_logger_kwargs(args.exp_name + '-a2', args.seed)
 
-    a1 = SAC(lambda: gym.make(args.env), actor_critic=core.mlp_actor_critic,
+    session = tf.Session()
+
+    a1 = SAC(session, lambda: gym.make(args.env), actor_critic=core.mlp_actor_critic,
              ac_kwargs=dict(hidden_sizes=[args.hid] * args.l),
              gamma=args.gamma, seed=args.seed, epochs=args.epochs,
-             logger_kwargs=logger_kwargs, name='sac')
+             logger_kwargs=logger_kwargs_1, name='sac')
 
-    a2 = SAC(lambda: gym.make(args.env), actor_critic=core.mlp_actor_critic,
+    a2 = SAC(session, lambda: gym.make(args.env), actor_critic=core.mlp_actor_critic,
              ac_kwargs=dict(hidden_sizes=[args.hid] * args.l),
              gamma=args.gamma, seed=args.seed, epochs=args.epochs,
-             logger_kwargs=logger_kwargs, alpha=0.0, name='ddpg')
+             logger_kwargs=logger_kwargs_2, alpha=0.0, name='ddpg')
 
     run_two(a1, a2)
