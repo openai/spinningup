@@ -238,10 +238,6 @@ class SAC:
         self.q1, self.q2, self.q1_pi, self.q2_pi, v = q1, q2, q1_pi, q2_pi, v
         self.step_ops = step_ops
 
-        vars = tf.global_variables()
-        for v in vars:
-            print(v)
-
     def get_action(self, o, deterministic=False):
         act_op = self.mu if deterministic else self.pi
         return self.sess.run(act_op, feed_dict={self.x_ph: o.reshape(1, -1)})[0]
