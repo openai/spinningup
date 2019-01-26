@@ -2,8 +2,8 @@ import numpy as np
 import tensorflow as tf
 import gym
 import time
-from spinup.algos.sac import core
-from spinup.algos.sac.core import get_vars
+from spinup.algos.two import core
+from spinup.algos.two.core import get_vars
 from spinup.utils.logx import EpochLogger
 
 
@@ -51,7 +51,7 @@ class SAC:
     def __init__(self, env_fn, actor_critic=core.mlp_actor_critic, ac_kwargs=dict(), seed=0,
                  steps_per_epoch=5000, epochs=100, replay_size=int(1e6), gamma=0.99,
                  polyak=0.995, lr=1e-3, alpha=0.2, batch_size=100, start_steps=10000,
-                 max_ep_len=1000, logger_kwargs=dict(), save_freq=1):
+                 max_ep_len=1000, logger_kwargs=dict(), save_freq=1, name='sac'):
         """
 
         Args:
@@ -153,11 +153,11 @@ class SAC:
         x_ph, a_ph, x2_ph, r_ph, d_ph = core.placeholders(obs_dim, act_dim, obs_dim, None, None)
 
         # Main outputs from computation graph
-        with tf.variable_scope('main'):
+        with tf.variable_scope('%s/main' % name):
             mu, pi, logp_pi, q1, q2, q1_pi, q2_pi, v = actor_critic(x_ph, a_ph, **ac_kwargs)
 
         # Target value network
-        with tf.variable_scope('target'):
+        with tf.variable_scope('%s/target' % name):
             _, _, _, _, _, _, _, v_targ = actor_critic(x2_ph, a_ph, **ac_kwargs)
 
         # Experience buffer
@@ -165,8 +165,8 @@ class SAC:
 
         # Count variables
         var_counts = tuple(core.count_vars(scope) for scope in
-                           ['main/pi', 'main/q1', 'main/q2', 'main/v', 'main'])
-        print(('\nNumber of parameters: \t pi: %d, \t' + \
+                           ['%s/%s' % (name, v) for v in ['main/pi', 'main/q1', 'main/q2', 'main/v', 'main']])
+        print(('\nNumber of parameters: \t pi: %d, \t' +
                'q1: %d, \t q2: %d, \t v: %d, \t total: %d\n') % var_counts)
 
         # Min Double-Q:
@@ -186,12 +186,12 @@ class SAC:
         # Policy train op
         # (has to be separate from value train op, because q1_pi appears in pi_loss)
         pi_optimizer = tf.train.AdamOptimizer(learning_rate=lr)
-        train_pi_op = pi_optimizer.minimize(pi_loss, var_list=get_vars('main/pi'))
+        train_pi_op = pi_optimizer.minimize(pi_loss, var_list=get_vars('%s/main/pi' % name))
 
         # Value train op
         # (control dep of train_pi_op because sess.run otherwise evaluates in nondeterministic order)
         value_optimizer = tf.train.AdamOptimizer(learning_rate=lr)
-        value_params = get_vars('main/q') + get_vars('main/v')
+        value_params = get_vars('%s/main/q' % name) + get_vars('%s/main/v' % name)
         with tf.control_dependencies([train_pi_op]):
             train_value_op = value_optimizer.minimize(value_loss, var_list=value_params)
 
@@ -199,7 +199,8 @@ class SAC:
         # (control flow because sess.run otherwise evaluates in nondeterministic order)
         with tf.control_dependencies([train_value_op]):
             target_update = tf.group([tf.assign(v_targ, polyak * v_targ + (1 - polyak) * v_main)
-                                      for v_main, v_targ in zip(get_vars('main'), get_vars('target'))])
+                                      for v_main, v_targ in
+                                      zip(get_vars('%s/main' % name), get_vars('%s/target' % name))])
 
         # All ops to call during one training step
         step_ops = [pi_loss, q1_loss, q2_loss, v_loss, q1, q2, v, logp_pi,
@@ -207,7 +208,7 @@ class SAC:
 
         # Initializing targets to match main variables
         target_init = tf.group([tf.assign(v_targ, v_main)
-                                for v_main, v_targ in zip(get_vars('main'), get_vars('target'))])
+                                for v_main, v_targ in zip(get_vars('%s/main' % name), get_vars('%s/target' % name))])
 
         sess = tf.Session()
         sess.run(tf.global_variables_initializer())
@@ -235,7 +236,9 @@ class SAC:
         self.q1, self.q2, self.q1_pi, self.q2_pi, v = q1, q2, q1_pi, q2_pi, v
         self.step_ops = step_ops
 
-        self.run()
+        vars = tf.global_variables()
+        for v in vars:
+            print(v)
 
     def get_action(self, o, deterministic=False):
         act_op = self.mu if deterministic else self.pi
@@ -252,91 +255,109 @@ class SAC:
                 ep_len += 1
             self.logger.store(TestEpRet=ep_ret, TestEpLen=ep_len)
 
-    def run(self):
-        start_time = time.time()
-        o, r, d, ep_ret, ep_len = self.env.reset(), 0, False, 0, 0
-        total_steps = self.steps_per_epoch * self.epochs
+    def wrap_up_epoch(self, epoch, t, start_time):
+        # Save model
+        if (epoch % self.save_freq == 0) or (epoch == self.epochs - 1):
+            self.logger.save_state({'env': self.env}, None)
 
-        # Main loop: collect experience in env and update/log each epoch
-        for t in range(total_steps):
+        # Test the performance of the deterministic version of the agent.
+        self.test_agent()
 
+        # Log info about epoch
+        self.logger.log_tabular('Epoch', epoch)
+        self.logger.log_tabular('EpRet', with_min_and_max=True)
+        self.logger.log_tabular('TestEpRet', with_min_and_max=True)
+        self.logger.log_tabular('EpLen', average_only=True)
+        self.logger.log_tabular('TestEpLen', average_only=True)
+        self.logger.log_tabular('TotalEnvInteracts', t)
+        self.logger.log_tabular('Q1Vals', with_min_and_max=True)
+        self.logger.log_tabular('Q2Vals', with_min_and_max=True)
+        self.logger.log_tabular('VVals', with_min_and_max=True)
+        self.logger.log_tabular('LogPi', with_min_and_max=True)
+        self.logger.log_tabular('LossPi', average_only=True)
+        self.logger.log_tabular('LossQ1', average_only=True)
+        self.logger.log_tabular('LossQ2', average_only=True)
+        self.logger.log_tabular('LossV', average_only=True)
+        self.logger.log_tabular('Time', time.time() - start_time)
+        self.logger.dump_tabular()
+
+
+def run_two(a1, a2, batch_size=100, epochs=100, max_ep_len=1000, start_steps=10000, steps_per_epoch=5000):
+    start_time = time.time()
+    total_steps = steps_per_epoch * epochs
+
+    o, r, d, ep_ret, ep_len = a1.env.reset(), 0, False, 0, 0
+    a2.env.reset()
+
+    # Main loop: collect experience in env and update/log each epoch
+    for t in range(total_steps):
+
+        """
+        Until start_steps have elapsed, randomly sample actions
+        from a uniform distribution for better exploration. Afterwards, 
+        use the learned policy. 
+        """
+        if t > start_steps:
+            a = a1.get_action(o)
+        else:
+            a = a1.env.action_space.sample()
+
+        # Step the env
+        o2, r, d, _ = a1.env.step(a)
+        ep_ret += r
+        ep_len += 1
+
+        # Ignore the "done" signal if it comes from hitting the time
+        # horizon (that is, when it's an artificial terminal signal
+        # that isn't based on the agent's state)
+        d = False if ep_len == max_ep_len else d
+
+        # Store experience to replay buffer
+        a1.replay_buffer.store(o, a, r, o2, d)
+
+        # Super critical, easy to overlook step: make sure to update
+        # most recent observation!
+        o = o2
+
+        if d or (ep_len == max_ep_len):
             """
-            Until start_steps have elapsed, randomly sample actions
-            from a uniform distribution for better exploration. Afterwards, 
-            use the learned policy. 
+            Perform all SAC updates at the end of the trajectory.
+            This is a slight difference from the SAC specified in the
+            original paper.
             """
-            if t > self.start_steps:
-                a = self.get_action(o)
-            else:
-                a = self.env.action_space.sample()
+            for j in range(ep_len):
+                batch = a1.replay_buffer.sample_batch(batch_size)
+                feed_dict_1 = {a1.x_ph: batch['obs1'],
+                               a1.x2_ph: batch['obs2'],
+                               a1.a_ph: batch['acts'],
+                               a1.r_ph: batch['rews'],
+                               a1.d_ph: batch['done'],
+                               }
+                feed_dict_2 = {a2.x_ph: batch['obs1'],
+                               a2.x2_ph: batch['obs2'],
+                               a2.a_ph: batch['acts'],
+                               a2.r_ph: batch['rews'],
+                               a2.d_ph: batch['done'],
+                               }
+                outs_1 = a1.sess.run(a1.step_ops, feed_dict_1)
+                outs_2 = a2.sess.run(a2.step_ops, feed_dict_2)
 
-            # Step the env
-            o2, r, d, _ = self.env.step(a)
-            ep_ret += r
-            ep_len += 1
+                a1.logger.store(LossPi=outs_1[0], LossQ1=outs_1[1], LossQ2=outs_1[2],
+                                LossV=outs_1[3], Q1Vals=outs_1[4], Q2Vals=outs_1[5],
+                                VVals=outs_1[6], LogPi=outs_1[7])
+                a2.logger.store(LossPi=outs_2[0], LossQ1=outs_2[1], LossQ2=outs_2[2],
+                                LossV=outs_2[3], Q1Vals=outs_2[4], Q2Vals=outs_2[5],
+                                VVals=outs_2[6], LogPi=outs_2[7])
 
-            # Ignore the "done" signal if it comes from hitting the time
-            # horizon (that is, when it's an artificial terminal signal
-            # that isn't based on the agent's state)
-            d = False if ep_len == self.max_ep_len else d
+            a1.logger.store(EpRet=ep_ret, EpLen=ep_len)
+            a2.logger.store(EpRet=ep_ret, EpLen=ep_len)
+            o, r, d, ep_ret, ep_len = a1.env.reset(), 0, False, 0, 0
 
-            # Store experience to replay buffer
-            self.replay_buffer.store(o, a, r, o2, d)
-
-            # Super critical, easy to overlook step: make sure to update
-            # most recent observation!
-            o = o2
-
-            if d or (ep_len == self.max_ep_len):
-                """
-                Perform all SAC updates at the end of the trajectory.
-                This is a slight difference from the SAC specified in the
-                original paper.
-                """
-                for j in range(ep_len):
-                    batch = self.replay_buffer.sample_batch(self.batch_size)
-                    feed_dict = {self.x_ph: batch['obs1'],
-                                 self.x2_ph: batch['obs2'],
-                                 self.a_ph: batch['acts'],
-                                 self.r_ph: batch['rews'],
-                                 self.d_ph: batch['done'],
-                                 }
-                    outs = self.sess.run(self.step_ops, feed_dict)
-                    self.logger.store(LossPi=outs[0], LossQ1=outs[1], LossQ2=outs[2],
-                                      LossV=outs[3], Q1Vals=outs[4], Q2Vals=outs[5],
-                                      VVals=outs[6], LogPi=outs[7])
-
-                self.logger.store(EpRet=ep_ret, EpLen=ep_len)
-                o, r, d, ep_ret, ep_len = self.env.reset(), 0, False, 0, 0
-
-            # End of epoch wrap-up
-            if t > 0 and t % self.steps_per_epoch == 0:
-                epoch = t // self.steps_per_epoch
-
-                # Save model
-                if (epoch % self.save_freq == 0) or (epoch == self.epochs - 1):
-                    self.logger.save_state({'env': self.env}, None)
-
-                # Test the performance of the deterministic version of the agent.
-                self.test_agent()
-
-                # Log info about epoch
-                self.logger.log_tabular('Epoch', epoch)
-                self.logger.log_tabular('EpRet', with_min_and_max=True)
-                self.logger.log_tabular('TestEpRet', with_min_and_max=True)
-                self.logger.log_tabular('EpLen', average_only=True)
-                self.logger.log_tabular('TestEpLen', average_only=True)
-                self.logger.log_tabular('TotalEnvInteracts', t)
-                self.logger.log_tabular('Q1Vals', with_min_and_max=True)
-                self.logger.log_tabular('Q2Vals', with_min_and_max=True)
-                self.logger.log_tabular('VVals', with_min_and_max=True)
-                self.logger.log_tabular('LogPi', with_min_and_max=True)
-                self.logger.log_tabular('LossPi', average_only=True)
-                self.logger.log_tabular('LossQ1', average_only=True)
-                self.logger.log_tabular('LossQ2', average_only=True)
-                self.logger.log_tabular('LossV', average_only=True)
-                self.logger.log_tabular('Time', time.time() - start_time)
-                self.logger.dump_tabular()
+        # End of epoch wrap-up
+        if t > 0 and t % steps_per_epoch == 0:
+            epoch = t // steps_per_epoch
+            a1.wrap_up_epoch(epoch, t, start_time)
+            a2.wrap_up_epoch(epoch, t, start_time)
 
 
 if __name__ == '__main__':
@@ -356,7 +377,14 @@ if __name__ == '__main__':
 
     logger_kwargs = setup_logger_kwargs(args.exp_name, args.seed)
 
-    SAC(lambda: gym.make(args.env), actor_critic=core.mlp_actor_critic,
-        ac_kwargs=dict(hidden_sizes=[args.hid] * args.l),
-        gamma=args.gamma, seed=args.seed, epochs=args.epochs,
-        logger_kwargs=logger_kwargs)
+    a1 = SAC(lambda: gym.make(args.env), actor_critic=core.mlp_actor_critic,
+             ac_kwargs=dict(hidden_sizes=[args.hid] * args.l),
+             gamma=args.gamma, seed=args.seed, epochs=args.epochs,
+             logger_kwargs=logger_kwargs, name='sac')
+
+    a2 = SAC(lambda: gym.make(args.env), actor_critic=core.mlp_actor_critic,
+             ac_kwargs=dict(hidden_sizes=[args.hid] * args.l),
+             gamma=args.gamma, seed=args.seed, epochs=args.epochs,
+             logger_kwargs=logger_kwargs, alpha=0.0, name='ddpg')
+
+    run_two(a1, a2)
