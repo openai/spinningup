@@ -179,7 +179,7 @@ class SAC:
         v_backup = tf.stop_gradient(min_q_pi - alpha * logp_pi)
 
         # Soft actor-critic losses
-        pi_loss = tf.reduce_mean(alpha * logp_pi - q1_pi)
+        pi_loss = tf.reduce_mean(alpha * logp_pi - min_q_pi)
         q1_loss = 0.5 * tf.reduce_mean((q_backup - q1) ** 2)
         q2_loss = 0.5 * tf.reduce_mean((q_backup - q2) ** 2)
         v_loss = 0.5 * tf.reduce_mean((v_backup - v) ** 2)
@@ -284,8 +284,8 @@ def run_two(a1, a2, batch_size=100, epochs=100, max_ep_len=1000, start_steps=100
     start_time = time.time()
     total_steps = steps_per_epoch * epochs
 
-    o, r, d, ep_ret, ep_len = a1.env.reset(), 0, False, 0, 0
-    a2.env.reset()
+    o_1, r_1, d_1, ep_ret_1, ep_len_1 = a1.env.reset(), 0, False, 0, 0
+    o_2, r_2, d_2, ep_ret_2, ep_len_2 = a2.env.reset(), 0, False, 0, 0
 
     # Main loop: collect experience in env and update/log each epoch
     for t in range(total_steps):
@@ -296,34 +296,43 @@ def run_two(a1, a2, batch_size=100, epochs=100, max_ep_len=1000, start_steps=100
         use the learned policy. 
         """
         if t > start_steps:
-            a = a1.get_action(o)
+            a_1 = a1.get_action(o_1)
+            a_2 = a2.get_action(o_2)
         else:
-            a = a1.env.action_space.sample()
+            a_1 = a1.env.action_space.sample()
+            a_2 = a2.env.action_space.sample()
 
-        # Step the env
-        o2, r, d, _ = a1.env.step(a)
-        ep_ret += r
-        ep_len += 1
+        # Step the env of a1
+        o2_1, r_1, d_1, _ = a1.env.step(a_1)
+        ep_ret_1 += r_1
+        ep_len_1 += 1
+
+        # Step the env of a2
+        o2_2, r_2, d_2, _ = a2.env.step(a_2)
+        ep_ret_2 += r_2
+        ep_len_2 += 1
 
         # Ignore the "done" signal if it comes from hitting the time
         # horizon (that is, when it's an artificial terminal signal
         # that isn't based on the agent's state)
-        d = False if ep_len == max_ep_len else d
+        d_1 = False if ep_len_1 == max_ep_len else d_1
 
-        # Store experience to replay buffer
-        a1.replay_buffer.store(o, a, r, o2, d)
+        # Store experiences to replay buffer
+        a1.replay_buffer.store(o_1, a_1, r_1, o2_1, d_1)
+        a1.replay_buffer.store(o_2, a_2, r_2, o2_2, d_2)
 
         # Super critical, easy to overlook step: make sure to update
         # most recent observation!
-        o = o2
+        o_1 = o2_1
+        o_2 = o2_2
 
-        if d or (ep_len == max_ep_len):
+        if d_1 or d_2 or (ep_len_1 == max_ep_len) or (ep_len_2 == max_ep_len):
             """
             Perform all SAC updates at the end of the trajectory.
             This is a slight difference from the SAC specified in the
             original paper.
             """
-            for j in range(ep_len):
+            for j in range(ep_len_1):
                 batch = a1.replay_buffer.sample_batch(batch_size)
                 feed_dict_1 = {a1.x_ph: batch['obs1'],
                                a1.x2_ph: batch['obs2'],
@@ -347,9 +356,10 @@ def run_two(a1, a2, batch_size=100, epochs=100, max_ep_len=1000, start_steps=100
                                 LossV=outs_2[3], Q1Vals=outs_2[4], Q2Vals=outs_2[5],
                                 VVals=outs_2[6], LogPi=outs_2[7])
 
-            a1.logger.store(EpRet=ep_ret, EpLen=ep_len)
-            a2.logger.store(EpRet=ep_ret, EpLen=ep_len)
-            o, r, d, ep_ret, ep_len = a1.env.reset(), 0, False, 0, 0
+            a1.logger.store(EpRet=ep_ret_1, EpLen=ep_len_1)
+            a2.logger.store(EpRet=ep_ret_2, EpLen=ep_len_2)
+            o_1, r_1, d_1, ep_ret_1, ep_len_1 = a1.env.reset(), 0, False, 0, 0
+            o_2, r_2, d_2, ep_ret_2, ep_len_2 = a2.env.reset(), 0, False, 0, 0
 
         # End of epoch wrap-up
         if t > 0 and t % steps_per_epoch == 0:
