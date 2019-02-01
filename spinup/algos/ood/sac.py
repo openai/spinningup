@@ -175,7 +175,6 @@ class SAC:
         target_init = tf.group([tf.assign(v_targ, v_main)
                                 for v_main, v_targ in zip(get_vars('%s/main' % name), get_vars('%s/target' % name))])
 
-        # sess = tf.Session()
         sess.run(tf.global_variables_initializer())
         sess.run(target_init)
 
@@ -187,15 +186,15 @@ class SAC:
         self.batch_size = batch_size
         self.epochs = epochs
         self.max_ep_len = max_ep_len
+        self.replay_buffer = replay_buffer
         self.save_freq = save_freq
+        self.sess = sess
         self.start_steps = start_steps
         self.steps_per_epoch = steps_per_epoch
 
         # variables
-        self.sess = sess
         self.logger = logger
         self.env, self.test_env = env, test_env
-        self.replay_buffer = replay_buffer
         self.x_ph, self.a_ph, self.x2_ph, self.r_ph, self.d_ph = x_ph, a_ph, x2_ph, r_ph, d_ph
         self.mu, self.pi, self.logp_pi = mu, pi, logp_pi
         self.q1, self.q2, self.q1_pi, self.q2_pi, v = q1, q2, q1_pi, q2_pi, v

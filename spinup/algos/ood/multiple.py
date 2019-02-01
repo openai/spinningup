@@ -2,8 +2,10 @@ import numpy as np
 import tensorflow as tf
 import gym
 import time
-from spinup.algos.sac import core
+from spinup.algos.sac import core as sac_core
+from spinup.algos.ddpg import core as ddpg_core
 from spinup.algos.ood.sac import SAC
+from spinup.algos.ood.ddpg import DDPG
 
 
 class ReplayBuffer:
@@ -89,7 +91,7 @@ def run_multiple(algorithms, replay_buffer, batch_size=100, epochs=100, max_ep_l
             This is a slight difference from the SAC specified in the
             original paper.
             """
-            for j in range(max(step[5] for step in steps)):
+            for _ in range(max(step[5] for step in steps)):
                 batch = replay_buffer.sample_batch(batch_size)
 
                 for algorithm in algorithms:
@@ -137,14 +139,14 @@ if __name__ == '__main__':
         size=int(1e6)
     )
 
-    a1 = SAC(session, rb, lambda: gym.make(args.env), actor_critic=core.mlp_actor_critic,
+    a1 = SAC(session, rb, lambda: gym.make(args.env), actor_critic=sac_core.mlp_actor_critic,
              ac_kwargs=dict(hidden_sizes=[args.hid] * args.l),
              gamma=args.gamma, seed=args.seed, epochs=args.epochs,
              logger_kwargs=logger_kwargs_1, name='sac')
 
-    a2 = SAC(session, rb, lambda: gym.make(args.env), actor_critic=core.mlp_actor_critic,
-             ac_kwargs=dict(hidden_sizes=[args.hid] * args.l),
-             gamma=args.gamma, seed=args.seed, epochs=args.epochs,
-             logger_kwargs=logger_kwargs_2, alpha=0.0, name='ddpg')
+    a2 = DDPG(session, rb, lambda: gym.make(args.env), actor_critic=ddpg_core.mlp_actor_critic,
+              ac_kwargs=dict(hidden_sizes=[args.hid] * args.l),
+              gamma=args.gamma, seed=args.seed, epochs=args.epochs,
+              logger_kwargs=logger_kwargs_2, name='ddpg')
 
     run_multiple([a1, a2], rb)
