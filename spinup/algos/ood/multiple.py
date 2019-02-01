@@ -4,8 +4,10 @@ import gym
 import time
 from spinup.algos.sac import core as sac_core
 from spinup.algos.ddpg import core as ddpg_core
+from spinup.algos.td3 import core as td3_core
 from spinup.algos.ood.sac import SAC
 from spinup.algos.ood.ddpg import DDPG
+from spinup.algos.ood.td3 import TD3
 
 
 class ReplayBuffer:
@@ -91,11 +93,11 @@ def run_multiple(algorithms, replay_buffer, batch_size=100, epochs=100, max_ep_l
             This is a slight difference from the SAC specified in the
             original paper.
             """
-            for _ in range(max(step[5] for step in steps)):
+            for j in range(max(step[5] for step in steps)):
                 batch = replay_buffer.sample_batch(batch_size)
 
                 for algorithm in algorithms:
-                    algorithm.update(batch)
+                    algorithm.update(batch, j)
 
             for i in range(len(algorithms)):
                 algorithm = algorithms[i]
@@ -137,30 +139,37 @@ if __name__ == '__main__':
     from spinup.utils.run_utils import setup_logger_kwargs
 
     all_algorithms = []
-    for i, algorithm in enumerate(args.algorithms.split(',')):
-        algorithm_name = '%s-%d-%s' % (args.exp_name, i + 1, algorithm)
+    for k, algo in enumerate(args.algorithms.split(',')):
+        algorithm_name = '%s-%d-%s' % (args.exp_name, k + 1, algo)
         logger_kwargs = setup_logger_kwargs(algorithm_name, args.seed)
 
-        if algorithm == 'sac':
+        if algo == 'sac':
             all_algorithms.append(
                 SAC(session, rb, lambda: gym.make(args.env), actor_critic=sac_core.mlp_actor_critic,
                     ac_kwargs=dict(hidden_sizes=[args.hid] * args.l),
                     gamma=args.gamma, seed=args.seed, epochs=args.epochs,
                     logger_kwargs=logger_kwargs, name=algorithm_name)
             )
-        elif algorithm == 'sac_zero_alpha':
+        elif algo == 'sac_zero_alpha':
             all_algorithms.append(
                 SAC(session, rb, lambda: gym.make(args.env), actor_critic=sac_core.mlp_actor_critic,
                     ac_kwargs=dict(hidden_sizes=[args.hid] * args.l),
                     gamma=args.gamma, seed=args.seed, epochs=args.epochs,
                     logger_kwargs=logger_kwargs, name=algorithm_name, alpha=0.0)
             )
-        elif algorithm == 'ddpg':
+        elif algo == 'ddpg':
             all_algorithms.append(
                 DDPG(session, rb, lambda: gym.make(args.env), actor_critic=ddpg_core.mlp_actor_critic,
                      ac_kwargs=dict(hidden_sizes=[args.hid] * args.l),
                      gamma=args.gamma, seed=args.seed, epochs=args.epochs,
                      logger_kwargs=logger_kwargs, name=algorithm_name)
+            )
+        elif algo == 'td3':
+            all_algorithms.append(
+                TD3(session, rb, lambda: gym.make(args.env), actor_critic=td3_core.mlp_actor_critic,
+                    ac_kwargs=dict(hidden_sizes=[args.hid] * args.l),
+                    gamma=args.gamma, seed=args.seed, epochs=args.epochs,
+                    logger_kwargs=logger_kwargs, name=algorithm_name)
             )
 
     run_multiple(all_algorithms, rb)

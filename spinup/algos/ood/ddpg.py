@@ -213,10 +213,26 @@ class DDPG:
             o, r, d, ep_ret, ep_len = self.test_env.reset(), 0, False, 0, 0
             while not (d or (ep_len == self.max_ep_len)):
                 # Take deterministic actions at test time (noise_scale=0)
-                o, r, d, _ = self.test_env.step(self.get_action(o, True))
+                o, r, d, _ = self.test_env.step(self.get_action(o, deterministic=True))
                 ep_ret += r
                 ep_len += 1
             self.logger.store(TestEpRet=ep_ret, TestEpLen=ep_len)
+
+    def update(self, batch, step):
+        feed_dict = {self.x_ph: batch['obs1'],
+                     self.x2_ph: batch['obs2'],
+                     self.a_ph: batch['acts'],
+                     self.r_ph: batch['rews'],
+                     self.d_ph: batch['done']
+                     }
+
+        # Q-learning update
+        outs = self.sess.run([self.q_loss, self.q, self.train_q_op], feed_dict)
+        self.logger.store(LossQ=outs[0], QVals=outs[1])
+
+        # Policy update
+        outs = self.sess.run([self.pi_loss, self.train_pi_op, self.target_update], feed_dict)
+        self.logger.store(LossPi=outs[0])
 
     def wrap_up_epoch(self, epoch, t, start_time):
         # Save model
@@ -238,19 +254,3 @@ class DDPG:
         self.logger.log_tabular('LossQ', average_only=True)
         self.logger.log_tabular('Time', time.time() - start_time)
         self.logger.dump_tabular()
-
-    def update(self, batch):
-        feed_dict = {self.x_ph: batch['obs1'],
-                     self.x2_ph: batch['obs2'],
-                     self.a_ph: batch['acts'],
-                     self.r_ph: batch['rews'],
-                     self.d_ph: batch['done']
-                     }
-
-        # Q-learning update
-        outs = self.sess.run([self.q_loss, self.q, self.train_q_op], feed_dict)
-        self.logger.store(LossQ=outs[0], QVals=outs[1])
-
-        # Policy update
-        outs = self.sess.run([self.pi_loss, self.train_pi_op, self.target_update], feed_dict)
-        self.logger.store(LossPi=outs[0])
