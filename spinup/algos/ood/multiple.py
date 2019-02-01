@@ -42,7 +42,7 @@ class ReplayBuffer:
 
 
 def run_multiple(algorithms, replay_buffer, batch_size=100, epochs=100, max_ep_len=1000, start_steps=10000,
-                 steps_per_epoch=5000):
+                 steps_per_epoch=5000, sample_from=tuple([])):
     start_time = time.time()
     total_steps = steps_per_epoch * epochs
     steps = [[a.env.reset(), None, 0, False, 0, 0] for a in algorithms]  # o, o2, r, d, ep_ret, ep_len
@@ -75,7 +75,8 @@ def run_multiple(algorithms, replay_buffer, batch_size=100, epochs=100, max_ep_l
             d = False if ep_len == max_ep_len else d
 
             # Store experiences to replay buffer
-            replay_buffer.store(o, a, r, o2, d)
+            if len(sample_from) == 0 or i in sample_from:
+                replay_buffer.store(o, a, r, o2, d)
 
             # Super critical, easy to overlook step: make sure to update
             # most recent observation!
@@ -126,6 +127,7 @@ if __name__ == '__main__':
     parser.add_argument('--seed', '-s', type=int, default=0)
     parser.add_argument('--epochs', type=int, default=50)
     parser.add_argument('--exp_name', type=str, default='multiple')
+    parser.add_argument('--sample_from', type=str, default='', help='0-based index of algorithm to sample action from')
     args = parser.parse_args()
 
     session = tf.Session()
@@ -140,7 +142,7 @@ if __name__ == '__main__':
 
     all_algorithms = []
     for k, algo in enumerate(args.algorithms.split(',')):
-        algorithm_name = '%s-%d-%s' % (args.exp_name, k + 1, algo)
+        algorithm_name = '%s-%d-%s' % (args.env, k, algo)
         logger_kwargs = setup_logger_kwargs(algorithm_name, args.seed)
 
         if algo == 'sac':
@@ -172,4 +174,7 @@ if __name__ == '__main__':
                     logger_kwargs=logger_kwargs, name=algorithm_name)
             )
 
-    run_multiple(all_algorithms, rb)
+    sample_from = tuple([int(ind) for ind in args.sample_from.split(',')
+                         if len(ind) > 0 and int(ind) < len(all_algorithms)])
+
+    run_multiple(all_algorithms, rb, sample_from=sample_from)
