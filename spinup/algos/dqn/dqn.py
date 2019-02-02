@@ -3,7 +3,7 @@ import tensorflow as tf
 import gym
 import time
 from spinup.algos.dqn import core
-from spinup.algos.dqn.core import get_vars
+from spinup.algos.dqn.core import get_vars, copy_model_parameters
 from spinup.utils.logx import EpochLogger
 
 
@@ -47,7 +47,7 @@ def dqn(env_fn, actor_critic=core.mlp_actor_critic, ac_kwargs=dict(), seed=0,
         steps_per_epoch=500, epochs=100, replay_size=int(1e6), gamma=0.99,
         epsilon_start=1, epsilon_step=1e-4, epsilon_end=0.1,
         q_lr=1e-3, batch_size=100, start_steps=5000,
-        max_ep_len=1000, logger_kwargs=dict(), save_freq=1):
+        max_ep_len=1000, logger_kwargs=dict(), update_freq=100, save_freq=1):
     """
 
     Args:
@@ -98,6 +98,9 @@ def dqn(env_fn, actor_critic=core.mlp_actor_critic, ac_kwargs=dict(), seed=0,
 
         logger_kwargs (dict): Keyword args for EpochLogger.
 
+        update_freq (int): How often (in terms of gap between epochs) to update
+            the parameters of target network
+
         save_freq (int): How often (in terms of gap between epochs) to save
             the current policy and value function.
 
@@ -124,26 +127,26 @@ def dqn(env_fn, actor_critic=core.mlp_actor_critic, ac_kwargs=dict(), seed=0,
 
     # Main outputs from computation graph
     with tf.variable_scope('main'):
-        q = actor_critic(x_ph, **ac_kwargs)
-        q_2 = actor_critic(x2_ph, **ac_kwargs)
+        q = actor_critic(x_ph, scope='theta', **ac_kwargs)
+        q_target = actor_critic(x2_ph, scope='target', **ac_kwargs)
 
     # Experience buffer
     replay_buffer = ReplayBuffer(obs_dim=obs_dim, act_dim=act_dim, size=replay_size)
 
     # Count variables
-    var_counts = tuple(core.count_vars(scope) for scope in ['main/q', 'main'])
-    print('\nNumber of parameters: \t q: %d, \t total: %d\n' % var_counts)
+    var_counts = tuple(core.count_vars(scope) for scope in ['main/theta', 'main/target', 'main'])
+    print('\nNumber of parameters: \t theta: %d,\t target: %d,\t total: %d\n' % var_counts)
 
     # Bellman backup for Q function
-    q_a = tf.reduce_sum(tf.one_hot(a_ph, depth=env.action_space.n)*q, axis=1)
-    backup = r_ph + gamma*(1-d_ph)*tf.stop_gradient(tf.reduce_max(q_2, axis=1))
+    qa_theta = tf.reduce_sum(tf.one_hot(a_ph, depth=env.action_space.n)*q, axis=1)
+    qa_target = r_ph + gamma*(1-d_ph)*tf.stop_gradient(tf.reduce_max(q_target, axis=1))
 
     # DQN losses
-    q_loss = tf.reduce_mean((q_a-backup)**2)
+    q_loss = tf.reduce_mean((qa_theta-qa_target)**2)
 
     # Train ops for q
     q_optimizer = tf.train.AdamOptimizer(learning_rate=q_lr)
-    train_q_op = q_optimizer.minimize(q_loss, var_list=get_vars('main/q'))
+    train_q_op = q_optimizer.minimize(q_loss, var_list=get_vars('main/theta'))
 
     sess = tf.Session()
     sess.run(tf.global_variables_initializer())
@@ -207,8 +210,7 @@ def dqn(env_fn, actor_critic=core.mlp_actor_critic, ac_kwargs=dict(), seed=0,
 
         if d or (ep_len == max_ep_len):
             """
-            Perform all DQN updates at the end of the trajectory,
-            in accordance with tuning done by TD3 paper authors.
+            Store episode return at the end of trajectory
             """
             logger.store(EpRet=ep_ret, EpLen=ep_len)
             o, r, d, ep_ret, ep_len = env.reset(), 0, False, 0, 0
@@ -227,7 +229,6 @@ def dqn(env_fn, actor_critic=core.mlp_actor_critic, ac_kwargs=dict(), seed=0,
             outs = sess.run([q_loss, q, train_q_op], feed_dict)
             logger.store(LossQ=outs[0], QVals=outs[1])
 
-
         # End of epoch wrap-up
         if t > start_steps and (t - start_steps) % steps_per_epoch == 0:
             epoch = (t - start_steps) // steps_per_epoch
@@ -235,6 +236,9 @@ def dqn(env_fn, actor_critic=core.mlp_actor_critic, ac_kwargs=dict(), seed=0,
             # Save model
             if (epoch % save_freq == 0) or (epoch == epochs-1):
                 logger.save_state({'env': env}, None)
+
+            if epoch % update_freq == 0:
+                copy_model_parameters(sess, q_target, q)
 
             # Test the performance of the deterministic version of the agent.
             test_agent()

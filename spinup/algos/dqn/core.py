@@ -44,13 +44,36 @@ def count_vars(scope):
     return sum([np.prod(var.shape.as_list()) for var in v])
 
 
+# Credit for copy model params:
+# https://github.com/dennybritz/reinforcement-learning/blob/master/DQN/dqn.py#L150
+def copy_model_parameters(sess, estimator1, estimator2):
+    """
+    Copies the model parameters of one estimator to another.
+    Args:
+      sess: Tensorflow session instance
+      estimator1: Estimator to copy the paramters from
+      estimator2: Estimator to copy the parameters to
+    """
+    e1_params = [t for t in tf.trainable_variables() if t.name.startswith(estimator1.scope)]
+    e1_params = sorted(e1_params, key=lambda v: v.name)
+    e2_params = [t for t in tf.trainable_variables() if t.name.startswith(estimator2.scope)]
+    e2_params = sorted(e2_params, key=lambda v: v.name)
+
+    update_ops = []
+    for e1_v, e2_v in zip(e1_params, e2_params):
+        op = e2_v.assign(e1_v)
+        update_ops.append(op)
+
+    sess.run(update_ops)
+
+
 """
 Actor-Critics
 """
 def mlp_actor_critic(x, hidden_sizes=(64, 64), activation=tf.nn.relu,
-                     output_activation=None, action_space=None):
+                     output_activation=None, action_space=None, scope='q'):
     act_dim = action_space.n
-    with tf.variable_scope('q', reuse=tf.AUTO_REUSE):
+    with tf.variable_scope(scope):
         # Q value for each action
         q = mlp(x, list(hidden_sizes)+[act_dim], activation, output_activation)
     return q
