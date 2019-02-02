@@ -45,26 +45,22 @@ def count_vars(scope):
 
 
 # Credit for copy model params:
-# https://github.com/dennybritz/reinforcement-learning/blob/master/DQN/dqn.py#L150
-def copy_model_parameters(sess, estimator1, estimator2):
+# https://stackoverflow.com/a/44991094
+def copy_operation(scope1, scope2):
     """
-    Copies the model parameters of one estimator to another.
+    Copies the model parameters of one scope to the other for the same network
     Args:
-      sess: Tensorflow session instance
-      estimator1: Estimator to copy the paramters from
-      estimator2: Estimator to copy the parameters to
+      scope1: Scope to copy the paramters from
+      scope2: Scope to copy the parameters to
     """
-    e1_params = [t for t in tf.trainable_variables() if t.name.startswith(estimator1.scope)]
-    e1_params = sorted(e1_params, key=lambda v: v.name)
-    e2_params = [t for t in tf.trainable_variables() if t.name.startswith(estimator2.scope)]
-    e2_params = sorted(e2_params, key=lambda v: v.name)
+    main_variables = tf.get_collection(tf.GraphKeys.VARIABLES, scope=scope1)
+    target_variables = tf.get_collection(tf.GraphKeys.VARIABLES, scope=scope2)
 
-    update_ops = []
-    for e1_v, e2_v in zip(e1_params, e2_params):
-        op = e2_v.assign(e1_v)
-        update_ops.append(op)
+    assign_ops = []
+    for main_var, target_var in zip(main_variables, target_variables):
+        assign_ops.append(tf.assign(target_var, main_var))
 
-    sess.run(update_ops)
+    return tf.group(*assign_ops)
 
 
 """

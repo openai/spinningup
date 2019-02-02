@@ -3,7 +3,7 @@ import tensorflow as tf
 import gym
 import time
 from spinup.algos.dqn import core
-from spinup.algos.dqn.core import get_vars, copy_model_parameters
+from spinup.algos.dqn.core import get_vars, copy_operation
 from spinup.utils.logx import EpochLogger
 
 
@@ -148,6 +148,9 @@ def dqn(env_fn, actor_critic=core.mlp_actor_critic, ac_kwargs=dict(), seed=0,
     q_optimizer = tf.train.AdamOptimizer(learning_rate=q_lr)
     train_q_op = q_optimizer.minimize(q_loss, var_list=get_vars('main/theta'))
 
+    # Copy parameters operation between theta & target
+    copy_op = copy_operation('main/theta', 'main/target')
+
     sess = tf.Session()
     sess.run(tf.global_variables_initializer())
 
@@ -215,6 +218,9 @@ def dqn(env_fn, actor_critic=core.mlp_actor_critic, ac_kwargs=dict(), seed=0,
             logger.store(EpRet=ep_ret, EpLen=ep_len)
             o, r, d, ep_ret, ep_len = env.reset(), 0, False, 0, 0
 
+        if t % update_freq == 0:
+            sess.run(copy_op)
+
         if t > start_steps:
             batch = replay_buffer.sample_batch(batch_size)
             feed_dict = {
@@ -229,6 +235,7 @@ def dqn(env_fn, actor_critic=core.mlp_actor_critic, ac_kwargs=dict(), seed=0,
             outs = sess.run([q_loss, q, train_q_op], feed_dict)
             logger.store(LossQ=outs[0], QVals=outs[1])
 
+
         # End of epoch wrap-up
         if t > start_steps and (t - start_steps) % steps_per_epoch == 0:
             epoch = (t - start_steps) // steps_per_epoch
@@ -237,8 +244,6 @@ def dqn(env_fn, actor_critic=core.mlp_actor_critic, ac_kwargs=dict(), seed=0,
             if (epoch % save_freq == 0) or (epoch == epochs-1):
                 logger.save_state({'env': env}, None)
 
-            if epoch % update_freq == 0:
-                copy_model_parameters(sess, q_target, q)
 
             # Test the performance of the deterministic version of the agent.
             test_agent()
