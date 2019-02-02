@@ -142,7 +142,7 @@ if __name__ == '__main__':
 
     all_algorithms = []
     for k, algo in enumerate(args.algorithms.split(',')):
-        algorithm_name = '%s-%d-%s' % (args.env, k, algo)
+        algorithm_name = '%s-%s-%d-%s' % (args.exp_name, args.env, k, algo)
         logger_kwargs = setup_logger_kwargs(algorithm_name, args.seed)
 
         if algo == 'sac':
