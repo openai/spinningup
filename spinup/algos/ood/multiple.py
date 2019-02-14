@@ -8,6 +8,7 @@ from spinup.algos.td3 import core as td3_core
 from spinup.algos.ood.sac import SAC
 from spinup.algos.ood.ddpg import DDPG
 from spinup.algos.ood.td3 import TD3
+from stable_baselines.common.vec_env import SubprocVecEnv
 
 
 class ReplayBuffer:
@@ -41,8 +42,9 @@ class ReplayBuffer:
                     done=self.done_buf[idxs])
 
 
-def run_multiple(algorithms, replay_buffer, batch_size=100, epochs=100, max_ep_len=1000, start_steps=10000,
+def run_multiple(algorithms, replay_buffer, env_fn, batch_size=100, epochs=100, max_ep_len=1000, start_steps=10000,
                  steps_per_epoch=5000, sample_from=tuple([])):
+    envs = SubprocVecEnv([env_fn for _ in algorithms])
     start_time = time.time()
     total_steps = steps_per_epoch * epochs
     steps = [[a.env.reset(), None, 0, False, 0, 0] for a in algorithms]  # o, o2, r, d, ep_ret, ep_len
@@ -55,28 +57,33 @@ def run_multiple(algorithms, replay_buffer, batch_size=100, epochs=100, max_ep_l
         from a uniform distribution for better exploration. Afterwards, 
         use the learned policy. 
         """
+        actions = []
         for i in range(len(algorithms)):
-            algorithm = algorithms[i]
-            o, o2, r, d, ep_ret, ep_len = steps[i]
+            o = steps[i][0]
 
             if t > start_steps:
-                a = algorithm.get_action(o)
+                a = algorithms[i].get_action(o)
             else:
-                a = algorithm.env.action_space.sample()
+                a = algorithms[i].env.action_space.sample()
 
-            # Step the env
-            o2, r, d, _ = algorithm.env.step(a)
-            ep_ret += r
+            actions.append(a)
+
+        o2_s, r_s, d_s, _ = envs.step(actions)
+
+        for i in range(len(algorithms)):
+            o, o2, r, d, ep_ret, ep_len = steps[i]
+
+            ep_ret += r_s[i]
             ep_len += 1
 
             # Ignore the "done" signal if it comes from hitting the time
             # horizon (that is, when it's an artificial terminal signal
             # that isn't based on the agent's state)
-            d = False if ep_len == max_ep_len else d
+            d = False if ep_len == max_ep_len else d_s[i]
 
             # Store experiences to replay buffer
             if len(sample_from) == 0 or i in sample_from:
-                replay_buffer.store(o, a, r, o2, d)
+                replay_buffer.store(o, actions[i], r, o2, d)
 
             # Super critical, easy to overlook step: make sure to update
             # most recent observation!
@@ -177,4 +184,4 @@ if __name__ == '__main__':
     sample_from = tuple([int(ind) for ind in args.sample_from.split(',')
                          if len(ind) > 0 and int(ind) < len(all_algorithms)])
 
-    run_multiple(all_algorithms, rb, sample_from=sample_from, epochs=args.epochs)
+    run_multiple(all_algorithms, rb, lambda: gym.make(args.env), sample_from=sample_from, epochs=args.epochs)
