@@ -11,7 +11,7 @@ def combined_shape(length, shape=None):
     return (length, shape) if np.isscalar(shape) else (length, *shape)
 
 def placeholder(dim=None):
-    return tf.placeholder(dtype=tf.float32, shape=combined_shape(None,dim))
+    return tf.placeholder(dtype=tf.float32,shape=combined_shape(None, dim))
 
 def placeholders(*args):
     return [placeholder(dim) for dim in args]
@@ -21,6 +21,20 @@ def placeholder_from_space(space):
         return placeholder(space.shape)
     elif isinstance(space, Discrete):
         return tf.placeholder(dtype=tf.int32, shape=(None,))
+    raise NotImplementedError
+
+def shape_from_space(space, batch_dim=None):
+    if isinstance(space, Box):
+        return combined_shape(batch_dim, space.shape)
+    elif isinstance(space, Discrete):
+        return (batch_dim,)
+    raise NotImplementedError
+
+def type_from_space(space):
+    if isinstance(space, Box):
+        return np.float32
+    elif isinstance(space, Discrete):
+        return np.int32
     raise NotImplementedError
 
 def placeholders_from_spaces(*args):
@@ -58,7 +72,7 @@ def discount_cumsum(x, discount):
          x2]
 
     output:
-        [x0 + discount * x1 + discount^2 * x2,  
+        [x0 + discount * x1 + discount^2 * x2,
          x1 + discount * x2,
          x2]
     """
@@ -78,7 +92,6 @@ def mlp_categorical_policy(x, a, hidden_sizes, activation, output_activation, ac
     logp_pi = tf.reduce_sum(tf.one_hot(pi, depth=act_dim) * logp_all, axis=1)
     return pi, logp, logp_pi
 
-
 def mlp_gaussian_policy(x, a, hidden_sizes, activation, output_activation, action_space):
     act_dim = a.shape.as_list()[-1]
     mu = mlp(x, list(hidden_sizes)+[act_dim], activation, output_activation)
@@ -89,11 +102,10 @@ def mlp_gaussian_policy(x, a, hidden_sizes, activation, output_activation, actio
     logp_pi = gaussian_likelihood(pi, mu, log_std)
     return pi, logp, logp_pi
 
-
 """
 Actor-Critics
 """
-def mlp_actor_critic(x, a, hidden_sizes=(64,64), activation=tf.tanh, 
+def mlp_actor_critic(x, a, hidden_sizes=(64,64), activation=tf.tanh,
                      output_activation=None, policy=None, action_space=None):
 
     # default policy builder depends on action space
@@ -107,3 +119,33 @@ def mlp_actor_critic(x, a, hidden_sizes=(64,64), activation=tf.tanh,
     with tf.variable_scope('v'):
         v = tf.squeeze(mlp(x, list(hidden_sizes)+[1], activation, None), axis=1)
     return pi, logp, logp_pi, v
+
+
+def masked_suffix_sum(x, endmask, discount, axis=0, last_val=None, force_last=True):
+    """
+    x: time series
+    endmask: indicator for end of sequences
+    last_val: value to be used for the accumulator if not specified, must be same shape as x[axis]
+    force_last: true by default, force the last output to be last_val
+    """
+    x = tf.reverse(x, axis=[axis])
+    endmask = tf.reverse(endmask, axis=[axis])
+    p = list(range(len(x.get_shape())))
+    p[axis] = 0
+    p[0] = axis
+    x = tf.transpose(x, perm=p)
+    if last_val == None:
+        initializer = x[0] - x[0]
+    elif force_last:
+        # we want to ensure initializer * discount + x[0] == last_val
+        initializer = (last_val - x[0]) / discount
+    else:
+        initializer = last_val
+    endmask = tf.transpose(endmask, perm=p)
+    def _scan_fn(cumsum, x_mask):
+        x, mask = x_mask
+        return cumsum * (1 - mask) * discount + x
+    ans = tf.scan(_scan_fn, (x, endmask), initializer = initializer)
+    ans = tf.transpose(ans, perm=p)
+    ans = tf.reverse(ans, axis=[axis])
+    return ans
