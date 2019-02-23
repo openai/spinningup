@@ -1,324 +1,177 @@
 import numpy as np
 import tensorflow as tf
-import gym
-import time
-import spinup.algos.ppo.core as core
-from spinup.utils.logx import EpochLogger
-from spinup.utils.mpi_tf import MpiAdamOptimizer, sync_all_params
-from spinup.utils.mpi_tools import mpi_fork, mpi_avg, proc_id, mpi_statistics_scalar, num_procs
+import core
 
+from spiningup.utils.mpi_tools import mpi_sctatistics_scalar
 
 class PPOBuffer:
+  """
+  "A buffer for storing trajectories experienced by a PPO agent interacting
+  with the environment, and using Generalized Advantage Estimation (GAE-Lambda)
+  for calculating the advantages of state-action pairs." -OpenAI
+  """
+
+  def __init__(self, obs_dim, act_dim, size, gamma=0.99, lam=0.95):
     """
-    A buffer for storing trajectories experienced by a PPO agent interacting
-    with the environment, and using Generalized Advantage Estimation (GAE-Lambda)
-    for calculating the advantages of state-action pairs.
+    `obs_dim` = shape of tensor representing an observation of the agent
+    `act_dim` = shape of tensor representing an action of the agent
+    `size` = maximum number of steps for the trajectory, ie. max needed size of buffer
+    `gamma` = discount factor
+    `lam` = lambda value for temporal difference value function updating
+      - for information, see 
+      https://amreis.github.io/ml/reinf-learn/2017/11/02/reinforcement-learning-eligibility-traces.html
     """
+    # lists of observations and actions taken
+    self.obs_buf = np.zeros(core.combined_shape(size, obs_dim), dtype=np.float32)
+    self.act_buf = np.zeros(core.combined_shape(size, act_dim), dtype=np.float32)
 
-    def __init__(self, obs_dim, act_dim, size, gamma=0.99, lam=0.95):
-        self.obs_buf = np.zeros(core.combined_shape(size, obs_dim), dtype=np.float32)
-        self.act_buf = np.zeros(core.combined_shape(size, act_dim), dtype=np.float32)
-        self.adv_buf = np.zeros(size, dtype=np.float32)
-        self.rew_buf = np.zeros(size, dtype=np.float32)
-        self.ret_buf = np.zeros(size, dtype=np.float32)
-        self.val_buf = np.zeros(size, dtype=np.float32)
-        self.logp_buf = np.zeros(size, dtype=np.float32)
-        self.gamma, self.lam = gamma, lam
-        self.ptr, self.path_start_idx, self.max_size = 0, 0, size
+    # lists of advantages, rewards, returns (ie. discounted sum of rewards)
+    # value functions, and ??? `logp` for each time step
+    # TODO: figure out what `logp` is
+    self.adv_buf = np.zeros(size, dtype=np.float32)
+    self.rew_buf = np.zeros(size, dtype=np.float32)
+    self.ret_buf = np.zeros(size, dtype=np.float32)
+    self.val_buf = np.zeros(size, dtype=np.float32)
+    self.logp_buf = np.zeros(size, dtype=np.float32)
 
-    def store(self, obs, act, rew, val, logp):
-        """
-        Append one timestep of agent-environment interaction to the buffer.
-        """
-        assert self.ptr < self.max_size     # buffer has to have room so you can store
-        self.obs_buf[self.ptr] = obs
-        self.act_buf[self.ptr] = act
-        self.rew_buf[self.ptr] = rew
-        self.val_buf[self.ptr] = val
-        self.logp_buf[self.ptr] = logp
-        self.ptr += 1
+    self.gamma, self.lam = gamma, lam
 
-    def finish_path(self, last_val=0):
-        """
-        Call this at the end of a trajectory, or when one gets cut off
-        by an epoch ending. This looks back in the buffer to where the
-        trajectory started, and uses rewards and value estimates from
-        the whole trajectory to compute advantage estimates with GAE-Lambda,
-        as well as compute the rewards-to-go for each state, to use as
-        the targets for the value function.
+    # ptr is a pointer to the next time slot in the arrays/buffers which
+    # is going to be filled in
+    # path_start_idx is a pointer to the time slot at which
+    # the most recent (or present) path began
+    # (in case the buffer contains information from multiple
+    # paths)
+    # max_size is the maximum capacity for the array
+    self.ptr, self.path_start_idx, self.max_size = 0, 0, size
 
-        The "last_val" argument should be 0 if the trajectory ended
-        because the agent reached a terminal state (died), and otherwise
-        should be V(s_T), the value function estimated for the last state.
-        This allows us to bootstrap the reward-to-go calculation to account
-        for timesteps beyond the arbitrary episode horizon (or epoch cutoff).
-        """
-
-        path_slice = slice(self.path_start_idx, self.ptr)
-        rews = np.append(self.rew_buf[path_slice], last_val)
-        vals = np.append(self.val_buf[path_slice], last_val)
-        
-        # the next two lines implement GAE-Lambda advantage calculation
-        deltas = rews[:-1] + self.gamma * vals[1:] - vals[:-1]
-        self.adv_buf[path_slice] = core.discount_cumsum(deltas, self.gamma * self.lam)
-        
-        # the next line computes rewards-to-go, to be targets for the value function
-        self.ret_buf[path_slice] = core.discount_cumsum(rews, self.gamma)[:-1]
-        
-        self.path_start_idx = self.ptr
-
-    def get(self):
-        """
-        Call this at the end of an epoch to get all of the data from
-        the buffer, with advantages appropriately normalized (shifted to have
-        mean zero and std one). Also, resets some pointers in the buffer.
-        """
-        assert self.ptr == self.max_size    # buffer has to be full before you can get
-        self.ptr, self.path_start_idx = 0, 0
-        # the next two lines implement the advantage normalization trick
-        adv_mean, adv_std = mpi_statistics_scalar(self.adv_buf)
-        self.adv_buf = (self.adv_buf - adv_mean) / adv_std
-        return [self.obs_buf, self.act_buf, self.adv_buf, 
-                self.ret_buf, self.logp_buf]
-
-
-"""
-
-Proximal Policy Optimization (by clipping), 
-
-with early stopping based on approximate KL
-
-"""
-def ppo(env_fn, actor_critic=core.mlp_actor_critic, ac_kwargs=dict(), seed=0, 
-        steps_per_epoch=4000, epochs=50, gamma=0.99, clip_ratio=0.2, pi_lr=3e-4,
-        vf_lr=1e-3, train_pi_iters=80, train_v_iters=80, lam=0.97, max_ep_len=1000,
-        target_kl=0.01, logger_kwargs=dict(), save_freq=10):
+  def store(self, obs, act, rew, val, logp):
     """
-
-    Args:
-        env_fn : A function which creates a copy of the environment.
-            The environment must satisfy the OpenAI Gym API.
-
-        actor_critic: A function which takes in placeholder symbols 
-            for state, ``x_ph``, and action, ``a_ph``, and returns the main 
-            outputs from the agent's Tensorflow computation graph:
-
-            ===========  ================  ======================================
-            Symbol       Shape             Description
-            ===========  ================  ======================================
-            ``pi``       (batch, act_dim)  | Samples actions from policy given 
-                                           | states.
-            ``logp``     (batch,)          | Gives log probability, according to
-                                           | the policy, of taking actions ``a_ph``
-                                           | in states ``x_ph``.
-            ``logp_pi``  (batch,)          | Gives log probability, according to
-                                           | the policy, of the action sampled by
-                                           | ``pi``.
-            ``v``        (batch,)          | Gives the value estimate for states
-                                           | in ``x_ph``. (Critical: make sure 
-                                           | to flatten this!)
-            ===========  ================  ======================================
-
-        ac_kwargs (dict): Any kwargs appropriate for the actor_critic 
-            function you provided to PPO.
-
-        seed (int): Seed for random number generators.
-
-        steps_per_epoch (int): Number of steps of interaction (state-action pairs) 
-            for the agent and the environment in each epoch.
-
-        epochs (int): Number of epochs of interaction (equivalent to
-            number of policy updates) to perform.
-
-        gamma (float): Discount factor. (Always between 0 and 1.)
-
-        clip_ratio (float): Hyperparameter for clipping in the policy objective.
-            Roughly: how far can the new policy go from the old policy while 
-            still profiting (improving the objective function)? The new policy 
-            can still go farther than the clip_ratio says, but it doesn't help
-            on the objective anymore. (Usually small, 0.1 to 0.3.)
-
-        pi_lr (float): Learning rate for policy optimizer.
-
-        vf_lr (float): Learning rate for value function optimizer.
-
-        train_pi_iters (int): Maximum number of gradient descent steps to take 
-            on policy loss per epoch. (Early stopping may cause optimizer
-            to take fewer than this.)
-
-        train_v_iters (int): Number of gradient descent steps to take on 
-            value function per epoch.
-
-        lam (float): Lambda for GAE-Lambda. (Always between 0 and 1,
-            close to 1.)
-
-        max_ep_len (int): Maximum length of trajectory / episode / rollout.
-
-        target_kl (float): Roughly what KL divergence we think is appropriate
-            between new and old policies after an update. This will get used 
-            for early stopping. (Usually small, 0.01 or 0.05.)
-
-        logger_kwargs (dict): Keyword args for EpochLogger.
-
-        save_freq (int): How often (in terms of gap between epochs) to save
-            the current policy and value function.
-
+    "Append one timestep of agent-environment interaction to the buffer." -OpenAI
     """
+    # make sure we have room in the buffer to add this time step
+    assert self.ptr < self.max_size
 
-    logger = EpochLogger(**logger_kwargs)
-    logger.save_config(locals())
+    self.obs_buf[self.ptr] = obs
+    self.act_buf[self.ptr] = act
+    self.ret_buf[self.ptr] = rew
+    self.val_buf[self.ptr] = val
+    self.logp_buf[self.ptr] = logp
 
-    seed += 10000 * proc_id()
-    tf.set_random_seed(seed)
-    np.random.seed(seed)
+    self.ptr += 1
+  
+  def finish_path(self, last_val=0):
+    """
+    "Call this at the end of a trajectory, or when one gets cut off
+    by an epoch ending.  This looks back in the buffer to where the
+    trajectory started, and uses rewards and value etimates from
+    the whole trajectory to compute advantage estimates with GAE-Lambda,
+    as well as compute the rewards-to-go for each state, to use as
+    the targets for the value function.
 
-    env = env_fn()
-    obs_dim = env.observation_space.shape
-    act_dim = env.action_space.shape
+    The 'last_val' argument should be 0 if the trajectory ended
+    because the agent reached a terminal state (died), and otherwise
+    should be V(s_T), the value function estimated for the last state.
+    This allows us to bootstrap the reward-to-go calculation to account
+    for timesteps beyond the arbitrary episode horizon (or epoch cutoff)."
+    -OpenAI
+    """
+    # a slice object which can be used to index into arrays
+    # to get the relevant data for the current path
+    path_slice = slice(self.path_start_idx, self.ptr)
+
+    # rewards & vals for this path, including the value estimate
+    # of the final state in the path [0 if it is a terminal state]
+    rews = np.append(self.rew_buf[path_slice], last_val)
+    vals = np.append(self.val_buf[path_slice], last_val)
+
+    # "the next two lines implement GAE-Lambda" advantage calculation" -OpenAI
+
+    # okay, I'm gonna put in some comments to explain what is going on here.
+
+    # first we calculate 'deltas'.  This is an array such that
+    # deltas[i] = (rews[i] + gamma * vals[i + 1]) - vals[i]
+    # in other words, deltas[i] is the difference between our 
+    # new estimate of the value of the state[i], and 
+    # the previous value function's estimate of the value of state i
+    # 
+    # our new estimate of value[state[i]]
+    # is based on the reward achieved at time step i, plus our old value
+    # function's estimate of the value of state[i + 1]
+
+    # so deltas[i] is an estimate of how much better the trajectory
+    # was than the expected values for the current policy.
+    # Note that this estimate is based ONLY ON ONE REWARD,
+    # namely that received at time step i.
+    deltas = rews[:-1] + self.gamma * vals[1:] - vals[:-1]
+
+    # then we determine the "advantage" for each of these times
+    # functionally, adv_buf[i] is similar to deltas[i] in that
+    # it provides a measure of how much better this trajectory was
+    # than that expected under the given policy.
+    # however, this measure of advantage integrates information
+    # from the entire trajectory, rather than just from a single reward
     
-    # Share information about action space with policy architecture
-    ac_kwargs['action_space'] = env.action_space
+    # adv_buf[i] = delta_i + gamma * lambda * delta_(i + 1) + (gamma * lambda)^2 * delta_(i + 2) + ...
+    # in other words, it is a sum of the delta value throughout the future of this trajectory,
+    # there the term of delta[i + k] is discounted by (gamma * lambda)^k = lambda^k * gamma^k
+    # Discounting by gamma^k is expected, since delta[i + k] occurs k time steps in the future.
+    # we discount by lambda^k based on the approximation that the the further in the future
+    # we go, the less influence the current state has on the reward recieved.
+    # in other words, we have the lambda term so that we consider advantage observed very far
+    # in the future to have less to do with present actions than advantage observed in the short term
+    self.adv_buf[path_slice] = core.discount_cumsum(deltas, self.gamma * self.lam)[:-1]
 
-    # Inputs to computation graph
-    x_ph, a_ph = core.placeholders_from_spaces(env.observation_space, env.action_space)
-    adv_ph, ret_ph, logp_old_ph = core.placeholders(None, None, None)
+    # TODO: consider integrating eligibility traces into this implementation
+    # this may already be done in some form which I just haven't understood yet,
+    # and it may be that the format of the algorithm doesn't allow for it to be
+    # done in any useful way, but this is worth coming back to. -george 2019-02-16
 
-    # Main outputs from computation graph
-    pi, logp, logp_pi, v = actor_critic(x_ph, a_ph, **ac_kwargs)
+    # fill in the return buffer with the discounted sum of the rewards
+    # recieved during this path
+    self.ret_buf[path_slice] = core.discount_cumsum(rews, self.gamma)[:-1]
 
-    # Need all placeholders in *this* order later (to zip with data from buffer)
-    all_phs = [x_ph, a_ph, adv_ph, ret_ph, logp_old_ph]
+    # advance the path_start_idx so it points to the beginning
+    # of the next path which will be put into the buffer
+    self.path_start_idx = self.ptr
 
-    # Every step, get: action, value, and logprob
-    get_action_ops = [pi, v, logp_pi]
+  def get(self):
+    """
+    "Call this at the end of an epoch to get all of the data from
+    the buffer, with advantages appropriately normalized (shifted to have
+    mean zero and std one).  Also, resets some pointers in the buffer."
+    -OpenAI
 
-    # Experience buffer
-    local_steps_per_epoch = int(steps_per_epoch / num_procs())
-    buf = PPOBuffer(obs_dim, act_dim, local_steps_per_epoch, gamma, lam)
+    Returns the list of vectors [obs_buf, act_buf, adv_buf, ret_buf, logp_buf].
 
-    # Count variables
-    var_counts = tuple(core.count_vars(scope) for scope in ['pi', 'v'])
-    logger.log('\nNumber of parameters: \t pi: %d, \t v: %d\n'%var_counts)
+    NOTE:
+    I am concerned that something is lost by normalizing.  For example,
+    it is possible that during this epoch, we had an advantage with a very high
+    mean, because the actions taken during the trajectories happened to be quite
+    a bit better.  If we normalize, we lose the information that this
+    epoch represented a solid improvement; instead we just learn which
+    particular actions tried out during this epoch gave the biggest
+    improvement.  We don't just care how the actions in this trajectory
+    compare to one another, though; we care about how they compare to all
+    possible actions, including ones we didn't try.
 
-    # PPO objectives
-    ratio = tf.exp(logp - logp_old_ph)          # pi(a|s) / pi_old(a|s)
-    min_adv = tf.where(adv_ph>0, (1+clip_ratio)*adv_ph, (1-clip_ratio)*adv_ph)
-    pi_loss = -tf.reduce_mean(tf.minimum(ratio * adv_ph, min_adv))
-    v_loss = tf.reduce_mean((ret_ph - v)**2)
+    That said, since this sample was just sampled from the given trajectory,
+    we expect the mean advantage to already be close to 0, since we expect
+    our value function is already pretty accurate to the mean performance of
+    trajectories under this policy.  Thus renormalizing to a mean of zero
+    usually shouldn't represent a big change, and it may be that the mathematical
+    convenience of this is worth it.  It may also be that there is a more fundamentally
+    important reason to normalize which I'm not currently understanding.
 
-    # Info (useful to watch during learning)
-    approx_kl = tf.reduce_mean(logp_old_ph - logp)      # a sample estimate for KL-divergence, easy to compute
-    approx_ent = tf.reduce_mean(-logp)                  # a sample estimate for entropy, also easy to compute
-    clipped = tf.logical_or(ratio > (1+clip_ratio), ratio < (1-clip_ratio))
-    clipfrac = tf.reduce_mean(tf.cast(clipped, tf.float32))
+    TODO: consider whether we should change this so it DOES NOT normalize advantages
+    (or just don't normalize the mean, even if you do normalize the variance)
+    """
+    # "buffer has to be full before you can get" -OpenAI
+    assert self.ptr == self.max_size
+    self.ptr, self.path_start_idx = 0, 0
 
-    # Optimizers
-    train_pi = MpiAdamOptimizer(learning_rate=pi_lr).minimize(pi_loss)
-    train_v = MpiAdamOptimizer(learning_rate=vf_lr).minimize(v_loss)
+    # "the next two lines implement the advantage normalization trick" -OpenAI
+    adv_mean, adv_std = mpi_statistics_scalar(self.adv_buf) # TODO: import openAI mpi statistics stuff
+    self.adv_buf = (self.adv_buf - adv_mean) / adv_std
 
-    sess = tf.Session()
-    sess.run(tf.global_variables_initializer())
-
-    # Sync params across processes
-    sess.run(sync_all_params())
-
-    # Setup model saving
-    logger.setup_tf_saver(sess, inputs={'x': x_ph}, outputs={'pi': pi, 'v': v})
-
-    def update():
-        inputs = {k:v for k,v in zip(all_phs, buf.get())}
-        pi_l_old, v_l_old, ent = sess.run([pi_loss, v_loss, approx_ent], feed_dict=inputs)
-
-        # Training
-        for i in range(train_pi_iters):
-            _, kl = sess.run([train_pi, approx_kl], feed_dict=inputs)
-            kl = mpi_avg(kl)
-            if kl > 1.5 * target_kl:
-                logger.log('Early stopping at step %d due to reaching max kl.'%i)
-                break
-        logger.store(StopIter=i)
-        for _ in range(train_v_iters):
-            sess.run(train_v, feed_dict=inputs)
-
-        # Log changes from update
-        pi_l_new, v_l_new, kl, cf = sess.run([pi_loss, v_loss, approx_kl, clipfrac], feed_dict=inputs)
-        logger.store(LossPi=pi_l_old, LossV=v_l_old, 
-                     KL=kl, Entropy=ent, ClipFrac=cf,
-                     DeltaLossPi=(pi_l_new - pi_l_old),
-                     DeltaLossV=(v_l_new - v_l_old))
-
-    start_time = time.time()
-    o, r, d, ep_ret, ep_len = env.reset(), 0, False, 0, 0
-
-    # Main loop: collect experience in env and update/log each epoch
-    for epoch in range(epochs):
-        for t in range(local_steps_per_epoch):
-            a, v_t, logp_t = sess.run(get_action_ops, feed_dict={x_ph: o.reshape(1,-1)})
-
-            # save and log
-            buf.store(o, a, r, v_t, logp_t)
-            logger.store(VVals=v_t)
-
-            o, r, d, _ = env.step(a[0])
-            ep_ret += r
-            ep_len += 1
-
-            terminal = d or (ep_len == max_ep_len)
-            if terminal or (t==local_steps_per_epoch-1):
-                if not(terminal):
-                    print('Warning: trajectory cut off by epoch at %d steps.'%ep_len)
-                # if trajectory didn't reach terminal state, bootstrap value target
-                last_val = r if d else sess.run(v, feed_dict={x_ph: o.reshape(1,-1)})
-                buf.finish_path(last_val)
-                if terminal:
-                    # only save EpRet / EpLen if trajectory finished
-                    logger.store(EpRet=ep_ret, EpLen=ep_len)
-                o, r, d, ep_ret, ep_len = env.reset(), 0, False, 0, 0
-
-        # Save model
-        if (epoch % save_freq == 0) or (epoch == epochs-1):
-            logger.save_state({'env': env}, None)
-
-        # Perform PPO update!
-        update()
-
-        # Log info about epoch
-        logger.log_tabular('Epoch', epoch)
-        logger.log_tabular('EpRet', with_min_and_max=True)
-        logger.log_tabular('EpLen', average_only=True)
-        logger.log_tabular('VVals', with_min_and_max=True)
-        logger.log_tabular('TotalEnvInteracts', (epoch+1)*steps_per_epoch)
-        logger.log_tabular('LossPi', average_only=True)
-        logger.log_tabular('LossV', average_only=True)
-        logger.log_tabular('DeltaLossPi', average_only=True)
-        logger.log_tabular('DeltaLossV', average_only=True)
-        logger.log_tabular('Entropy', average_only=True)
-        logger.log_tabular('KL', average_only=True)
-        logger.log_tabular('ClipFrac', average_only=True)
-        logger.log_tabular('StopIter', average_only=True)
-        logger.log_tabular('Time', time.time()-start_time)
-        logger.dump_tabular()
-
-if __name__ == '__main__':
-    import argparse
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--env', type=str, default='HalfCheetah-v2')
-    parser.add_argument('--hid', type=int, default=64)
-    parser.add_argument('--l', type=int, default=2)
-    parser.add_argument('--gamma', type=float, default=0.99)
-    parser.add_argument('--seed', '-s', type=int, default=0)
-    parser.add_argument('--cpu', type=int, default=4)
-    parser.add_argument('--steps', type=int, default=4000)
-    parser.add_argument('--epochs', type=int, default=50)
-    parser.add_argument('--exp_name', type=str, default='ppo')
-    args = parser.parse_args()
-
-    mpi_fork(args.cpu)  # run parallel code with mpi
-
-    from spinup.utils.run_utils import setup_logger_kwargs
-    logger_kwargs = setup_logger_kwargs(args.exp_name, args.seed)
-
-    ppo(lambda : gym.make(args.env), actor_critic=core.mlp_actor_critic,
-        ac_kwargs=dict(hidden_sizes=[args.hid]*args.l), gamma=args.gamma, 
-        seed=args.seed, steps_per_epoch=args.steps, epochs=args.epochs,
-        logger_kwargs=logger_kwargs)
+    return [self.obs_buf, self.act_buf, self.adv_buf, self.ret_buf, self.logp_buf]
