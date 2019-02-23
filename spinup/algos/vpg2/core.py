@@ -40,12 +40,20 @@ def type_from_space(space):
 def placeholders_from_spaces(*args):
     return [placeholder_from_space(space) for space in args]
 
-def mlp(x, hidden_sizes=(32,), activation=tf.tanh, output_activation=None):
-    # support for scalar inputs, eg. discrete observation spaces
-    if len(x.shape) == 1:
+def mlp(x, hidden_sizes=(64,64,), activation=tf.tanh, output_activation=None, one_hot = None):
+    # support for discrete imputs
+    if one_hot != None:
+        assert(len(x.shape) == 1)
+        x = tf.one_hot(x, depth=one_hot)
+    # support for scalar inputs
+    elif len(x.shape) == 1:
         x = x[:,None]
+
+    print ('mlp: ', x.shape)
+
     if x.dtype not in [tf.bfloat16, tf.float16, tf.float32, tf.float64, tf.complex64, tf.complex128]:
         x = tf.dtypes.cast(x, tf.float32)
+
     for h in hidden_sizes[:-1]:
         x = tf.layers.dense(x, units=h, activation=activation)
     return tf.layers.dense(x, units=hidden_sizes[-1], activation=output_activation)
@@ -83,9 +91,9 @@ def discount_cumsum(x, discount):
 Policies
 """
 
-def mlp_categorical_policy(x, a, hidden_sizes, activation, output_activation, action_space):
+def mlp_categorical_policy(x, a, hidden_sizes, activation, output_activation, action_space, one_hot = None):
     act_dim = action_space.n
-    logits = mlp(x, list(hidden_sizes)+[act_dim], activation, None)
+    logits = mlp(x, list(hidden_sizes)+[act_dim], activation, None, one_hot)
     logp_all = tf.nn.log_softmax(logits)
     pi = tf.squeeze(tf.multinomial(logits,1), axis=1)
     logp = tf.reduce_sum(tf.one_hot(a, depth=act_dim) * logp_all, axis=1)
@@ -94,7 +102,7 @@ def mlp_categorical_policy(x, a, hidden_sizes, activation, output_activation, ac
 
 def mlp_gaussian_policy(x, a, hidden_sizes, activation, output_activation, action_space):
     act_dim = a.shape.as_list()[-1]
-    mu = mlp(x, list(hidden_sizes)+[act_dim], activation, output_activation)
+    mu = mlp(x, list(hidden_sizes)+[act_dim], activation, output_activation, one_hot)
     log_std = tf.get_variable(name='log_std', initializer=-0.5*np.ones(act_dim, dtype=np.float32))
     std = tf.exp(log_std)
     pi = mu + tf.random_normal(tf.shape(mu)) * std
@@ -105,8 +113,13 @@ def mlp_gaussian_policy(x, a, hidden_sizes, activation, output_activation, actio
 """
 Actor-Critics
 """
-def mlp_actor_critic(x, a, hidden_sizes=(64,64), activation=tf.tanh,
-                     output_activation=None, policy=None, action_space=None):
+def mlp_actor_critic(x, a, hidden_sizes=(64,64), activation=tf.math.tanh,
+                     output_activation=None, policy=None, action_space=None, observation_space = None):
+
+    if isinstance(observation_space, Discrete):
+        one_hot = observation_space.n
+    else:
+        one_hot = None
 
     # default policy builder depends on action space
     if policy is None and isinstance(action_space, Box):
@@ -115,9 +128,9 @@ def mlp_actor_critic(x, a, hidden_sizes=(64,64), activation=tf.tanh,
         policy = mlp_categorical_policy
 
     with tf.variable_scope('pi'):
-        pi, logp, logp_pi = policy(x, a, hidden_sizes, activation, output_activation, action_space)
+        pi, logp, logp_pi = policy(x, a, hidden_sizes, activation, output_activation, action_space, one_hot)
     with tf.variable_scope('v'):
-        v = tf.squeeze(mlp(x, list(hidden_sizes)+[1], activation, None), axis=1)
+        v = tf.squeeze(mlp(x, list(hidden_sizes)+[1], activation, None, one_hot), axis=1)
     return pi, logp, logp_pi, v
 
 
