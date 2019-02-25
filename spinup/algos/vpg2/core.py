@@ -41,15 +41,13 @@ def placeholders_from_spaces(*args):
     return [placeholder_from_space(space) for space in args]
 
 def mlp(x, hidden_sizes=(64,64,), activation=tf.tanh, output_activation=None, one_hot = None):
-    # support for discrete imputs
+    # support for discrete inputs
     if one_hot != None:
         assert(len(x.shape) == 1)
         x = tf.one_hot(x, depth=one_hot)
     # support for scalar inputs
     elif len(x.shape) == 1:
         x = x[:,None]
-
-    print ('mlp: ', x.shape)
 
     if x.dtype not in [tf.bfloat16, tf.float16, tf.float32, tf.float64, tf.complex64, tf.complex128]:
         x = tf.dtypes.cast(x, tf.float32)

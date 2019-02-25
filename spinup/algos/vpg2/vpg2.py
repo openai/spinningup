@@ -10,8 +10,8 @@ import gym
 env = gym.make('CartPole-v1')
 n = 1000000
 lr = 3e-4
-train_iters=3
-v_loss_ratio=100
+train_iters=5
+v_loss_ratio=1000
 epochs = 1000
 display = epochs # number of update panels to show
 steps_per_epoch = 4000
@@ -33,7 +33,7 @@ rew_buf = np.zeros(dtype=np.float32, shape=(steps_per_epoch,))
 # did the agent just die? Replace all future rewards by zero.
 msk_buf = np.zeros(dtype=np.float32, shape=(steps_per_epoch,))
 
-# Did this trajectory get terminated by epoch or max_ep_len? Replace reward by value netwrok output
+# Did this trajectory get terminated by epoch or max_ep_len? Replace reward by value network output
 end_buf = np.zeros(dtype=np.float32, shape=(steps_per_epoch,))
 
 obs_buf_ph = tf.placeholder(dtype=core.type_from_space(env.observation_space), \
@@ -51,20 +51,24 @@ pi_buf, logp_buf, logp_pi_buf, v_buf = actor_critic(obs_buf_ph, act_buf_ph, **ac
 
 rew_buf_adjusted = rew_buf_ph * (1 - end_buf_ph) + v_buf * end_buf_ph
 
-ret_buf = core.masked_suffix_sum(rew_buf_adjusted, msk_buf_ph, gamma, axis=0, last_val=v_buf[-1])
+ret_buf = core.masked_suffix_sum(rew_buf_adjusted, msk_buf_ph, gamma, axis=0, last_val=None)
 ret_buf = tf.stop_gradient(ret_buf)
 
 v_loss = tf.math.sqrt(tf.reduce_mean((ret_buf - v_buf)**2))
 
-delta_buf = rew_buf_adjusted[:-1] + gamma * v_buf[1:] * (1 - msk_buf_ph[:-1]) - v_buf[:-1]
-adv_buf = core.masked_suffix_sum(delta_buf, msk_buf_ph[:-1], gamma * lam, axis=0, last_val=0)
+delta_buf = rew_buf_adjusted[:-1] #+ gamma * v_buf[1:] * (1 - msk_buf_ph[:-1]) - v_buf[:-1]
+adv_buf = core.masked_suffix_sum(delta_buf, msk_buf_ph[:-1], gamma * lam, axis=0, last_val=None)
 mean, var = tf.nn.moments(adv_buf, axes=[0])
+raw_adv = adv_buf
 adv_buf = (adv_buf - mean) / tf.math.sqrt(var)
 adv_buf = tf.stop_gradient(adv_buf)
 
 pi_loss = -tf.reduce_mean(logp_buf[:-1] * adv_buf)
 
 train = MpiAdamOptimizer(learning_rate=lr).minimize(pi_loss+v_loss*v_loss_ratio)
+
+train_pi = MpiAdamOptimizer(learning_rate=3e-4).minimize(pi_loss)
+train_v = MpiAdamOptimizer(learning_rate=1e-3).minimize(v_loss)
 
 sess = tf.Session()
 sess.run(tf.global_variables_initializer())
@@ -102,12 +106,12 @@ for epoch in range(epochs):
     # print (mean_, np.sqrt(var_))
 
     pi_loss_1, v_loss_1 = sess.run([pi_loss, v_loss], feed_dict=bufs_dict)
-    '''
-    if epoch % 10 == 0:
-        adv_buf_, ret_buf_, val_buf_ = sess.run([adv_buf, ret_buf, v_buf], feed_dict=bufs_dict)
-        for i in range(200):
-            print (adv_buf_[i], ret_buf_[i], val_buf_[i], msk_buf[i], end_buf[i], act_buf[i], obs_buf[i])
-    '''
+    
+    if epoch % 25 == 0:
+        raw_adv_, adv_buf_, ret_buf_, val_buf_, logp_buf_ = sess.run([raw_adv, adv_buf, ret_buf, v_buf, logp_buf], feed_dict=bufs_dict)
+        for i in range(600):
+            print (raw_adv_[i], adv_buf_[i], ret_buf_[i], val_buf_[i], msk_buf[i], end_buf[i], act_buf[i], logp_buf_[i], obs_buf[i])
+    
 
     #entropy, advantage = sess.run([logp_buf, adv_buf], feed_dict=bufs_dict)
 
@@ -116,8 +120,12 @@ for epoch in range(epochs):
     #print (np.around(entropy, decimals=1))
     #print (np.around(advantage, decimals=1))
 
-    for _ in range(train_iters):
+    for _ in range(5):
         sess.run(train, feed_dict=bufs_dict)
+        '''
+    for _ in range(80):
+        sess.run(train_v, feed_dict=bufs_dict)
+        '''
 
     pi_loss_2, v_loss_2 = sess.run([pi_loss, v_loss], feed_dict=bufs_dict)
 
