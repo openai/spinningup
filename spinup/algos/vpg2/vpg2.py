@@ -6,8 +6,8 @@ import math
 
 import gym
 #env = gym.make('FrozenLake-v0')
-#env = gym.make('Swimmer-v2')
-env = gym.make('CartPole-v1')
+env = gym.make('Swimmer-v2')
+#env = gym.make('CartPole-v1')
 n = 1000000
 lr = 3e-4
 train_iters=5
@@ -89,7 +89,7 @@ for epoch in range(epochs):
         a = sess.run(pi_buf, feed_dict = {obs_buf_ph:obs})[0]
         obs, rew, done, _ = env.step(a)
         j += 1
-        should_end = (j >= max_ep_len or i == steps_per_epoch-1) and (not done)
+        should_end = j >= max_ep_len or ((i == steps_per_epoch-1) and (not done))
         done = done or should_end
         #if epoch % 20 == 0 and i < 500:
         #    env.render()
@@ -108,9 +108,9 @@ for epoch in range(epochs):
     pi_loss_1, v_loss_1 = sess.run([pi_loss, v_loss], feed_dict=bufs_dict)
     
     if epoch % 25 == 0:
-        raw_adv_, adv_buf_, ret_buf_, val_buf_, logp_buf_ = sess.run([raw_adv, adv_buf, ret_buf, v_buf, logp_buf], feed_dict=bufs_dict)
+        raw_adv_, adv_buf_, ret_buf_, rew_buf_adjusted_, val_buf_, logp_buf_ = sess.run([raw_adv, adv_buf, ret_buf, rew_buf_adjusted, v_buf, logp_buf], feed_dict=bufs_dict)
         for i in range(600):
-            print (raw_adv_[i], adv_buf_[i], ret_buf_[i], val_buf_[i], msk_buf[i], end_buf[i], act_buf[i], logp_buf_[i], obs_buf[i])
+            print (raw_adv_[i], adv_buf_[i], ret_buf_[i], rew_buf_adjusted_[i], val_buf_[i], msk_buf[i], end_buf[i], act_buf[i], logp_buf_[i], obs_buf[i])
     
 
     #entropy, advantage = sess.run([logp_buf, adv_buf], feed_dict=bufs_dict)
@@ -120,12 +120,12 @@ for epoch in range(epochs):
     #print (np.around(entropy, decimals=1))
     #print (np.around(advantage, decimals=1))
 
-    for _ in range(5):
-        sess.run(train, feed_dict=bufs_dict)
-        '''
+    for _ in range(3):
+        sess.run(train_pi, feed_dict=bufs_dict)
+        
     for _ in range(80):
         sess.run(train_v, feed_dict=bufs_dict)
-        '''
+        
 
     pi_loss_2, v_loss_2 = sess.run([pi_loss, v_loss], feed_dict=bufs_dict)
 

@@ -98,7 +98,7 @@ def mlp_categorical_policy(x, a, hidden_sizes, activation, output_activation, ac
     logp_pi = tf.reduce_sum(tf.one_hot(pi, depth=act_dim) * logp_all, axis=1)
     return pi, logp, logp_pi
 
-def mlp_gaussian_policy(x, a, hidden_sizes, activation, output_activation, action_space):
+def mlp_gaussian_policy(x, a, hidden_sizes, activation, output_activation, action_space, one_hot = None):
     act_dim = a.shape.as_list()[-1]
     mu = mlp(x, list(hidden_sizes)+[act_dim], activation, output_activation, one_hot)
     log_std = tf.get_variable(name='log_std', initializer=-0.5*np.ones(act_dim, dtype=np.float32))
@@ -111,7 +111,7 @@ def mlp_gaussian_policy(x, a, hidden_sizes, activation, output_activation, actio
 """
 Actor-Critics
 """
-def mlp_actor_critic(x, a, hidden_sizes=(64,64), activation=tf.math.tanh,
+def mlp_actor_critic(x, a, hidden_sizes=(64,64), activation=tf.tanh,
                      output_activation=None, policy=None, action_space=None, observation_space = None):
 
     if isinstance(observation_space, Discrete):

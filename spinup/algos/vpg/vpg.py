@@ -188,7 +188,7 @@ def vpg(env_fn, actor_critic=core.mlp_actor_critic, ac_kwargs=dict(), seed=0,
 
     # VPG objectives
     pi_loss = -tf.reduce_mean(logp * adv_ph)
-    v_loss = tf.math.sqrt(tf.reduce_mean((ret_ph - v)**2))
+    v_loss = tf.reduce_mean((ret_ph - v)**2)
 
     # Info (useful to watch during learning)
     approx_kl = tf.reduce_mean(logp_old_ph - logp)      # a sample estimate for KL-divergence, easy to compute
