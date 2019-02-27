@@ -295,9 +295,47 @@ Actor-Critics
 """
 def mlp_actor_critic(x, a, hidden_sizes=(64, 64), activation=tf.tanh
                      output_activation=None, policy=None, action_space=None):
-    
+  """
+  Constructs the tensorflow graph for a policy and value function.
+
+  Selects the type of policy to use depending on whether the
+  action space is continuous or discrete.  Policies
+  and value function are based on mlps with the given
+  hidden_sizes and activation.
+
+  Returns the following outputs from the tensorflow graph:
+
+  `pi` - an action to perform according to this policy given input `x`
+  `logp_pi` - the log of the probability (or pdf) of the policy
+    choosing this action given `x`
+  `logp` - the log probability (or pdf) of the policy choosing
+    the action `a` given `x`.  (So we have a way in the tensorflow
+    graph to find the probabilities of actions being selected
+    which we never actually selected in the current state of the mlp.)
+  `v` - the output from our value function estimator
+
+  TODO: make this functionmore extensible.
+  we might want different hidden_sizes and
+  activation functions for the value function and the policy,
+  but right now this function forces the same for both!
+  """
+
   # "defalut policy builder depends on action space" -OpenAI
+  # in other words, the policy works differently if we have
+  # a discrete action space vs a continuous action space
   if policy is None and isinstance(action_space, Box):
     policy = mlp_gaussian_policy
   elif policy is None and isinstance(action_space, Discrete):
-    policy = mlp.categorical_policy
+    policy = mlp_categorical_policy
+
+  # construct the tensorflow graph for the chosen type of policy
+  # and encapsulate it in the tf scope "pi"
+  with tf.variable_scope('pi'):
+    pi, logp, logp_pi = policy(x, a, hidden_sizes, activation, output_activation, action_space)
+
+  # also construct an mlp for the value function
+  with tf.variable_scope('v'):
+    v = tf.squeeze(mlp(x, list(hidden_sizes)+[1], activation, None), axis=1)
+
+  # return the important outputs of the tensorflow graph
+  return pi, logp, logp_pi, v
