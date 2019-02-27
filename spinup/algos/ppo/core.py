@@ -149,7 +149,27 @@ Policies
 """
 
 def mlp_categorical_policy(x, a, hidden_sizes, activation, output_activation, action_space):
-  # number of actions possible...they are numbered 0 through n
+  """
+  Constructs the tensorflow graph for a mlp-based policy over a discrete action space.
+
+  Returns pointers to tensors in the constructed graph which are relevant outputs:
+  
+  `pi` - A tensor which is the index of the action to perform given input `x`
+  `logp_pi` - The log of the probability that `pi` was chosen
+  `logp` - The log of the probability that the policy would select action `a` given
+    input `x` in the current state of the mlp.
+
+  Note that this can also be used with `x` as a vector with several state vectors
+  within, mapping to `pi`/`a` - a vector containing multiple actions to take, corresponding
+  to the elements in the state vector.  In this case, the logp values are the log probabilities
+  of the entire trajectory given by x and pi / x and a.
+
+  For more commentary on why it makes sense to return `logp` and `logp_pi` in the same function,
+  see comments for `mlp_gaussian_policy`.  (Short version: we aren't computing anything;
+  we are just constructing the tensorflow graph.)
+  """
+
+  # number of actions possible...they are numbered 0 through n-1
   act_dim = action_space.n
 
   # get a tensorflow neural network to give us a vector output
@@ -157,32 +177,46 @@ def mlp_categorical_policy(x, a, hidden_sizes, activation, output_activation, ac
   logits = mlp(x, list(hidden_sizes)+[act_dim], activation, None)
 
   # then do a softmax to normalize the probabilities
-  # so logp_ll is the log of the normalized probabilities of each action
+  # so logp_all is the log of the normalized probabilities of each action
   logp_all = tf.nn.log_softmax(logits)
 
-  # squeeze removes all dimensions of size one
+
+  # now, create `pi`,
+  # which will be a tensor containing the index
+  # of the action we have selected (randomly, according to the
+  # probabilities implied by the neural network)
+
+  # the line that does this is dense, so here is some commentary:
+  # squeeze removes all dimensions of size one, and
   # multinomial draws samples according to the multinomial distribution,
   # ie. according to the probabilities implied by the logits
   # https://www.tensorflow.org/api_docs/python/tf/random/multinomial
   # TODO: tf is deprecating multinomial;
-  # we should change this to tf.random.categorical instead
-
-  # we use these functions to create `pi`,
-  # which will be a tensor containing the index
-  # of the action we have selected (randomly, according to the
-  # probabilities implied by the neural network)
+  # we should probably change this to tf.random.categorical instead
   pi = tf.squeeze(tf.multinomial(logits, 1), axis=1)
 
-  # TODO: come back and document this
-  logp = tf.reducesum(tf.one_hot(a, depth=act_dim) * logp_all, axis=1)
-
+  # calculate the log of the  probability of selecting the specific
+  # actions (pi / a) given states x
+  # to do this, use a one_hot on the action index to get a vector
+  # with a one in that slot and 0s elsewhere,
+  # then dot with logp_all (which we already constructed)
+  # to get a the value of the probability of that specific action
+  # reduce_sum will give us a tensor which is just a number with this value
+  # (or the sum of the log probs of multiple actions, if we used this
+  # function to calculate probabilities over a trajectory, ie.
+  # x and a/pi both contain several elements, representing different
+  # actions to take in different states.
+  # in this case, by summing the log probs, we essentially
+  # log the product of individual probabilities, ie. finding
+  # the log prob of the entire trajectory)
+  logp = tf.reduce_sum(tf.one_hot(a, depth=act_dim) * logp_all, axis=1)
   logp_pi = tf.reduce_sum(tf.one_hot(pi, depth=act_dim) * logp_all, axis=1)
 
   return pi, logp, logp_pi
 
 def mlp_gaussian_policy(x, a, hidden_sizes, activation, output_activation, action_space):
   """
-  Constructs the tensorflow graph for a gaussian policy over a continuous action space.
+  Constructs the tensorflow graph for a mlp-based gaussian policy over a continuous action space.
 
   In other words, this constructs a neural network (mlp) which maps from the state (x)
   to actions.  It then appends onto the tensorflow graph the addition of random
