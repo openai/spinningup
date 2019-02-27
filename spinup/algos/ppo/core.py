@@ -113,10 +113,35 @@ def mlp(x, hidden_sizes=(32,), activation=tf.tanh, output_activation=None):
   return tf.layers.dense(x, units=hidden_sizes[-1], activation=output_activation)
 
 def gaussian_likelihood(x, mu, log_std):
+  """
+  Compute the log of the pdf of a gaussian with the given `log_std`
+  evaluated at (`x` - `mu`).
+  
+  In other words, this function returns the log of a measure
+  of how likely it would be for a gaussian with mean `mu` and std
+  exp(`log_std`) to have the value `x` randomly selected from it.
+  This "measure of likelihood" is the probability density function
+  (pdf) for such a gaussian.
 
+  Note that `x`, `mu`, and `log_std`, are vectors, so the pdf
+  of the overall distribution (over all slots in the vectors)
+  is the product of the pdfs of each individual slot.
+  """
+
+  # this expression just calculates the log of the pdf of the gaussian for a single
+  # vector index, as described in the function docstring.
+  # note that since we are taking the *log* of the pdf, we add terms together
+  # which are multiplied together in the pdf
+  # also note that rather than dividing by the std_dev, like we do in the regular pdf,
+  # we divide by (std_dev + EPS), where EPS (epsilon) is a tiny number we include
+  # to ensure that we don't divide by zero if std_dev = 0.
   pre_sum = -0.5 * (((x - mu) / (tf.exp(log_std) + EPS))**2 + 2*log_std + np.log(2 * np.pi))
   
-  # return the sum of the items in the pre_sum vector  
+  # return the sum of the items in the pre_sum vector
+  # since each item is the log of the pdf for a specific index,
+  # when we sum these, we get the log of the product of each
+  # individual pdf -- ie. the log of the pdf evaluated
+  # at this vector as a whole
   return tf.reduce_sum(pre_sum, axis=1)
 
 """
@@ -156,6 +181,46 @@ def mlp_categorical_policy(x, a, hidden_sizes, activation, output_activation, ac
   return pi, logp, logp_pi
 
 def mlp_gaussian_policy(x, a, hidden_sizes, activation, output_activation, action_space):
+  """
+  Constructs the tensorflow graph for a gaussian policy over a continuous action space.
+
+  In other words, this constructs a neural network (mlp) which maps from the state (x)
+  to actions.  It then appends onto the tensorflow graph the addition of random
+  gaussian noise, so that the policy is not deterministic.
+
+  There are several outputs for this tensorflow graph constructed here:
+
+  `pi` - a vector specifying the action
+  this policy has chosen to perform given a specific x.  (This `pi` will be the output
+  from the mlp + the random noise.)
+
+  `logp_pi` - the log of probability (pdf) for this action.
+    In other words, logp_pi gives a measure of how likely it was that, given the
+    current state of the mlp and its parameters, the action pi would be selected
+    after the noise was added in.  (Ie. logp_pi measures how far from the mean
+    the random values were that were selected this time.)
+    Since the action space is continuous, the raw probability of any specific
+    action is zero, so instead of giving the log of that, this returns
+    the log of the probability density function (pdf) describing
+    the likelyhood of the policy (given its current parameters) selecting
+    any given action.
+
+  `logp` - this is similar to logp_pi, as it gives the log of the pdf describing
+    the probabilities of selecting a specific action given the input x (in the current
+    state of the mlp & its parameters). However, instead of giving the log of this pdf
+    evaluated at the action `pi`, this instead evaluates it at the action in the tensor
+    `a` which is passed into this function.
+    
+    (It might seem strange for this function ostentibly outputs both logp and logp_pi--
+    why would the same function handle logp for a specific `pi` we compute given `x` AND
+    for an action `a` we pass in?  Shouldn't these be handled by different functions?
+    Well, keep in mind that this function `mlp_gaussian_policy` is merely constructing
+    a tensorflow graph--it is not actually computing anything.  So yes, finding logp(a)
+    and calculating `pi` given an `x`, and then finding logp_pi, are different actions
+    that are done at different times--but both are based on outputs from the mlp we create
+    here, so we construct the tensorflow graph to handle them in this same function.)
+  """
+
   # Get the length of the action vector
   # (here we are getting the last value in the action_space.shape, but
   # there should only be one value in the action_space vector, since
@@ -170,15 +235,23 @@ def mlp_gaussian_policy(x, a, hidden_sizes, activation, output_activation, actio
   # create a densely connected neural network from inputs `x` to action space
   mu = mlp(x, list(hidden_sizes)+[act_dim], activation, output_activation)
 
+  # set the standard deviation for the noise we calculate to be -1/2
   log_std = tf.get_variable(name='log_std', initializer=-0.5*np.ones(act_dim, dtype=np.float32))
-
   std = tf.exp(log_std)
 
+  # calculate the action `pi` given the state `x` by passing `x` through
+  # the mlp to get mu, then adding in some random guassian noise with the 
+  # proper standard deviation
   pi = mu + tf.random_normal(tf.shape(mu)) * std
 
+  # calculate the log of the pdf of the policy given x & the current
+  # mlp parameters, evaluated either at a given action `a`
+  # or at the `pi` we just computed
   logp = gaussian_likelihood(a, mu, log_std)
   logp_pi = gaussian_likelyhood(pi, mu, log_std)
 
+  # return the important outputs we can now compute from
+  # the tensorflow graph
   return pi, logp, logp_pi
 
 
@@ -191,6 +264,6 @@ def mlp_actor_critic(x, a, hidden_sizes=(64, 64), activation=tf.tanh
     
   # "defalut policy builder depends on action space" -OpenAI
   if policy is None and isinstance(action_space, Box):
-    policy = mpl_gaussian_policy
+    policy = mlp_gaussian_policy
   elif policy is None and isinstance(action_space, Discrete):
     policy = mlp.categorical_policy
