@@ -303,7 +303,10 @@ def ppo(env_fn,
 
   # "Inputs to computation graph" -OpenAI
   # create tensorflow placeholders for observations (x_ph), actions (a_ph),
-  # advantages (adv_ph), returns (ret_ph), log probabilities from the prev run (logp_old_ph)
+  # advantages (adv_ph), returns (ret_ph), log probabilities
+  # in the current state of the policy (logp_old_ph)
+  # (old since this is used compared to the newer version of the policy
+  # we are creating in the optimization step, comparing to this "old" version)
   x_ph, a_ph = core.placeholders_from_spaces(env.observation_space, env.action_space)
   adv_ph, ret_ph, logp_old_ph = core.placeholders(None, None, None)
 
@@ -335,13 +338,49 @@ def ppo(env_fn,
   logger.log('\nNumber of parameters: \t pi: %d, \t v: %d\n'%var_counts)
 
   # PPO objectives
-  # TODO
+  # ratio is the ratio of two probabilities:
+  # pi(a|s) / pi_old(a|s)
+  # where pi(a|s) is the probability of performing action a
+  # given state s GIVEN THE POLICY WHOSE PARAMETERS WE ARE CHANGING
+  # DURING THE OPTIMIZATION STEP
+  # and pi_old(a|s) is the probability of the policy,
+  # with fixed mlp parameters after the last update,
+  # performing a given state s
+
+  # we essentially use math to find the gradient of pi(a|s) with respect
+  # to the parameters of the mlp, and this is the core of how we calculate
+  # the gradient of the objective function for gradient descent
+
+  ratio = tf.exp(logp - logp_old_ph) # "pi(a|s) / pi_old(a|s)"-OpenAI
+
+  # this min_adv, along with the tf.minimum call in the next line of code,
+  # implement the PPO-clip functionality
+
+  # NOTE: calling this `min_adv` is a bit confusing; if advantage is negative
+  # this is the min value we allow the gradient descent to consider as the advantage;
+  # but it is the MAX value if advantage is positive.
+  min_adv = tf.where(adv_ph > 0, (1 + clip_ratio) * adv_ph, (1 - clip_ratio) * adv_ph)
+
+  # create the functions whose gradients we wish to use for gradient descent
+  # during optimization
+  # for our policy optimization, it is the PPO objective; 
+  # for the value function it is simply an error-squared
+  # note that reduce_mean just calculates the mean of the values in the tensor;
+  # ie. this gives the expected value of the loss given the experimental values we have
+  pi_loss = -tf.reduce_mean(tf.minimum(ratio * adv_ph, min_adv))
+  v_loss = tf.reduce_mean((ret_ph - v) ** 2)
 
   # Info (useful to watch during learning)
-  # TODO
+  approx_kl = tf.reduce_mean(logp_old_ph - logp) # "a sample estimate for KL-divergence, easy to compute" -OpenAI
+  approx_ent = tf.reduce_mean(-logp) # "a sample estimate for entropy, also easy to compute" -OpenAI
+  clipped = tf.logical_or(ratio > (1 + clip_ratio), ratio < (1 - clip_ratio))
+  clipfrac = tf.reduce_mean(tf.cast(clipped, tf.float32)) # what fraction of advantages are clipped
 
-  #Optimizers
-  # TODO
+  # Optimizers
+  # These use gradient descent with the gradient of the objective
+  # functions we defined above to improve parameters for pi and v
+  train_pi = MpiAdamOptimizer(learning_rate=pi_lf).minimize(pi_loss)
+  train_v = MpiAdamOptimizer(learning_rate=vf_lr).minimize(v_loss)
 
   # initialize the tensorflow computation graph's parameters
   # with values
@@ -355,8 +394,44 @@ def ppo(env_fn,
   logger.setup_tf_saver(sess, inputs={'x': x_ph}, outputs={'pi': pi, 'v': v})
 
   def update():
-    # TODO
-    pass
+    # create a dictionary of values, which specify to tensorflow what
+    # to input for the placeholders: tensors containing the data from
+    # the trajectory we have stored in buf
+    inputs = {k:v for k, v in zip(all_phs, buf.get())}
+
+    # calculate these for logging later
+    pi_l_old, v_l_old, ent = sess.run([pi_loss, v_loss, approx_ent], feed_dict=inputs)
+
+    # Training
+    for i in range(train_pi_iters):
+      # run a training step for the policy, and estimate the kl-divergence
+      # (ie. how much the policy changed) on this step
+      _, kl = sess.run([train_pi, approx_kl], feed_dict=inputs)
+      kl = mpi_avg(kl)
+
+      # if the kl divergence is too high, stop training on this step
+      # TODO: understand better why it is important to do this
+      if kl > 1.5 * target_kl:
+        logger.log('Early stopping at step %d due to reaching max kl.'%i)
+        break
+
+    logger.store(StopIter=i)
+
+    # train our value function mlp
+    for _ in range(train_v_iters):
+      sess.run(train_v, feed_dicts=inputs)
+
+    # "Log changes from update" -OpenAI
+    # TODO: This could be made a bit more computationally efficient by not recalculating pi_l_old each loop
+    # after having calculated the same thing as pi_l_new the previous run through the loop!
+    # Plus, does it really make the most sense to output pi_l_old and v_l_old as LossPi and LossV
+    # instead of pi_l_new and v_l_new?
+    pi_l_new, v_l_new, kl, cf = sess.run([pi_loss, v_loss, approx_kl, clipfrac], feed_dict=inputs)
+    logger.store(LossPi=pi_l_old, LossV=v_l_old,
+        KL=kl, Entropy=ent, ClipFrac=cf,
+        DeltaLossPi=(pi_l_new - pi_l_old)
+        DeltaLossV=(v_l_new - v_l_old))
+    
 
   start_time = time.time()
 
@@ -387,8 +462,25 @@ def ppo(env_fn,
 
       terminal = d or (ep_len == max_ep_len)
       if terminal or (t==local_steps_per_epoch - 1):
-        # TODO
-        pass
+        if not terminal:
+          print('Warning: trajectory cut off by epoch at %d steps'%ep_len)
+        
+        # "if trajectory didn't reach terminal state, bootstrap value target" -OpenAI
+        # in other words, if the we are stopping this trajectory due to a termination
+        # signal from the env, last_val = the reward from the last step, r
+        # otherwise we stopped because we reached the max episode length or max local_steps_per_epoch,
+        # in which ase we set last_val = estimate of the value of current state based on v function 
+        # we are training
+        last_val = r if d else sess.run(v, feed_dict={x_ph: o.reshape(1, -1)})
+        
+        buf.finish_path(last_val)
+
+        # "only store EpRet / EpLen if trajectory finished" -OpenAI
+        if terminal:
+          logger.store(EpRet=ep_ret, EpLen=ep_len)
+
+        # reset our training variables and the training environment
+        o, r, d, ep_ret, ep_len = env.reset(), 0, False, 0, 0
 
     # every save_freq epochs,
     # save the state of the environment
@@ -399,8 +491,22 @@ def ppo(env_fn,
     if (epoch % save_freq == 0) or (epoch == epochs - 1):
       logger.save_state({'env': env}, None)
 
-    # perform PPO update!
+    # "Perform PPO update!"
     update()
     
-    # Log info about epoch
-    # TODO
+    # "Log info about epoch"
+    logger.log_tabular('Epoch', epoch)
+    logger.log_tabular('EpRet', with_min_and_max=True)
+    logger.log_tabular(EpLen, averate_only=True)
+    logger.log_tabular('VVals', with_min_and_max=True)
+    logger.log_tabular('TotalEnvInteracts', (epoch + 1) * steps_per_epoch)
+    logger.log_tabular('LossPi', averate_only=True)
+    logger.log_tabular('LossV', average_only=True)
+    logger.log_tabular('DeltaLossPi', average_only=True)
+    logger.log_tabular('DeltaLossV', average_only=True)
+    logger.log_tabular('Entropy', average_only=True)
+    logger.log_tabular('KL', average_only=True)
+    logger.log_tabular('ClipFrac', average_only=True)
+    logger.log_tabular('StopIter', average_only=True)
+    logger.log_tabular('Time', time.time() - start_time)
+    logger.dump_tabular()
