@@ -2,10 +2,11 @@ import numpy as np
 import tensorflow as tf
 import gym
 import time
-import core
+
+import spinup.algos.ppo.core as core
 
 from spinup.utils.mpi_tf import MpiAdamOptimizer, sync_all_params
-from spinup.utils.mpi_tools import mpi_sctatistics_scalar, mpi_fork, mpi_avg, proc_id, num_procs
+from spinup.utils.mpi_tools import mpi_statistics_scalar, mpi_fork, mpi_avg, proc_id, num_procs
 from spinup.utils.logx import EpochLogger
 
 class PPOBuffer:

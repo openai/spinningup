@@ -293,7 +293,7 @@ def mlp_gaussian_policy(x, a, hidden_sizes, activation, output_activation, actio
 """
 Actor-Critics
 """
-def mlp_actor_critic(x, a, hidden_sizes=(64, 64), activation=tf.tanh
+def mlp_actor_critic(x, a, hidden_sizes=(64, 64), activation=tf.tanh,
                      output_activation=None, policy=None, action_space=None):
   """
   Constructs the tensorflow graph for a policy and value function.
