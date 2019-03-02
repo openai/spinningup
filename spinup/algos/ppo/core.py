@@ -35,7 +35,7 @@ def placeholders(*args):
 def placeholder_from_space(space):
   if isinstance(space, Box):
     return placeholder(space.shape)
-  elif isinstance(shape, Discrete):
+  elif isinstance(space, Discrete):
     # TODO: why don't we just return placeholder()
     # i think that does the same thing
     return tf.placeholder(dtype=tf.int32, shape=(None,))

@@ -380,7 +380,7 @@ def ppo(env_fn,
   # Optimizers
   # These use gradient descent with the gradient of the objective
   # functions we defined above to improve parameters for pi and v
-  train_pi = MpiAdamOptimizer(learning_rate=pi_lf).minimize(pi_loss)
+  train_pi = MpiAdamOptimizer(learning_rate=pi_lr).minimize(pi_loss)
   train_v = MpiAdamOptimizer(learning_rate=vf_lr).minimize(v_loss)
 
   # initialize the tensorflow computation graph's parameters
@@ -523,8 +523,8 @@ if __name__ == '__main__':
     parser.add_argument('--gamma', type=float, default=0.99)
     parser.add_argument('--seed', '-s', type=int, default=0)
     parser.add_argument('--cpu', type=int, default=4)
-    parser.add_argument('--steps', type=int, default=4000)
-    parser.add_argument('--epochs', type=int, default=50)
+    parser.add_argument('--steps', type=int, default=1000)
+    parser.add_argument('--epochs', type=int, default=10)
     parser.add_argument('--exp_name', type=str, default='ppo')
     args = parser.parse_args()
 
