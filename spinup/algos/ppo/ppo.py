@@ -429,7 +429,7 @@ def ppo(env_fn,
     pi_l_new, v_l_new, kl, cf = sess.run([pi_loss, v_loss, approx_kl, clipfrac], feed_dict=inputs)
     logger.store(LossPi=pi_l_old, LossV=v_l_old,
         KL=kl, Entropy=ent, ClipFrac=cf,
-        DeltaLossPi=(pi_l_new - pi_l_old)
+        DeltaLossPi=(pi_l_new - pi_l_old),
         DeltaLossV=(v_l_new - v_l_old))
     
 
