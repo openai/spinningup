@@ -334,11 +334,14 @@ def trpo(env_fn, actor_critic=core.mlp_actor_critic, ac_kwargs=dict(), seed=0,
             agent_outs = sess.run(get_action_ops, feed_dict={x_ph: o.reshape(1,-1)})
             a, v_t, logp_t, info_t = agent_outs[0][0], agent_outs[1], agent_outs[2], agent_outs[3:]
 
-            # save and log
+            o2, r, d, _ = env.step(a)
+
+            # save and log old_observation, new_action, new_reward, state_value, logp_action, info
             buf.store(o, a, r, v_t, logp_t, info_t)
             logger.store(VVals=v_t)
 
-            o, r, d, _ = env.step(a)
+            o = o2
+
             ep_ret += r
             ep_len += 1
 

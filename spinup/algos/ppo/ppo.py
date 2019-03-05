@@ -255,11 +255,14 @@ def ppo(env_fn, actor_critic=core.mlp_actor_critic, ac_kwargs=dict(), seed=0,
         for t in range(local_steps_per_epoch):
             a, v_t, logp_t = sess.run(get_action_ops, feed_dict={x_ph: o.reshape(1,-1)})
 
-            # save and log
+            o2, r, d, _ = env.step(a[0])
+
+            # save and log old_observation, new_action, new_reward, state_value, logp_action
             buf.store(o, a, r, v_t, logp_t)
             logger.store(VVals=v_t)
 
-            o, r, d, _ = env.step(a[0])
+            o = o2
+
             ep_ret += r
             ep_len += 1
 
