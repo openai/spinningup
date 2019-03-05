@@ -93,7 +93,8 @@ def mlp_categorical_policy(x, a, hidden_sizes, activation, output_activation, ac
     act_dim = action_space.n
     logits = mlp(x, list(hidden_sizes)+[act_dim], activation, None, one_hot)
     logp_all = tf.nn.log_softmax(logits)
-    pi = tf.squeeze(tf.multinomial(logits,1), axis=1)
+    # pi = tf.math.argmax(logits, axis=1)
+    pi = tf.squeeze(tf.multinomial(logits, 1), axis=1)
     logp = tf.reduce_sum(tf.one_hot(a, depth=act_dim) * logp_all, axis=1)
     logp_pi = tf.reduce_sum(tf.one_hot(pi, depth=act_dim) * logp_all, axis=1)
     return pi, logp, logp_pi
@@ -132,12 +133,10 @@ def mlp_actor_critic(x, a, hidden_sizes=(64,64), activation=tf.tanh,
     return pi, logp, logp_pi, v
 
 
-def masked_suffix_sum(x, endmask, discount, axis=0, last_val=None, force_last=True):
+def masked_suffix_sum(x, endmask, discount, axis=0, last_val = False):
     """
     x: time series
     endmask: indicator for end of sequences
-    last_val: value to be used for the accumulator if not specified, must be same shape as x[axis]
-    force_last: true by default, force the last output to be last_val
     """
     x = tf.reverse(x, axis=[axis])
     endmask = tf.reverse(endmask, axis=[axis])
@@ -145,18 +144,43 @@ def masked_suffix_sum(x, endmask, discount, axis=0, last_val=None, force_last=Tr
     p[axis] = 0
     p[0] = axis
     x = tf.transpose(x, perm=p)
-    if last_val == None:
-        initializer = x[0] - x[0]
-    elif force_last:
-        # we want to ensure initializer * discount + x[0] == last_val
-        initializer = (last_val - x[0]) / discount
-    else:
-        initializer = last_val
+    initializer = x[0] - x[0]
     endmask = tf.transpose(endmask, perm=p)
     def _scan_fn(cumsum, x_mask):
         x, mask = x_mask
-        return cumsum * (1 - mask) * discount + x
+        prev = cumsum * (1 - mask)
+        if last_val:
+            prev += x * mask
+        return prev * discount + x
     ans = tf.scan(_scan_fn, (x, endmask), initializer = initializer)
     ans = tf.transpose(ans, perm=p)
     ans = tf.reverse(ans, axis=[axis])
     return ans
+
+import os
+
+def save_variables(save_path, variables=None, sess=None):
+    import joblib
+    sess = sess or tf.get_default_session()
+    variables = variables or tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES)
+
+    ps = sess.run(variables)
+    save_dict = {v.name: value for v, value in zip(variables, ps)}
+    dirname = os.path.dirname(save_path)
+    if any(dirname):
+        os.makedirs(dirname, exist_ok=True)
+    joblib.dump(save_dict, save_path)
+
+def load_variables(load_path, variables=None, sess=None):
+    import joblib
+    sess = sess or tf.get_default_session()
+    variables = variables or tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES)
+
+    loaded_params = joblib.load(os.path.expanduser(load_path))
+    restores = []
+    for v in variables:
+        if v.name in loaded_params:
+            restores.append(v.assign(loaded_params[v.name]))
+
+    sess.run(restores)
+
