@@ -87,8 +87,14 @@ pi_loss = -tf.reduce_mean(clipped_logp[:-1] * adv_buf)
 ratio = tf.exp(logp_buf - logp_old_buf_ph)
 min_adv = tf.where(adv_buf>0, (1+clip_ratio)*adv_buf, (1-clip_ratio)*adv_buf)
 pi_loss = -tf.reduce_mean(tf.minimum(ratio[:-1] * adv_buf, min_adv))
+net_loss = pi_loss+v_loss*v_loss_ratio
 
-train = MpiAdamOptimizer(learning_rate=lr).minimize(pi_loss+v_loss*v_loss_ratio)
+train = MpiAdamOptimizer(learning_rate=lr).compute_gradients(net_loss)
+
+print (train)
+
+
+train = MpiAdamOptimizer(learning_rate=lr).minimize(net_loss)
 
 train_pi = MpiAdamOptimizer(learning_rate=3e-4).minimize(pi_loss)
 train_v = MpiAdamOptimizer(learning_rate=1e-3).minimize(v_loss)
