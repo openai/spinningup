@@ -5,9 +5,9 @@ from spinup.utils.mpi_tf import MpiAdamOptimizer
 import math
 
 import gym
-env = gym.make('FrozenLake-v0')
+#env = gym.make('FrozenLake-v0')
 #env = gym.make('Swimmer-v2')
-#env = gym.make('CartPole-v1')
+env = gym.make('CartPole-v1')
 n = 1000000
 lr = 3e-4
 train_iters=5
@@ -15,6 +15,7 @@ v_loss_ratio=100
 epochs = 1000
 display = epochs # number of update panels to show
 steps_per_epoch = 4000
+train_iters = 80
 max_ep_len = 500 # episodes end at step 1000 no matter what
 clip_ratio = 0.2
 actor_critic=core.mlp_actor_critic
@@ -96,11 +97,12 @@ print ([v.name for v in tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES)])
 '''
 # print (sess.run([tf.get_default_graph().get_tensor_by_name("pi/dense/kernel:0")]))
 
+done = True
 
 for epoch in range(epochs):
 
     # Collect trajectories according to actor_critic
-    done = True
+    
     for i in range(steps_per_epoch):
         if done:
             new_obs = env.reset()
@@ -157,9 +159,9 @@ for epoch in range(epochs):
     #print (np.around(entropy, decimals=1))
     #print (np.around(advantage, decimals=1))
 
-    for _ in range(80):
+    for _ in range(train_iters):
         sess.run(train_pi, feed_dict=bufs_dict)
-    for _ in range(80):
+    for _ in range(train_iters):
         sess.run(train_v, feed_dict=bufs_dict)
         
 
