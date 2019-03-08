@@ -3,24 +3,26 @@ import numpy as np
 import tensorflow as tf
 from spinup.utils.mpi_tf import MpiAdamOptimizer
 import math
+import sys
 
 import gym
 #env = gym.make('FrozenLake-v0')
-#env = gym.make('Swimmer-v2')
-env = gym.make('CartPole-v1')
+env = gym.make('Swimmer-v2')
+#env = gym.make('CartPole-v1')
 n = 1000000
-lr = 3e-4
-train_iters=5
+lr = 1e-3
 v_loss_ratio=100
 epochs = 1000
 display = epochs # number of update panels to show
-steps_per_epoch = 4000
-train_iters = 80
-max_ep_len = 500 # episodes end at step 1000 no matter what
+steps_per_epoch = 2000
+train_iters = 25
+max_ep_len = 1000 # episodes end at step 1000 no matter what
 clip_ratio = 0.2
 actor_critic=core.mlp_actor_critic
 ac_kwargs=dict()
 seed = 10
+if len(sys.argv) > 1:
+    seed = int(sys.argv[1])
 env.seed(seed)
 tf.set_random_seed(seed)
 np.random.seed(seed)
@@ -49,10 +51,14 @@ msk_buf_ph = tf.placeholder(dtype=tf.float32, shape=(None,))
 end_buf_ph = tf.placeholder(dtype=tf.float32, shape=(None,))
 logp_old_buf_ph = tf.placeholder(dtype=tf.float32, shape=(None,))
 
+pi_buf, logp_buf, logp_pi_buf, v_buf = actor_critic(obs_buf_ph, act_buf_ph, **ac_kwargs)
+
+training_vars = [v.name for v in tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES)]
+
+print (training_vars)
+
 gamma = tf.constant(0.99)
 lam = tf.constant(0.97)
-
-pi_buf, logp_buf, logp_pi_buf, v_buf = actor_critic(obs_buf_ph, act_buf_ph, **ac_kwargs)
 
 rew_buf_adjusted = rew_buf_ph * (1 - end_buf_ph) + v_buf * end_buf_ph
 
@@ -160,13 +166,16 @@ for epoch in range(epochs):
     #print (np.around(advantage, decimals=1))
 
     for _ in range(train_iters):
-        sess.run(train_pi, feed_dict=bufs_dict)
-    for _ in range(train_iters):
-        sess.run(train_v, feed_dict=bufs_dict)
+        sess.run(train, feed_dict=bufs_dict)
         
 
     pi_loss_2, v_loss_2 = sess.run([pi_loss, v_loss], feed_dict=bufs_dict)
-
+    '''
+    for j in range(1002):
+        print (rew_buf[j])
+    print()
+    print (np.sum(rew_buf) / len(rew_buf))
+    '''
 
     if epoch % int(epochs / display) == 0:
         num_trajectories = np.sum(msk_buf)
