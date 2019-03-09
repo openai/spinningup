@@ -125,7 +125,7 @@ class PPOBuffer:
     # we go, the less influence the current state has on the reward recieved.
     # in other words, we have the lambda term so that we consider advantage observed very far
     # in the future to have less to do with present actions than advantage observed in the short term
-    self.adv_buf[path_slice] = core.discount_cumsum(deltas, self.gamma * self.lam)[:-1]
+    self.adv_buf[path_slice] = core.discount_cumsum(deltas, self.gamma * self.lam)
 
     # TODO: consider integrating eligibility traces into this implementation
     # this may already be done in some form which I just haven't understood yet,
@@ -420,7 +420,7 @@ def ppo(env_fn,
 
     # train our value function mlp
     for _ in range(train_v_iters):
-      sess.run(train_v, feed_dicts=inputs)
+      sess.run(train_v, feed_dict=inputs)
 
     # "Log changes from update" -OpenAI
     # TODO: This could be made a bit more computationally efficient by not recalculating pi_l_old each loop
@@ -498,10 +498,10 @@ def ppo(env_fn,
     # "Log info about epoch"
     logger.log_tabular('Epoch', epoch)
     logger.log_tabular('EpRet', with_min_and_max=True)
-    logger.log_tabular(EpLen, averate_only=True)
+    logger.log_tabular('EpLen', average_only=True)
     logger.log_tabular('VVals', with_min_and_max=True)
     logger.log_tabular('TotalEnvInteracts', (epoch + 1) * steps_per_epoch)
-    logger.log_tabular('LossPi', averate_only=True)
+    logger.log_tabular('LossPi', average_only=True)
     logger.log_tabular('LossV', average_only=True)
     logger.log_tabular('DeltaLossPi', average_only=True)
     logger.log_tabular('DeltaLossV', average_only=True)
