@@ -14,8 +14,8 @@ lr = 1e-3
 v_loss_ratio=100
 epochs = 1000
 display = epochs # number of update panels to show
-steps_per_epoch = 2000
-train_iters = 25
+steps_per_epoch = 1000
+train_iters = 10
 max_ep_len = 1000 # episodes end at step 1000 no matter what
 clip_ratio = 0.2
 actor_critic=core.mlp_actor_critic
@@ -30,74 +30,81 @@ np.random.seed(seed)
 ac_kwargs['action_space'] = env.action_space
 ac_kwargs['observation_space'] = env.observation_space
 
-obs_buf = np.zeros(dtype=core.type_from_space(env.observation_space), \
-    shape=core.shape_from_space(env.observation_space, steps_per_epoch))
-act_buf = np.zeros(dtype=core.type_from_space(env.action_space), \
-    shape=core.shape_from_space(env.action_space, steps_per_epoch))
-rew_buf = np.zeros(dtype=np.float32, shape=(steps_per_epoch,))
-# did the agent just die? Replace all future rewards by zero.
-msk_buf = np.zeros(dtype=np.float32, shape=(steps_per_epoch,))
-
-# Did this trajectory get terminated by epoch or max_ep_len? Replace reward by value network output
-end_buf = np.zeros(dtype=np.float32, shape=(steps_per_epoch,))
-logp_old_buf = np.zeros(dtype=np.float32, shape=(steps_per_epoch,))
-
-obs_buf_ph = tf.placeholder(dtype=core.type_from_space(env.observation_space), \
-    shape=core.shape_from_space(env.observation_space, None))
-act_buf_ph = tf.placeholder(dtype=core.type_from_space(env.action_space), \
-    shape=core.shape_from_space(env.action_space, None))
-rew_buf_ph = tf.placeholder(dtype=tf.float32, shape=(None,))
-msk_buf_ph = tf.placeholder(dtype=tf.float32, shape=(None,))
-end_buf_ph = tf.placeholder(dtype=tf.float32, shape=(None,))
-logp_old_buf_ph = tf.placeholder(dtype=tf.float32, shape=(None,))
-
-pi_buf, logp_buf, logp_pi_buf, v_buf = actor_critic(obs_buf_ph, act_buf_ph, **ac_kwargs)
-
-training_vars = [v.name for v in tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES)]
-
-print (training_vars)
-
-gamma = tf.constant(0.99)
-lam = tf.constant(0.97)
-
-rew_buf_adjusted = rew_buf_ph * (1 - end_buf_ph) + v_buf * end_buf_ph
-
-ret_buf = core.masked_suffix_sum(rew_buf_adjusted, msk_buf_ph, gamma, axis=0)
-ret_buf = tf.stop_gradient(ret_buf)
-
-v_loss = tf.sqrt(tf.reduce_mean((ret_buf - v_buf)**2))
-
-delta_buf = rew_buf_adjusted[:-1] + gamma * v_buf[1:] * (1 - msk_buf_ph[:-1]) - v_buf[:-1]
-adv_buf = core.masked_suffix_sum(delta_buf, msk_buf_ph[:-1], gamma * lam, axis=0)
-mean, var = tf.nn.moments(adv_buf, axes=[0])
-raw_adv = adv_buf
-adv_buf = (adv_buf - mean) / tf.math.sqrt(var)
-adv_buf = tf.stop_gradient(adv_buf)
 
 '''
-clipped_logp = tf.minimum(logp_buf, logp_old_buf_ph + np.log(1+clip_ratio))
-clipped_logp = tf.maximum(logp_buf, logp_old_buf_ph - np.log(1+clip_ratio))
+input: dictionary of hyperparameters
+currently {'lam': tensor, 'gamma': tensor}
 
-# vpg objective
-# pi_loss = -tf.reduce_mean(logp_buf[:-1] * adv_buf)
-# ppo objective
-pi_loss = -tf.reduce_mean(clipped_logp[:-1] * adv_buf)
+return: placeholders, loss
+
+placeholders is a list of placeholders
+consisting of [obs_buf_ph, act_buf_ph, rew_buf_ph, msk_buf_ph, end_buf_ph, logp_old_buf_ph]
+
+loss is just a tensor which is the loss
 '''
+def compute_losses(hyperparams):
 
-ratio = tf.exp(logp_buf - logp_old_buf_ph)
-min_adv = tf.where(adv_buf>0, (1+clip_ratio)*adv_buf, (1-clip_ratio)*adv_buf)
-pi_loss = -tf.reduce_mean(tf.minimum(ratio[:-1] * adv_buf, min_adv))
-net_loss = pi_loss+v_loss*v_loss_ratio
+    obs_buf_ph = tf.placeholder(dtype=core.type_from_space(env.observation_space), \
+        shape=core.shape_from_space(env.observation_space, None))
+    act_buf_ph = tf.placeholder(dtype=core.type_from_space(env.action_space), \
+        shape=core.shape_from_space(env.action_space, None))
+    rew_buf_ph = tf.placeholder(dtype=tf.float32, shape=(None,))
+    msk_buf_ph = tf.placeholder(dtype=tf.float32, shape=(None,))
+    end_buf_ph = tf.placeholder(dtype=tf.float32, shape=(None,))
+    logp_old_buf_ph = tf.placeholder(dtype=tf.float32, shape=(None,))
 
-train = MpiAdamOptimizer(learning_rate=lr).compute_gradients(net_loss)
+    all_phs = (obs_buf_ph, act_buf_ph, rew_buf_ph, msk_buf_ph, end_buf_ph, logp_old_buf_ph)
+    pi_buf, logp_buf, logp_pi_buf, v_buf = actor_critic(obs_buf_ph, act_buf_ph, **ac_kwargs)
 
-print (train)
+    #training_vars = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES)
+    #print ([v.name for v in training_vars])
 
+    #with tf.variable_scope('test_scope'):
+    #pi_buf, logp_buf, logp_pi_buf, v_buf = actor_critic(obs_buf_ph, act_buf_ph, **ac_kwargs)
+
+    gamma = hyperparams['gamma']
+    lam = hyperparams['lam']
+
+    rew_buf_adjusted = rew_buf_ph * (1 - end_buf_ph) + v_buf * end_buf_ph
+
+    ret_buf = core.masked_suffix_sum(rew_buf_adjusted, msk_buf_ph, gamma, axis=0)
+    ret_buf = tf.stop_gradient(ret_buf)
+
+    v_loss = tf.sqrt(tf.reduce_mean((ret_buf - v_buf)**2))
+
+    delta_buf = rew_buf_adjusted[:-1] + gamma * v_buf[1:] * (1 - msk_buf_ph[:-1]) - v_buf[:-1]
+    adv_buf = core.masked_suffix_sum(delta_buf, msk_buf_ph[:-1], gamma * lam, axis=0)
+    mean, var = tf.nn.moments(adv_buf, axes=[0])
+    raw_adv = adv_buf
+    adv_buf = (adv_buf - mean) / tf.math.sqrt(var)
+    adv_buf = tf.stop_gradient(adv_buf)
+    
+    
+    ratio = tf.exp(logp_buf - logp_old_buf_ph)
+    min_adv = tf.where(adv_buf>0, (1+clip_ratio)*adv_buf, (1-clip_ratio)*adv_buf)
+    pi_loss = -tf.reduce_mean(tf.minimum(ratio[:-1] * adv_buf, min_adv))
+    
+    net_loss = pi_loss+v_loss*v_loss_ratio
+
+    #grads = MpiAdamOptimizer(learning_rate=lr).compute_gradients(net_loss, training_vars)
+
+    return all_phs, net_loss
+
+# print (grads)
+
+with tf.variable_scope('loss_scope'):
+    all_phs, net_loss = compute_losses({'gamma': tf.constant(0.99), 'lam': tf.constant(0.95)})
+
+with tf.variable_scope('loss_scope', reuse = True):
+    obs_ph = tf.placeholder(dtype=core.type_from_space(env.observation_space), shape=env.observation_space.shape)
+    obs = tf.reshape(obs_ph, shape = core.shape_from_space(env.observation_space, 1))
+    act_ph = tf.placeholder(dtype=core.type_from_space(env.action_space), shape=env.action_space.shape)
+    act = tf.reshape(act_ph, shape = core.shape_from_space(env.action_space, 1))
+    pi, _1, logp_pi, _2 = actor_critic(obs, act, **ac_kwargs)
+    pi = pi[0]
+    logp_pi = logp_pi[0]
 
 train = MpiAdamOptimizer(learning_rate=lr).minimize(net_loss)
-
-train_pi = MpiAdamOptimizer(learning_rate=3e-4).minimize(pi_loss)
-train_v = MpiAdamOptimizer(learning_rate=1e-3).minimize(v_loss)
 
 sess = tf.Session()
 sess.run(tf.global_variables_initializer())
@@ -109,23 +116,28 @@ print ([v.name for v in tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES)])
 '''
 # print (sess.run([tf.get_default_graph().get_tensor_by_name("pi/dense/kernel:0")]))
 
-done = True
+def collect_observations():
+    obs_buf = np.zeros(dtype=core.type_from_space(env.observation_space), \
+    shape=core.shape_from_space(env.observation_space, steps_per_epoch))
+    act_buf = np.zeros(dtype=core.type_from_space(env.action_space), \
+        shape=core.shape_from_space(env.action_space, steps_per_epoch))
+    rew_buf = np.zeros(dtype=np.float32, shape=(steps_per_epoch,))
+    # did the agent just die? Replace all future rewards by zero.
+    msk_buf = np.zeros(dtype=np.float32, shape=(steps_per_epoch,))
 
-for epoch in range(epochs):
+    # Did this trajectory get terminated by epoch or max_ep_len? Replace reward by value network output
+    end_buf = np.zeros(dtype=np.float32, shape=(steps_per_epoch,))
+    logp_old_buf = np.zeros(dtype=np.float32, shape=(steps_per_epoch,))
 
-    # Collect trajectories according to actor_critic
-    
+    done = True
     for i in range(steps_per_epoch):
         if done:
             new_obs = env.reset()
             j = 0
 
-        if np.isscalar(new_obs):
-            obs = np.array([new_obs])
-        else:
-            obs = new_obs.reshape((1,-1))
-        pi_buf_, logp_pi_buf_  = sess.run([pi_buf, logp_pi_buf], feed_dict = {obs_buf_ph:obs})
-        a = pi_buf_[0]
+        obs = new_obs
+        pi_, logp_pi_ = sess.run([pi, logp_pi], feed_dict = {obs_ph:obs})
+        a = pi_
 
         new_obs, rew, done, _ = env.step(a)
         '''
@@ -143,15 +155,21 @@ for epoch in range(epochs):
         rew_buf[i] = rew
         msk_buf[i] = 1 if done else 0
         end_buf[i] = 1 if should_end else 0
-        logp_old_buf[i] = logp_pi_buf_[0]
+        logp_old_buf[i] = logp_pi_
+    return [obs_buf, act_buf, rew_buf, msk_buf, end_buf, logp_old_buf]
 
-    bufs_dict = {obs_buf_ph:obs_buf, act_buf_ph:act_buf, rew_buf_ph:rew_buf, \
-        msk_buf_ph:msk_buf, end_buf_ph:end_buf, logp_old_buf_ph:logp_old_buf}
+for epoch in range(epochs):
+
+    # Collect trajectories according to actor_critic
+    
+    trajectories_0 = collect_observations()
+
+    bufs_dict = dict(zip(all_phs, trajectories_0))
 
     # mean_, var_ = sess.run([mean, var], feed_dict=bufs_dict)
     # print (mean_, np.sqrt(var_))
 
-    pi_loss_1, v_loss_1 = sess.run([pi_loss, v_loss], feed_dict=bufs_dict)
+    net_loss_1 = sess.run(net_loss, feed_dict=bufs_dict)
     
     '''
     if epoch % 1 == 0:
@@ -175,7 +193,7 @@ for epoch in range(epochs):
         sess.run(train, feed_dict=bufs_dict)
         
 
-    pi_loss_2, v_loss_2 = sess.run([pi_loss, v_loss], feed_dict=bufs_dict)
+    net_loss_2 = sess.run(net_loss, feed_dict=bufs_dict)
     '''
     for j in range(1002):
         print (rew_buf[j])
@@ -184,12 +202,12 @@ for epoch in range(epochs):
     '''
 
     if epoch % int(epochs / display) == 0:
-        num_trajectories = np.sum(msk_buf)
-        ep_ret = np.sum(rew_buf) / num_trajectories
+        num_trajectories = np.sum(trajectories_0[3])
+        ep_ret = np.sum(trajectories_0[2]) / num_trajectories
         ep_len = steps_per_epoch / num_trajectories
         print ('epoch: ', epoch)
         print ('ep_ret: ', ep_ret)
         print ('ep_len: ', ep_len)
-        print ('loss_1: ', (pi_loss_1, v_loss_1))
-        print ('loss_2: ', (pi_loss_2, v_loss_2))
+        print ('loss_1: ', net_loss_1)
+        print ('loss_2: ', net_loss_2)
         print ('---------------------------------------------------------')
