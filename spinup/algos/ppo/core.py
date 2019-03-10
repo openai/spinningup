@@ -282,7 +282,7 @@ def mlp_gaussian_policy(x, a, hidden_sizes, activation, output_activation, actio
   # mlp parameters, evaluated either at a given action `a`
   # or at the `pi` we just computed
   logp = gaussian_likelihood(a, mu, log_std)
-  logp_pi = gaussian_likelyhood(pi, mu, log_std)
+  logp_pi = gaussian_likelihood(pi, mu, log_std)
 
   # return the important outputs we can now compute from
   # the tensorflow graph

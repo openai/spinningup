@@ -4,10 +4,9 @@ import gym
 import time
 
 import spinup.algos.ppo.core as core
-
-from spinup.utils.mpi_tf import MpiAdamOptimizer, sync_all_params
-from spinup.utils.mpi_tools import mpi_statistics_scalar, mpi_fork, mpi_avg, proc_id, num_procs
 from spinup.utils.logx import EpochLogger
+from spinup.utils.mpi_tf import MpiAdamOptimizer, sync_all_params
+from spinup.utils.mpi_tools import mpi_fork, mpi_avg, proc_id, mpi_statistics_scalar, num_procs
 
 class PPOBuffer:
   """
@@ -59,7 +58,7 @@ class PPOBuffer:
 
     self.obs_buf[self.ptr] = obs
     self.act_buf[self.ptr] = act
-    self.ret_buf[self.ptr] = rew
+    self.rew_buf[self.ptr] = rew
     self.val_buf[self.ptr] = val
     self.logp_buf[self.ptr] = logp
 
@@ -523,8 +522,8 @@ if __name__ == '__main__':
     parser.add_argument('--gamma', type=float, default=0.99)
     parser.add_argument('--seed', '-s', type=int, default=0)
     parser.add_argument('--cpu', type=int, default=4)
-    parser.add_argument('--steps', type=int, default=1000)
-    parser.add_argument('--epochs', type=int, default=10)
+    parser.add_argument('--steps', type=int, default=5000)
+    parser.add_argument('--epochs', type=int, default=500)
     parser.add_argument('--exp_name', type=str, default='ppo')
     args = parser.parse_args()
 
@@ -536,4 +535,4 @@ if __name__ == '__main__':
     ppo(lambda : gym.make(args.env), actor_critic=core.mlp_actor_critic,
         ac_kwargs=dict(hidden_sizes=[args.hid]*args.l), gamma=args.gamma, 
         seed=args.seed, steps_per_epoch=args.steps, epochs=args.epochs,
-        logger_kwargs=logger_kwargs)
+        logger_kwargs=logger_kwargs, pi_lr=0.001, v_lr=0.001)
