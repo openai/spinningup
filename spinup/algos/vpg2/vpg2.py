@@ -103,7 +103,11 @@ metaparams = {'gamma': tf.constant(0.99), 'lam': tf.constant(0.95)}
 with tf.variable_scope('loss_scope'):
     all_phs, net_loss = compute_losses(hyperparams)
 
-with tf.variable_scope('loss_scope', reuse = True):
+def custom_get_var(*args):
+    print (args)
+    return tf.get_variable(*args)
+
+with tf.variable_scope('loss_scope', reuse = True, custom_getter = custom_get_var):
     obs_ph = tf.placeholder(dtype=core.type_from_space(env.observation_space), shape=env.observation_space.shape)
     obs = tf.reshape(obs_ph, shape = core.shape_from_space(env.observation_space, 1))
     act_ph = tf.placeholder(dtype=core.type_from_space(env.action_space), shape=env.action_space.shape)
