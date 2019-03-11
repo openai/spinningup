@@ -7,17 +7,17 @@ import sys
 
 import gym
 #env = gym.make('FrozenLake-v0')
-#env = gym.make('Swimmer-v2')
-env = gym.make('CartPole-v1')
+env = gym.make('Swimmer-v2')
+#env = gym.make('CartPole-v1')
 n = 1000000
-lr = 1e-3
+lr = 1e-2
 
 v_loss_ratio=100
 epochs = 1000
 display = epochs # number of update panels to show
 steps_per_epoch = 4000
-train_iters = 10
-max_ep_len = 1000 # episodes end at step 1000 no matter what
+train_iters = 2
+max_ep_len = 500 # episodes end at step 1000 no matter what
 clip_ratio = 0.2
 actor_critic=core.mlp_actor_critic
 ac_kwargs=dict()
@@ -53,8 +53,9 @@ def compute_losses(hyperparams):
     msk_buf_ph = tf.placeholder(dtype=tf.float32, shape=(None,))
     end_buf_ph = tf.placeholder(dtype=tf.float32, shape=(None,))
     logp_old_buf_ph = tf.placeholder(dtype=tf.float32, shape=(None,))
+    old_v_ph = tf.placeholder(dtype=tf.float32, shape=(None,))
 
-    all_phs = (obs_buf_ph, act_buf_ph, rew_buf_ph, msk_buf_ph, end_buf_ph, logp_old_buf_ph)
+    all_phs = (obs_buf_ph, act_buf_ph, rew_buf_ph, msk_buf_ph, end_buf_ph, logp_old_buf_ph, old_v_ph)
     pi_buf, logp_buf, logp_pi_buf, v_buf = actor_critic(obs_buf_ph, act_buf_ph, **ac_kwargs)
 
     #training_vars = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES)
@@ -69,16 +70,16 @@ def compute_losses(hyperparams):
     rew_buf_adjusted = rew_buf_ph * (1 - end_buf_ph) + v_buf * end_buf_ph
 
     ret_buf = core.masked_suffix_sum(rew_buf_adjusted, msk_buf_ph, gamma, axis=0)
-    #ret_buf = tf.stop_gradient(ret_buf)
+    # ret_buf = tf.stop_gradient(ret_buf)
 
     v_loss = tf.sqrt(tf.reduce_mean((ret_buf - v_buf)**2))
 
-    delta_buf = rew_buf_adjusted[:-1] + gamma * v_buf[1:] * (1 - msk_buf_ph[:-1]) - v_buf[:-1]
+    delta_buf = rew_buf_adjusted[:-1] + gamma * old_v_ph[1:] * (1 - msk_buf_ph[:-1]) - old_v_ph[:-1]
     adv_buf = core.masked_suffix_sum(delta_buf, msk_buf_ph[:-1], gamma * lam, axis=0)
     mean, var = tf.nn.moments(adv_buf, axes=[0])
     raw_adv = adv_buf
     adv_buf = (adv_buf - mean) / tf.math.sqrt(var)
-    #adv_buf = tf.stop_gradient(adv_buf)
+    # adv_buf = tf.stop_gradient(adv_buf)
     
     
     ratio = tf.exp(logp_buf - logp_old_buf_ph)
@@ -101,20 +102,23 @@ hyperparams = {
 metaparams = {'gamma': tf.constant(0.99), 'lam': tf.constant(0.95)}
 
 with tf.variable_scope('loss_scope'):
-    all_phs, net_loss = compute_losses(hyperparams)
+    all_phs, net_loss = compute_losses(metaparams)
 
-def custom_get_var(*args):
-    print (args)
-    return tf.get_variable(*args)
+def custom_get_var(getter, name, *args, **kwargs):
+    var = getter(name, *args, **kwargs)
+    print (name)
+    return var
 
+# This network is seperate, obs_ph is used one observation at a time to get pi, and logp_pi
 with tf.variable_scope('loss_scope', reuse = True, custom_getter = custom_get_var):
     obs_ph = tf.placeholder(dtype=core.type_from_space(env.observation_space), shape=env.observation_space.shape)
     obs = tf.reshape(obs_ph, shape = core.shape_from_space(env.observation_space, 1))
     act_ph = tf.placeholder(dtype=core.type_from_space(env.action_space), shape=env.action_space.shape)
     act = tf.reshape(act_ph, shape = core.shape_from_space(env.action_space, 1))
-    pi, _1, logp_pi, _2 = actor_critic(obs, act, **ac_kwargs)
+    pi, _1, logp_pi, v = actor_critic(obs, act, **ac_kwargs)
     pi = pi[0]
     logp_pi = logp_pi[0]
+    v = v[0]
 
 train = MpiAdamOptimizer(learning_rate=lr).minimize(net_loss)
 
@@ -140,6 +144,7 @@ def collect_observations():
     # Did this trajectory get terminated by epoch or max_ep_len? Replace reward by value network output
     end_buf = np.zeros(dtype=np.float32, shape=(steps_per_epoch,))
     logp_old_buf = np.zeros(dtype=np.float32, shape=(steps_per_epoch,))
+    old_v_buf = np.zeros(dtype=np.float32, shape=(steps_per_epoch,))
 
     done = True
     for i in range(steps_per_epoch):
@@ -148,7 +153,7 @@ def collect_observations():
             j = 0
 
         obs = new_obs
-        pi_, logp_pi_ = sess.run([pi, logp_pi], feed_dict = {obs_ph:obs})
+        pi_, logp_pi_, v_ = sess.run([pi, logp_pi, v], feed_dict = {obs_ph:obs})
         a = pi_
 
         new_obs, rew, done, _ = env.step(a)
@@ -168,7 +173,8 @@ def collect_observations():
         msk_buf[i] = 1 if done else 0
         end_buf[i] = 1 if should_end else 0
         logp_old_buf[i] = logp_pi_
-    return [obs_buf, act_buf, rew_buf, msk_buf, end_buf, logp_old_buf]
+        old_v_buf[i] = v_
+    return [obs_buf, act_buf, rew_buf, msk_buf, end_buf, logp_old_buf, old_v_buf]
 
 for epoch in range(epochs):
 

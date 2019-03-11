@@ -51,9 +51,8 @@ def mlp(x, hidden_sizes=(64,64,), activation=tf.tanh, output_activation=None, on
 
     if x.dtype not in [tf.bfloat16, tf.float16, tf.float32, tf.float64, tf.complex64, tf.complex128]:
         x = tf.dtypes.cast(x, tf.float32)
-    with tf.variable_scope('test_scope', reuse = tf.AUTO_REUSE):
-        for h in hidden_sizes[:-1]:
-            x = tf.layers.dense(x, units=h, activation=activation)
+    for h in hidden_sizes[:-1]:
+        x = tf.layers.dense(x, units=h, activation=activation)
     return tf.layers.dense(x, units=hidden_sizes[-1], activation=output_activation)
 
 def get_vars(scope=''):
