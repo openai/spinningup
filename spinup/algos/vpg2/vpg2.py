@@ -7,14 +7,15 @@ import sys
 
 import gym
 #env = gym.make('FrozenLake-v0')
-env = gym.make('Swimmer-v2')
-#env = gym.make('CartPole-v1')
+#env = gym.make('Swimmer-v2')
+env = gym.make('CartPole-v1')
 n = 1000000
 lr = 1e-3
+
 v_loss_ratio=100
 epochs = 1000
 display = epochs # number of update panels to show
-steps_per_epoch = 1000
+steps_per_epoch = 4000
 train_iters = 10
 max_ep_len = 1000 # episodes end at step 1000 no matter what
 clip_ratio = 0.2
@@ -68,7 +69,7 @@ def compute_losses(hyperparams):
     rew_buf_adjusted = rew_buf_ph * (1 - end_buf_ph) + v_buf * end_buf_ph
 
     ret_buf = core.masked_suffix_sum(rew_buf_adjusted, msk_buf_ph, gamma, axis=0)
-    ret_buf = tf.stop_gradient(ret_buf)
+    #ret_buf = tf.stop_gradient(ret_buf)
 
     v_loss = tf.sqrt(tf.reduce_mean((ret_buf - v_buf)**2))
 
@@ -77,7 +78,7 @@ def compute_losses(hyperparams):
     mean, var = tf.nn.moments(adv_buf, axes=[0])
     raw_adv = adv_buf
     adv_buf = (adv_buf - mean) / tf.math.sqrt(var)
-    adv_buf = tf.stop_gradient(adv_buf)
+    #adv_buf = tf.stop_gradient(adv_buf)
     
     
     ratio = tf.exp(logp_buf - logp_old_buf_ph)
@@ -92,8 +93,15 @@ def compute_losses(hyperparams):
 
 # print (grads)
 
+hyperparams = {
+    'gamma': tf.get_variable("gamma", dtype=tf.float32, initializer=tf.constant(0.99), trainable = True),\
+    'lam': tf.get_variable("lam", dtype=tf.float32, initializer=tf.constant(0.95), trainable = True)
+}
+
+metaparams = {'gamma': tf.constant(0.99), 'lam': tf.constant(0.95)}
+
 with tf.variable_scope('loss_scope'):
-    all_phs, net_loss = compute_losses({'gamma': tf.constant(0.99), 'lam': tf.constant(0.95)})
+    all_phs, net_loss = compute_losses(hyperparams)
 
 with tf.variable_scope('loss_scope', reuse = True):
     obs_ph = tf.placeholder(dtype=core.type_from_space(env.observation_space), shape=env.observation_space.shape)
@@ -194,6 +202,8 @@ for epoch in range(epochs):
         
 
     net_loss_2 = sess.run(net_loss, feed_dict=bufs_dict)
+
+    gamma_, lam_ = sess.run([hyperparams['gamma'], hyperparams['lam']], feed_dict=bufs_dict)
     '''
     for j in range(1002):
         print (rew_buf[j])
@@ -210,4 +220,5 @@ for epoch in range(epochs):
         print ('ep_len: ', ep_len)
         print ('loss_1: ', net_loss_1)
         print ('loss_2: ', net_loss_2)
+        print ('hyperparams', (gamma_, lam_))
         print ('---------------------------------------------------------')
