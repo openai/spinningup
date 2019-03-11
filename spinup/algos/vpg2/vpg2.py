@@ -7,10 +7,11 @@ import sys
 
 import gym
 #env = gym.make('FrozenLake-v0')
-env = gym.make('Swimmer-v2')
-#env = gym.make('CartPole-v1')
+#env = gym.make('Swimmer-v2')
+env = gym.make('CartPole-v1')
 n = 1000000
 lr = 1e-2
+meta_lr = lr
 
 v_loss_ratio=100
 epochs = 1000
@@ -70,25 +71,24 @@ def compute_losses(hyperparams):
     rew_buf_adjusted = rew_buf_ph * (1 - end_buf_ph) + v_buf * end_buf_ph
 
     ret_buf = core.masked_suffix_sum(rew_buf_adjusted, msk_buf_ph, gamma, axis=0)
+    # ret_buf = rew_buf_adjusted + gamma
     # ret_buf = tf.stop_gradient(ret_buf)
 
     v_loss = tf.sqrt(tf.reduce_mean((ret_buf - v_buf)**2))
 
     delta_buf = rew_buf_adjusted[:-1] + gamma * old_v_ph[1:] * (1 - msk_buf_ph[:-1]) - old_v_ph[:-1]
     adv_buf = core.masked_suffix_sum(delta_buf, msk_buf_ph[:-1], gamma * lam, axis=0)
+    # adv_buf = delta_buf + gamma * lam
     mean, var = tf.nn.moments(adv_buf, axes=[0])
     raw_adv = adv_buf
     adv_buf = (adv_buf - mean) / tf.math.sqrt(var)
     # adv_buf = tf.stop_gradient(adv_buf)
-    
     
     ratio = tf.exp(logp_buf - logp_old_buf_ph)
     min_adv = tf.where(adv_buf>0, (1+clip_ratio)*adv_buf, (1-clip_ratio)*adv_buf)
     pi_loss = -tf.reduce_mean(tf.minimum(ratio[:-1] * adv_buf, min_adv))
     
     net_loss = pi_loss+v_loss*v_loss_ratio
-
-    #grads = MpiAdamOptimizer(learning_rate=lr).compute_gradients(net_loss, training_vars)
 
     return all_phs, net_loss
 
@@ -99,18 +99,34 @@ hyperparams = {
     'lam': tf.get_variable("lam", dtype=tf.float32, initializer=tf.constant(0.95), trainable = True)
 }
 
+hyper_values = list(hyperparams.values())
+
 metaparams = {'gamma': tf.constant(0.99), 'lam': tf.constant(0.95)}
 
 with tf.variable_scope('loss_scope'):
-    all_phs, net_loss = compute_losses(metaparams)
+    traj0_phs, traj0_loss = compute_losses(hyperparams)
+
+params = [v for v in tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES) if v not in hyper_values]
+
+metaparams_optimizer = MpiAdamOptimizer(learning_rate=meta_lr)
+
+param_grads = tf.gradients(traj0_loss, params)
+grad_dict = dict(zip(params, param_grads))
 
 def custom_get_var(getter, name, *args, **kwargs):
     var = getter(name, *args, **kwargs)
-    print (name)
-    return var
+    return var - lr * grad_dict[var]
+
+with tf.variable_scope('loss_scope', reuse = True, custom_getter = custom_get_var):
+    traj1_phs, traj1_loss = compute_losses(metaparams)
+
+train_params = MpiAdamOptimizer(learning_rate=lr).minimize(traj0_loss)
+
+metaparam_grads = metaparams_optimizer.compute_gradients(traj1_loss, hyper_values)
+train_metaparams = metaparams_optimizer.apply_gradients(metaparam_grads)
 
 # This network is seperate, obs_ph is used one observation at a time to get pi, and logp_pi
-with tf.variable_scope('loss_scope', reuse = True, custom_getter = custom_get_var):
+with tf.variable_scope('loss_scope', reuse = True):
     obs_ph = tf.placeholder(dtype=core.type_from_space(env.observation_space), shape=env.observation_space.shape)
     obs = tf.reshape(obs_ph, shape = core.shape_from_space(env.observation_space, 1))
     act_ph = tf.placeholder(dtype=core.type_from_space(env.action_space), shape=env.action_space.shape)
@@ -119,8 +135,6 @@ with tf.variable_scope('loss_scope', reuse = True, custom_getter = custom_get_va
     pi = pi[0]
     logp_pi = logp_pi[0]
     v = v[0]
-
-train = MpiAdamOptimizer(learning_rate=lr).minimize(net_loss)
 
 sess = tf.Session()
 sess.run(tf.global_variables_initializer())
@@ -181,13 +195,14 @@ for epoch in range(epochs):
     # Collect trajectories according to actor_critic
     
     trajectories_0 = collect_observations()
+    trajectories_1 = collect_observations()
 
-    bufs_dict = dict(zip(all_phs, trajectories_0))
+    bufs_dict = dict(zip(traj0_phs + traj1_phs, trajectories_0 + trajectories_1))
 
     # mean_, var_ = sess.run([mean, var], feed_dict=bufs_dict)
     # print (mean_, np.sqrt(var_))
 
-    net_loss_1 = sess.run(net_loss, feed_dict=bufs_dict)
+    net_loss_1 = sess.run(traj0_loss, feed_dict=bufs_dict)
     
     '''
     if epoch % 1 == 0:
@@ -208,10 +223,11 @@ for epoch in range(epochs):
     #print (np.around(advantage, decimals=1))
 
     for _ in range(train_iters):
-        sess.run(train, feed_dict=bufs_dict)
+        sess.run(train_params, feed_dict=bufs_dict)
+        sess.run(train_metaparams, feed_dict=bufs_dict) # should this be done in a separate for loop?
         
 
-    net_loss_2 = sess.run(net_loss, feed_dict=bufs_dict)
+    net_loss_2 = sess.run(traj0_loss, feed_dict=bufs_dict)
 
     gamma_, lam_ = sess.run([hyperparams['gamma'], hyperparams['lam']], feed_dict=bufs_dict)
     '''
