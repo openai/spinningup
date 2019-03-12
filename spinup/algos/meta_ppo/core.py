@@ -40,7 +40,7 @@ def type_from_space(space):
 def placeholders_from_spaces(*args):
     return [placeholder_from_space(space) for space in args]
 
-def mlp(x, hidden_sizes=(64,64,), activation=tf.tanh, output_activation=None, one_hot = None):
+def mlp(x, hidden_sizes=(64,64,), activation=tf.tanh, output_activation=None, one_hot = None, discount_factor = None):
     # support for discrete inputs
     if one_hot != None:
         assert(len(x.shape) == 1)
@@ -48,6 +48,10 @@ def mlp(x, hidden_sizes=(64,64,), activation=tf.tanh, output_activation=None, on
     # support for scalar inputs
     elif len(x.shape) == 1:
         x = x[:,None]
+    # send in the discount factor as one of the inputs for the value function
+    if discount_factor != None:
+        pad = tf.broadcast_to(discount_factor, shape=(x.shape[0], 1))
+        x = tf.concat([x, pad], axis = -1)
 
     if x.dtype not in [tf.bfloat16, tf.float16, tf.float32, tf.float64, tf.complex64, tf.complex128]:
         x = tf.dtypes.cast(x, tf.float32)
@@ -111,8 +115,9 @@ def mlp_gaussian_policy(x, a, hidden_sizes, activation, output_activation, actio
 """
 Actor-Critics
 """
-def mlp_actor_critic(x, a, hidden_sizes=(64,64), activation=tf.tanh,
-                     output_activation=None, policy=None, action_space=None, observation_space = None):
+def mlp_actor_critic(x, a, hidden_sizes=(64,64), activation=tf.tanh,\
+                     output_activation=None, policy=None, action_space=None, observation_space = None,\
+                     discount_factor = None):
 
     if isinstance(observation_space, Discrete):
         one_hot = observation_space.n
@@ -128,7 +133,8 @@ def mlp_actor_critic(x, a, hidden_sizes=(64,64), activation=tf.tanh,
     with tf.variable_scope('pi'):
         pi, logp, logp_pi = policy(x, a, hidden_sizes, activation, output_activation, action_space, one_hot)
     with tf.variable_scope('v'):
-        v = tf.squeeze(mlp(x, list(hidden_sizes)+[1], activation, None, one_hot), axis=1)
+        v = tf.squeeze(mlp(x, list(hidden_sizes)+[1], activation=activation, output_activation=None, \
+            one_hot=one_hot, discount_factor=discount_factor), axis=1)
     return pi, logp, logp_pi, v
 
 
@@ -155,6 +161,23 @@ def masked_suffix_sum(x, endmask, discount, axis=0, last_val = False):
     ans = tf.transpose(ans, perm=p)
     ans = tf.reverse(ans, axis=[axis])
     return ans
+
+def exponential_avg(x, discount, batch_size, num_batches):
+    exponent_array = np.zeros((batch_size, batch_size), dtype = np.float32)
+    mask_array = np.zeros((batch_size, batch_size), dtype = np.float32)
+    for i in range(batch_size):
+        for j in range(batch_size):
+            exponent_array[i,j] = i-j if i >= j else 0
+            mask_array[i,j] = 1 if i >= j else 0
+    batch_mat = tf.math.pow(discount, exponent_array) * mask_array
+    ret = []
+    for i in range(num_batches):
+        data = x[i * batch_size: (i+1)*batch_size]
+        data = tf.reshape(data, (1, batch_size))
+        prod = tf.tensordot(data, batch_mat, ([1,0]))
+        ret.append(tf.reshape(prod, (batch_size,)))
+    return tf.concat(ret, axis = 0)
+
 
 import os
 
