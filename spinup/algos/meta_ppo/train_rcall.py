@@ -9,9 +9,21 @@ from pathlib import Path
 import sys
 import io
 import numpy as np
+from threading import Thread
+
+FNULL = open(os.devnull, 'w')
+
+image_dir = str(Path.home()) + '/Documents/curves/'
 
 envs = [\
     {'name': 'CartPole-v1', 'kwargs': {'env': gym.make('CartPole-v1')}},
+    {'name': 'Reacher-v2', 'kwargs': {'env': gym.make('Reacher-v2')}},
+    {'name': 'HalfCheetah-v2', 'kwargs': {'env': gym.make('HalfCheetah-v2')}},
+    {'name': 'Hopper-v2', 'kwargs': {'env': gym.make('Hopper-v2')}},
+    {'name': 'Walker2d-v2', 'kwargs': {'env': gym.make('Walker2d-v2')}},
+    {'name': 'Swimmer-v2', 'kwargs': {'env': gym.make('Swimmer-v2')}},
+    {'name': 'Ant-v2', 'kwargs': {'env': gym.make('Ant-v2')}},
+    {'name': 'LunarLander-v2', 'kwargs': {'env': gym.make('LunarLander-v2')}},
     {'name': 'FrozenLake-v0', 'kwargs': {'env': gym.make('FrozenLake-v0'), 'max_ep_len': 100, 'episodes_per_epoch': 100}}
 ]
 
@@ -33,40 +45,52 @@ def async_call(fn, kwargs, backend = 'kube-ibis'):
         job_name=job_name,
         shutdown=True
     )[0]
-    subprocess.check_call(['rcall-kube', 'tail', pod_name])
-    subprocess.check_call(['rcall-kube', 'pull', log_name])
+    subprocess.check_call(['rcall-kube', 'tail', pod_name], stdout=FNULL)
+    subprocess.check_call(['rcall-kube', 'pull', log_name], stdout=FNULL)
     data = pickle.load( open( str(Path.home()) + '/data/rcall/gce/' + log_name + '/fn_output.p', "rb" ) )
     return data
 
 #save_stdout = sys.stdout
 #sys.stdout = io.BytesIO()
 
+wait_threads = []
+
 # Send out rcalls
-for i in range(len(envs)-1):
-    env_data = envs[i]
-    num_epochs = 10
-    num_seeds = 2
-    env_data['kwargs']['epochs'] = num_epochs
-    env_data['kwargs']['should_print'] = False
+for i in range(len(envs)):
+    num_epochs = 250
+    num_seeds = 3
+    envs[i]['kwargs']['epochs'] = num_epochs
+    envs[i]['kwargs']['should_print'] = False
 
     def train_seeds(**kwargs):
         ret = []
         for i in range(num_seeds):
             kwargs['seed'] = i * 10
-
             ret.append(train(**kwargs))
         return ret
-    env_data['kwargs']['meta_learn'] = False
-    env_data['vanilla'] = train_seeds(**env_data['kwargs'])
-    env_data['kwargs']['meta_learn'] = True
-    env_data['meta_learned'] = train_seeds(**env_data['kwargs'])
+    envs[i]['kwargs']['meta_learn'] = False
+    def set_data(dic, meta_learn):
+        inp = dic['kwargs'].copy()
+        inp['meta_learn'] = meta_learn
+        if meta_learn:
+            dic['meta_learned'] = async_call(train_seeds, inp)
+        else:
+            dic['vanilla'] = async_call(train_seeds, inp)
+    wait_threads.append(Thread(target=set_data, args=[envs[i], False]))
+    wait_threads.append(Thread(target=set_data, args=[envs[i], True]))
+
+for t in wait_threads:
+    t.start()
+for t in wait_threads:
+    t.join()
 
 import matplotlib.pyplot as plt
 colors = ['b', 'g', 'r', 'c', 'm', 'y', 'k']
 
-for i in range(len(envs)-1):
+for i in range(len(envs)):
     env_data = envs[i]
-    fig, ax = plt.subplots(nrows=1, ncols=4)
+    fig, ax = plt.subplots(nrows=1, ncols=4, figsize=(32., 8.))
+    # fig.tight_layout()
     fig.suptitle(env_data['name'])
     vanilla_data = env_data['vanilla']
     for i in range(num_seeds):
@@ -100,7 +124,9 @@ for i in range(len(envs)-1):
         ax[3].set_xlabel('Env Interacts')
         ax[3].set_ylabel('1 / (1 - Lam)')
         ax[3].set_title('Advantage Bootstrap Factor')
-    plt.show()
+    fig.tight_layout()
+    fig.savefig(image_dir + env_data['name'] + '.png')
+    #plt.show()
 
 
 #sys.stdout = save_stdout
