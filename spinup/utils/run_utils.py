@@ -424,8 +424,8 @@ class ExperimentGrid:
             ====================  ===
             Key                   Val
             ====================  ===
-            ``'base:param:one'``  1
-            ``'base:param:two'``  2
+            ``'base:param:a'``    1
+            ``'base:param:b'``    2
             ====================  ===
 
         the variant dict will have the structure
