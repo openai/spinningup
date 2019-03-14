@@ -84,7 +84,11 @@ def get_datasets(logdir, condition=None):
             unit = units[condition1]
             units[condition1] += 1
 
-            exp_data = pd.read_table(os.path.join(root,'progress.txt'))
+            try:
+                exp_data = pd.read_table(os.path.join(root,'progress.txt'))
+            except:
+                print('Could not read from %s'%os.path.join(root,'progress.txt'))
+                continue
             performance = 'AverageTestEpRet' if 'AverageTestEpRet' in exp_data else 'AverageEpRet'
             exp_data.insert(len(exp_data.columns),'Unit',unit)
             exp_data.insert(len(exp_data.columns),'Condition1',condition1)
