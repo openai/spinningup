@@ -191,7 +191,7 @@ a. Model is Learned
 
 .. [#] `Neural Network Dynamics for Model-Based Deep Reinforcement Learning with Model-Free Fine-Tuning <https://arxiv.org/abs/1708.02596>`_, Nagabandi et al, 2017. **Algorithm: MBMF.**
 
-.. [#] `Model-Based Value Estimation for Efficient Model-Free Reinforcement Learning <https://arxiv.org/abs/1803.00101>`_, Feinberg et al, 2018. **Algorithm: MBVE.**
+.. [#] `Model-Based Value Expansion for Efficient Model-Free Reinforcement Learning <https://arxiv.org/abs/1803.00101>`_, Feinberg et al, 2018. **Algorithm: MVE.**
 
 .. [#] `Sample-Efficient Reinforcement Learning with Stochastic Ensemble Value Expansion <https://arxiv.org/abs/1807.01675>`_, Buckman et al, 2018. **Algorithm: STEVE.**
 
