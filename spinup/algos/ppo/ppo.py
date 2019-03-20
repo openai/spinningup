@@ -496,8 +496,11 @@ def ppo(env_fn,
     
     # "Log info about epoch"
     logger.log_tabular('Epoch', epoch)
-    logger.log_tabular('EpRet', with_min_and_max=True)
-    logger.log_tabular('EpLen', average_only=True)
+    try:
+      logger.log_tabular('EpRet', with_min_and_max=True)
+      logger.log_tabular('EpLen', average_only=True)
+    except:
+      pass
     logger.log_tabular('VVals', with_min_and_max=True)
     logger.log_tabular('TotalEnvInteracts', (epoch + 1) * steps_per_epoch)
     logger.log_tabular('LossPi', average_only=True)
