@@ -1,18 +1,14 @@
-**Status:** Active (under active development, breaking changes may occur)
+# STAC Moon Rover Training!
 
-Welcome to Spinning Up in Deep RL! 
-==================================
+To run, follow along at https://spinningup.openai.com/en/latest/
+for installation  (except git pull this instead of the openai og
+github!).
 
-This is an educational resource produced by OpenAI that makes it easier to learn about deep reinforcement learning (deep RL).
+Also I think you'll need to git clone the `airover` `tm` branch
+into the spinningup folder.  I'll fix it soon, don't worry.
 
-For the unfamiliar: [reinforcement learning](https://en.wikipedia.org/wiki/Reinforcement_learning) (RL) is a machine learning approach for teaching agents how to solve tasks by trial and error. Deep RL refers to the combination of RL with [deep learning](http://ufldl.stanford.edu/tutorial/).
+Setup stuff for docker!  Get gazebo running.
 
-This module contains a variety of helpful resources, including:
+Then, from the base spinningup folder, run `python test.py`.
 
-- a short [introduction](https://spinningup.openai.com/en/latest/spinningup/rl_intro.html) to RL terminology, kinds of algorithms, and basic theory,
-- an [essay](https://spinningup.openai.com/en/latest/spinningup/spinningup.html) about how to grow into an RL research role,
-- a [curated list](https://spinningup.openai.com/en/latest/spinningup/keypapers.html) of important papers organized by topic,
-- a well-documented [code repo](https://github.com/openai/spinningup) of short, standalone implementations of key algorithms,
-- and a few [exercises](https://spinningup.openai.com/en/latest/spinningup/exercises.html) to serve as warm-ups.
-
-Get started at [spinningup.openai.com](https://spinningup.openai.com)!
+Done!
