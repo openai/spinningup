@@ -3,7 +3,7 @@ from setuptools import setup
 import sys
 
 assert sys.version_info.major == 3 and sys.version_info.minor >= 6, \
-    "The Spinning Up repo is designed to work with Python 3.6 and greater." \
+    "This repo is designed to work with Python 3.6 and greater." \
     + "Please install it before proceeding."
 
 with open(join("spinup", "version.py")) as version_file:
@@ -29,6 +29,6 @@ setup(
         'tensorflow>=1.8.0',
         'tqdm'
     ],
-    description="Teaching tools for introducing people to deep RL.",
-    author="Joshua Achiam",
+    description="Learning algorithms for use by Space Technologies at California; originally based on Spinningup by OpenAI.",
+    author="George Matheos; derived from work by Joshua Achiam",
 )
