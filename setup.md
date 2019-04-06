@@ -40,9 +40,9 @@ This should begin training an agent for a `LunarLander`
 environment.
 
 This will run for a while; once it's done, you can run
-`python -m spinup.run plot data/test1/test1_s0`
+`python -m spinup.run plot data/test1`
 to see a plot of the results of this training.
 
 You can also run 
-`python -m spinup.run test_policy data/test1/test1_s0`
+`python -m spinup.run test_policy data/test1
 to see a video of the trained policy.
