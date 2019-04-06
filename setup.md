@@ -4,6 +4,10 @@ Note: these install instructions are based on the installation
 structions for OpenAI's spinningup found here:
 `https://spinningup.openai.com/en/latest/user/installation.html`.
 
+Also note that I've only tested this on Mac.  I suspect it will
+work with Linux, but am less sure about Windows.  (Mostly because
+OpenAI says they're not sure whether it works with Windows!)
+
 1. First, we will create a conda environment for learning:
 `conda create -n stac-learning python=3.6`
 
