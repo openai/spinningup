@@ -82,7 +82,16 @@ and the Bellman equation for :math:`Q^{\pi}` is
 Soft Actor-Critic
 ^^^^^^^^^^^^^^^^^
 
-SAC concurrently learns a policy :math:`\pi_{\theta}`, two Q-functions :math:`Q_{\phi_1}, Q_{\phi_2}`, and a value function :math:`V_{\psi}`. 
+SAC concurrently learns a policy :math:`\pi_{\theta}`, two Q-functions :math:`Q_{\phi_1}, Q_{\phi_2}`.
+
+The state-value function is emplicitly parametrized through the soft Q-function parameters and the connection is given by:
+
+.. math::
+
+    V^{\pi}(s) &= \underE{a \sim \pi}{Q^{\pi}(s,a)} + \alpha H\left(\pi(\cdot|s)\right) \\
+    &= \underE{a \sim \pi}{Q^{\pi}(s,a) - \alpha \log \pi(a|s)}.
+
+In the first paper of SAC a function approximator for this function was introduced, but later the authors found it to be unnecessary. 
 
 **Learning Q.** The Q-functions are learned by MSBE minimization, using a **target value network** to form the Bellman backups. They both use the same target, like in TD3, and have loss functions:
 
@@ -93,27 +102,6 @@ SAC concurrently learns a policy :math:`\pi_{\theta}`, two Q-functions :math:`Q_
         \right].
 
 The target value network, like the target networks in DDPG and TD3, is obtained by polyak averaging the value network parameters over the course of training.
-
-**Learning V.** The value function is learned by exploiting (a sample-based approximation of) the connection between :math:`Q^{\pi}` and :math:`V^{\pi}`. Before we go into the learning rule, let's first rewrite the connection equation by using the definition of entropy to obtain:
-
-.. math::
-
-    V^{\pi}(s) &= \underE{a \sim \pi}{Q^{\pi}(s,a)} + \alpha H\left(\pi(\cdot|s)\right) \\
-    &= \underE{a \sim \pi}{Q^{\pi}(s,a) - \alpha \log \pi(a|s)}.
-
-The RHS is an expectation over actions, so we can approximate it by sampling from the policy:
-
-.. math::
-
-    V^{\pi}(s) \approx Q^{\pi}(s,\tilde{a}) - \alpha \log \pi(\tilde{a}|s), \;\;\;\;\; \tilde{a} \sim \pi(\cdot|s).
-
-SAC sets up a mean-squared-error loss for :math:`V_{\psi}` based on this approximation. But what Q-value do we use? SAC uses **clipped double-Q** like TD3 for learning the value function, and takes the minimum Q-value between the two approximators. So the SAC loss for value function parameters is:
-
-.. math::
-
-    L(\psi, {\mathcal D}) = \underE{s \sim \mathcal{D} \\ \tilde{a} \sim \pi_{\theta}}{\Bigg(V_{\psi}(s) - \left(\min_{i=1,2} Q_{\phi_i}(s,\tilde{a}) - \alpha \log \pi_{\theta}(\tilde{a}|s) \right)\Bigg)^2}.
-
-Importantly, we do **not** use actions from the replay buffer here: these actions are sampled fresh from the current version of the policy. 
 
 **Learning the Policy.** The policy should, in each state, act to maximize the expected future return plus expected future entropy. That is, it should maximize :math:`V^{\pi}(s)`, which we expand out (as before) into
 
@@ -254,6 +242,10 @@ Relevant Papers
 - `Soft Actor-Critic: Off-Policy Maximum Entropy Deep Reinforcement Learning with a Stochastic Actor`_, Haarnoja et al, 2018
 
 .. _`Soft Actor-Critic: Off-Policy Maximum Entropy Deep Reinforcement Learning with a Stochastic Actor`: https://arxiv.org/abs/1801.01290
+
+- `Soft Actor-Critic Algorithms and Applications`_, Haarnoja et al, 2018
+
+.. _`Soft Actor-Critic Algorithms and Applications`: https://arxiv.org/abs/1812.05905
 
 
 Other Public Implementations
