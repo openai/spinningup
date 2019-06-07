@@ -6,3 +6,4 @@ data/
 .python-version
 .idea/
 .vscode/
+.DS_Store
