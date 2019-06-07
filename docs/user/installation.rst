@@ -45,11 +45,6 @@ To use Python from the environment you just created, activate the environment wi
 
     `FreeCodeCamp`_ has a good explanation worth reading. There's a shorter description on `Towards Data Science`_ which is also helpful and informative. Finally, if you're an extremely patient person, you may want to read the (dry, but very informative) `documentation page from Conda`_.
 
-.. caution:: 
-
-    As of November 2018, there appears to be a bug which prevents the Tensorflow pip package from working in Python 3.7. To track, see `this Github issue for Tensorflow`_. As a result, in order to use Spinning Up (which requires Tensorflow), you should use Python 3.6. 
-
-
 .. _`the installation instructions`: https://docs.continuum.io/anaconda/install/
 .. _`FreeCodeCamp`: https://medium.freecodecamp.org/why-you-need-python-environments-and-how-to-manage-them-with-conda-85f155f4353c
 .. _`Towards Data Science`: https://towardsdatascience.com/environment-management-with-conda-python-2-3-b9961a8a5097
