@@ -18,7 +18,7 @@ setup(
         'gym[atari,box2d,classic_control]>=0.10.8',
         'ipython',
         'joblib',
-        'matplotlib',
+        'matplotlib==3.0.2',
         'mpi4py',
         'mujoco-py<2.1,>=2.0',
         'numpy',
