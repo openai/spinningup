@@ -20,6 +20,7 @@ setup(
         'joblib',
         'matplotlib',
         'mpi4py',
+        'mujoco-py<2.1,>=2.0',
         'numpy',
         'pandas',
         'pytest',
