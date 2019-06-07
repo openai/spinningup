@@ -83,7 +83,7 @@ Examples of Q-learning methods include
 .. _`Bellman equation`: ../spinningup/rl_intro.html#bellman-equations
 .. _`Tsitsiklis and van Roy`: http://web.mit.edu/jnt/www/Papers/J063-97-bvr-td.pdf
 .. _`review by Szepesvari`: https://sites.ualberta.ca/~szepesva/papers/RLAlgsInMDPs.pdf
-.. _`Sutton and Barto`: https://drive.google.com/file/d/1xeUDVGWGUUv1-ccUMAZHJLej2C7aAFWY/view
+.. _`Sutton and Barto`: https://drive.google.com/file/d/1opPSz5AZ_kVa1uWOdOiveNiBFiEOHjkG/view
 .. _`equivalent`: https://arxiv.org/abs/1704.06440
 
 What to Learn in Model-Based RL
