@@ -167,6 +167,8 @@ b. Unsupervised RL
 
 .. [#] `Data-Efficient Hierarchical Reinforcement Learning <https://arxiv.org/abs/1805.08296>`_, Nachum et al, 2018. **Algorithm: HIRO.**
 
+.. [#] `Learning Multi-Level Hierarchies with Hindsight <https://arxiv.org/abs/1712.00948>`_, Levy et al, 2019. **Algorithm: Hierarchical Actor-Critic (HAC)**
+
 5. Memory
 =========
 
