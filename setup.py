@@ -20,7 +20,6 @@ setup(
         'joblib',
         'matplotlib==3.0.2',
         'mpi4py',
-        'mujoco-py<2.1,>=2.0',
         'numpy',
         'pandas',
         'pytest',
@@ -30,6 +29,7 @@ setup(
         'tensorflow>=1.8.0,<2.0',
         'tqdm'
     ],
+    extras_require={'mujoco': 'mujoco-py<2.1,>=2.0'},
     description="Teaching tools for introducing people to deep RL.",
     author="Joshua Achiam",
 )
