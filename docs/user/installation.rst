@@ -37,7 +37,7 @@ To use Python from the environment you just created, activate the environment wi
 
 .. parsed-literal::
 
-    source activate spinningup
+    conda activate spinningup
 
 .. admonition:: You Should Know
 
