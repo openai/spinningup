@@ -12,7 +12,7 @@ before_install:
     - ./travis_setup.sh
 
 script:
-    - pip3 install -e .
+    - pip3 install --upgrade -e .[mujoco]
     - python3 -c "import mujoco_py"
     - python3 -c "import spinup"
     - python3 -m pytest
