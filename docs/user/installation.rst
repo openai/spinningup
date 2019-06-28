@@ -85,7 +85,7 @@ Installing Spinning Up
 
 .. admonition:: You Should Know
 
-    Spinning Up defaults to installing everything in Gym **except** the MuJoCo environments. In case you run into any trouble with the Gym installation, check out the `Gym`_ github page for help. If you want the MuJoCo environments, see the optional installation arguments below.
+    Spinning Up defaults to installing everything in Gym **except** the MuJoCo environments. In case you run into any trouble with the Gym installation, check out the `Gym`_ github page for help. If you want the MuJoCo environments, see the optional installation section below.
 
 .. _`Gym`: https://github.com/openai/gym
 
