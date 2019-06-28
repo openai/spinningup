@@ -27,7 +27,7 @@ Installing Python
 
 We recommend installing Python through Anaconda. Anaconda is a library that includes Python and many useful packages for Python, as well as an environment manager called conda that makes package management simple.
 
-Follow `the installation instructions`_ for Anaconda here. Download and install Anaconda 3.x (at time of writing, 3.6). Then create a conda env for organizing packages used in Spinning Up:
+Follow `the installation instructions`_ for Anaconda here. Download and install Anaconda3 (at time of writing, `Anaconda3-5.3.0`_). Then create a conda Python 3.6 env for organizing packages used in Spinning Up:
 
 .. parsed-literal::
 
@@ -46,6 +46,7 @@ To use Python from the environment you just created, activate the environment wi
     `FreeCodeCamp`_ has a good explanation worth reading. There's a shorter description on `Towards Data Science`_ which is also helpful and informative. Finally, if you're an extremely patient person, you may want to read the (dry, but very informative) `documentation page from Conda`_.
 
 .. _`the installation instructions`: https://docs.continuum.io/anaconda/install/
+.. _`Anaconda3-5.3.0`: https://repo.anaconda.com/archive/
 .. _`FreeCodeCamp`: https://medium.freecodecamp.org/why-you-need-python-environments-and-how-to-manage-them-with-conda-85f155f4353c
 .. _`Towards Data Science`: https://towardsdatascience.com/environment-management-with-conda-python-2-3-b9961a8a5097
 .. _`documentation page from Conda`: https://conda.io/docs/user-guide/tasks/manage-environments.html
