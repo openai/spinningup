@@ -109,12 +109,12 @@ def get_all_datasets(all_logdirs, legend=None, select=None, exclude=None):
     """
     logdirs = []
     for logdir in all_logdirs:
-        if osp.isdir(logdir) and logdir[-1]=='/':
+        if osp.isdir(logdir) and logdir[-1]==os.sep:
             logdirs += [logdir]
         else:
             basedir = osp.dirname(logdir)
             fulldir = lambda x : osp.join(basedir, x)
-            prefix = logdir.split('/')[-1]
+            prefix = logdir.split(os.sep)[-1]
             listdir= os.listdir(basedir)
             logdirs += sorted([fulldir(x) for x in listdir if prefix in x])
 
