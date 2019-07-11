@@ -5,13 +5,13 @@ Installation
 
 .. contents:: Table of Contents
 
-Spinning Up requires Python3, OpenAI Gym, and OpenMPI. 
+Spinning Up requires Python3, OpenAI Gym, and OpenMPI.
 
-Spinning Up is currently only supported on Linux and OSX. It may be possible to install on Windows, though this hasn't been extensively tested. [#]_ 
+Spinning Up is currently only supported on Linux and OSX. It may be possible to install on Windows, though this hasn't been extensively tested. [#]_
 
 .. admonition:: You Should Know
 
-    Many examples and benchmarks in Spinning Up refer to RL environments that use the `MuJoCo`_ physics engine. MuJoCo is a proprietary software that requires a license, which is free to trial and free for students, but otherwise is not free. As a result, installing it is optional, but because of its importance to the research community---it is the de facto standard for benchmarking deep RL algorithms in continuous control---it is preferred. 
+    Many examples and benchmarks in Spinning Up refer to RL environments that use the `MuJoCo`_ physics engine. MuJoCo is a proprietary software that requires a license, which is free to trial and free for students, but otherwise is not free. As a result, installing it is optional, but because of its importance to the research community---it is the de facto standard for benchmarking deep RL algorithms in continuous control---it is preferred.
 
     Don't worry if you decide not to install MuJoCo, though. You can definitely get started in RL by running RL algorithms on the `Classic Control`_ and `Box2d`_ environments in Gym, which are totally free to use.
 
@@ -41,7 +41,7 @@ To use Python from the environment you just created, activate the environment wi
 
 .. admonition:: You Should Know
 
-    If you're new to python environments and package management, this stuff can quickly get confusing or overwhelming, and you'll probably hit some snags along the way. (Especially, you should expect problems like, "I just installed this thing, but it says it's not found when I try to use it!") You may want to read through some clean explanations about what package management is, why it's a good idea, and what commands you'll typically have to execute to correctly use it. 
+    If you're new to python environments and package management, this stuff can quickly get confusing or overwhelming, and you'll probably hit some snags along the way. (Especially, you should expect problems like, "I just installed this thing, but it says it's not found when I try to use it!") You may want to read through some clean explanations about what package management is, why it's a good idea, and what commands you'll typically have to execute to correctly use it.
 
     `FreeCodeCamp`_ has a good explanation worth reading. There's a shorter description on `Towards Data Science`_ which is also helpful and informative. Finally, if you're an extremely patient person, you may want to read the (dry, but very informative) `documentation page from Conda`_.
 
@@ -56,7 +56,7 @@ To use Python from the environment you just created, activate the environment wi
 Installing OpenMPI
 ==================
 
-Ubuntu 
+Ubuntu
 ------
 
 .. parsed-literal::
@@ -66,7 +66,7 @@ Ubuntu
 
 Mac OS X
 --------
-Installation of system packages on Mac requires Homebrew_. With Homebrew installed, run the follwing:
+Installation of system packages on Mac requires Homebrew_. With Homebrew installed, run the following:
 
 .. parsed-literal::
 
@@ -116,7 +116,7 @@ And plot the results with
 Installing MuJoCo (Optional)
 ============================
 
-First, go to the `mujoco-py`_ github page. Follow the installation instructions in the README, which describe how to install the MuJoCo physics engine and the mujoco-py package (which allows the use of MuJoCo from Python). 
+First, go to the `mujoco-py`_ github page. Follow the installation instructions in the README, which describe how to install the MuJoCo physics engine and the mujoco-py package (which allows the use of MuJoCo from Python).
 
 .. admonition:: You Should Know
 
