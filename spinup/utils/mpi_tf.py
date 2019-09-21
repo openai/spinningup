@@ -26,7 +26,7 @@ def sync_all_params():
     return sync_params(tf.global_variables())
 
 
-class MpiAdamOptimizer(tf.train.AdamOptimizer):
+class MpiAdamOptimizer(tf.compat.v1.train.AdamOptimizer):
     """
     Adam optimizer that averages gradients across MPI processes.
 
@@ -35,7 +35,7 @@ class MpiAdamOptimizer(tf.train.AdamOptimizer):
     the base `AdamOptimizer`_.
 
     .. _`MpiAdamOptimizer`: https://github.com/openai/baselines/blob/master/baselines/common/mpi_adam_optimizer.py
-    .. _`AdamOptimizer`: https://www.tensorflow.org/api_docs/python/tf/train/AdamOptimizer
+    .. _`AdamOptimizer`: https://www.tensorflow.org/api_docs/python/tf/compat/v1/train/AdamOptimizer
     """
 
     def __init__(self, **kwargs):
