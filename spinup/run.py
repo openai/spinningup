@@ -129,6 +129,7 @@ def parse_and_execute_grid_search(cmd, args):
 
     # Make sure that if num_cpu > 1, the algorithm being used is compatible
     # with MPI.
+    print("run_kwargs['num_cpu']",run_kwargs['num_cpu'])
     if 'num_cpu' in run_kwargs and not(run_kwargs['num_cpu'] == 1):
         assert cmd in MPI_COMPATIBLE_ALGOS, \
             friendly_err("This algorithm can't be run with num_cpu > 1.")
