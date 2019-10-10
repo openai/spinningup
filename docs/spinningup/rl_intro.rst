@@ -71,7 +71,7 @@ States and Observations
 
 A **state** :math:`s` is a complete description of the state of the world. There is no information about the world which is hidden from the state. An **observation** :math:`o` is a partial description of a state, which may omit information. 
 
-In deep RL, we almost always represent states and observations by a `real-valued vector, matrix, or higher-order tensor`_. For instance, a visual observation could be represented by the RGB matrix of its pixel values; the state of a robot might be represented by its joint angles and velocities. 
+In deep RL, we almost always represent states and observations by a `real-valued vector, matrix, or higher-order tensor`_. For instance, a visual observation could be represented by the RGB tensor of its pixel values; the state of a robot might be represented by its joint angles and velocities. 
 
 When the agent is able to observe the complete state of the environment, we say that the environment is **fully observed**. When the agent can only see a partial observation, we say that the environment is **partially observed**.
 
