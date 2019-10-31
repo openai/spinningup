@@ -133,7 +133,7 @@ def mlp_gaussian_policy(x, a, hidden_sizes, activation, output_activation, actio
     logp_pi = gaussian_likelihood(pi, mu, log_std)
 
     old_mu_ph, old_log_std_ph = placeholders(act_dim, act_dim)
-    d_kl = diagonal_gaussian_kl(mu, log_std, old_mu_ph, old_log_std_ph)
+    d_kl = diagonal_gaussian_kl(old_mu_ph, old_log_std_ph, mu, log_std)
 
     info = {'mu': mu, 'log_std': log_std}
     info_phs = {'mu': old_mu_ph, 'log_std': old_log_std_ph}
