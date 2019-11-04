@@ -14,11 +14,11 @@ setup(
     py_modules=['spinup'],
     version=__version__,#'0.1',
     install_requires=[
-        'cloudpickle==0.5.2',
+        'cloudpickle==1.2.1',
         'gym[atari,box2d,classic_control]>=0.10.8',
         'ipython',
         'joblib',
-        'matplotlib==3.0.2',
+        'matplotlib==3.1.1',
         'mpi4py',
         'numpy',
         'pandas',
@@ -29,7 +29,7 @@ setup(
         'tensorflow>=1.8.0,<2.0',
         'tqdm'
     ],
-    extras_require={'mujoco': 'mujoco-py<2.1,>=2.0'},
+    extras_require={'mujoco': 'mujoco-py==2.0.2.7'},
     description="Teaching tools for introducing people to deep RL.",
     author="Joshua Achiam",
 )
