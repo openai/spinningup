@@ -164,6 +164,7 @@ latex_elements = {
 imgmath_latex_preamble = r'''
 \usepackage{algorithm}
 \usepackage{algorithmic}
+\usepackage{amsmath}
 \usepackage{cancel}
 
 \usepackage[verbose=true,letterpaper]{geometry}

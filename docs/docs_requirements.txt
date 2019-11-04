@@ -1,5 +1,5 @@
-cloudpickle==0.5.2
-gym>=0.10.8
+cloudpickle~=1.2.1
+gym~=0.15.3
 ipython
 joblib
 matplotlib
@@ -12,5 +12,5 @@ seaborn==0.8.1
 sphinx==1.5.6
 sphinx-autobuild==0.7.1       
 sphinx-rtd-theme==0.4.1 
-tensorflow>=1.8.0
+tensorflow>=1.8.0<2.0
 tqdm
