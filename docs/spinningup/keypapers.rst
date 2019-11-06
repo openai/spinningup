@@ -292,6 +292,8 @@ b. Model is Given
 
 .. [#] `Simple Random Search Provides a Competitive Approach to Reinforcement Learning <https://arxiv.org/abs/1803.07055>`_, Mania et al, 2018.
 
+.. [#] `Behaviour Suite for Reinforcement Learning <https://arxiv.org/abs/1908.03568>`_, Osband et al, 2019.
+
 13. Bonus: Classic Papers in RL Theory or Review
 ================================================
 
