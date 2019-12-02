@@ -26,6 +26,17 @@ eg:
 
     python -m spinup.run ppo --env Walker2d-v2 --exp_name walker
 
+.. admonition:: Important!
+    
+    If you do not have the MuJoCo package installed, you won't be able to run the Walker2d-cv2 environment, in this case use LunarLanderv2 instead
+    
+    e.g
+    
+.. parsed-literal::
+    
+        python -m spinup.run ppo --env LunarLander-v2 --exp_name lunar
+
+
 .. _`experiment outputs`: ../user/saving_and_loading.html
 .. _`plotting`: ../user/plotting.html
 
