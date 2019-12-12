@@ -1,6 +1,7 @@
 *.*~
 __pycache__/
 *.pkl
+*.pyc
 data/
 **/*.egg-info
 .python-version

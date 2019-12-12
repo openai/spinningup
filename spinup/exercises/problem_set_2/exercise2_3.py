@@ -7,7 +7,11 @@ from spinup.algos.td3.td3 import ReplayBuffer
 from spinup.algos.td3.core import get_vars
 from spinup.utils.logx import EpochLogger
 from spinup.utils.run_utils import ExperimentGrid
+from spinup.user_config import HALFCHEETAH_ENV, IMPORT_USER_MODULES
 
+import importlib
+for module in IMPORT_USER_MODULES:
+    importlib.import_module(module)
 
 """
 
@@ -189,7 +193,7 @@ def td3(env_fn, actor_critic=core.mlp_actor_critic, ac_kwargs=dict(), seed=0,
     logger.setup_tf_saver(sess, inputs={'x': x_ph, 'a': a_ph}, outputs={'pi': pi, 'q1': q1, 'q2': q2})
 
     def get_action(o, noise_scale):
-        a = sess.run(pi, feed_dict={x_ph: o.reshape(1,-1)})
+        a = sess.run(pi, feed_dict={x_ph: o.reshape(1,-1)})[0]
         a += noise_scale * np.random.randn(act_dim)
         return np.clip(a, -act_limit, act_limit)
 
@@ -291,7 +295,7 @@ def td3(env_fn, actor_critic=core.mlp_actor_critic, ac_kwargs=dict(), seed=0,
 if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser()
-    parser.add_argument('--env', type=str, default='HalfCheetah-v2')
+    parser.add_argument('--env', type=str, default=HALFCHEETAH_ENV)
     parser.add_argument('--h', type=int, default=300)
     parser.add_argument('--l', type=int, default=1)
     parser.add_argument('--num_runs', '-n', type=int, default=3)

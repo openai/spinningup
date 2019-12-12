@@ -183,7 +183,13 @@ class Logger:
             try:
                 joblib.dump(state_dict, osp.join(self.output_dir, fname))
             except:
-                self.log('Warning: could not pickle state_dict.', color='red')
+                try:
+                    if 'env' in state_dict and \
+                        hasattr(state_dict['env'], 'env') and \
+                        hasattr(state_dict['env'].env, 'spec'):
+                        joblib.dump({'spec': state_dict['env'].env.spec}, osp.join(self.output_dir, fname))
+                finally:
+                    self.log('Warning: could not pickle state_dict.', color='red')
             if hasattr(self, 'tf_saver_elements'):
                 self._tf_simple_save(itr)
 

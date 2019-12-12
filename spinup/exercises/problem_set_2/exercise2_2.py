@@ -1,5 +1,6 @@
 from spinup.algos.ddpg.core import mlp, mlp_actor_critic
 from spinup.utils.run_utils import ExperimentGrid
+from spinup.user_config import HALFCHEETAH_ENV
 from spinup import ddpg
 import numpy as np
 import tensorflow as tf
@@ -19,7 +20,7 @@ You do NOT need to write code for this exercise.
 """
 Bugged Actor-Critic
 """
-def bugged_mlp_actor_critic(x, a, hidden_sizes=(400,300), activation=tf.nn.relu, 
+def bugged_mlp_actor_critic(x, a, hidden_sizes=(400,300), activation=tf.nn.relu,
                             output_activation=tf.tanh, action_space=None):
     act_dim = a.shape.as_list()[-1]
     act_limit = action_space.high[0]
@@ -35,7 +36,7 @@ def bugged_mlp_actor_critic(x, a, hidden_sizes=(400,300), activation=tf.nn.relu,
 if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser()
-    parser.add_argument('--env', type=str, default='HalfCheetah-v2')
+    parser.add_argument('--env', type=str, default=HALFCHEETAH_ENV)
     parser.add_argument('--h', type=int, default=300)
     parser.add_argument('--l', type=int, default=1)
     parser.add_argument('--num_runs', '-n', type=int, default=3)
@@ -45,7 +46,7 @@ if __name__ == '__main__':
 
     def ddpg_with_actor_critic(bugged, **kwargs):
         actor_critic = bugged_mlp_actor_critic if bugged else mlp_actor_critic
-        return ddpg(actor_critic=actor_critic, 
+        return ddpg(actor_critic=actor_critic,
                     ac_kwargs=dict(hidden_sizes=[args.h]*args.l),
                     start_steps=5000,
                     max_ep_len=150,
