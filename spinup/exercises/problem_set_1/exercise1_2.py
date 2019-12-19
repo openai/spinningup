@@ -98,7 +98,7 @@ if __name__ == '__main__':
     import pandas as pd
     import psutil
     import time
-
+    
     logdir = "/tmp/experiments/%i"%int(time.time())
     ppo(env_fn = lambda : gym.make('InvertedPendulum-v2'),
         ac_kwargs=dict(policy=mlp_gaussian_policy, hidden_sizes=(64,)),

@@ -19,7 +19,7 @@ You do NOT need to write code for this exercise.
 """
 Bugged Actor-Critic
 """
-def bugged_mlp_actor_critic(x, a, hidden_sizes=(400,300), activation=tf.nn.relu, 
+def bugged_mlp_actor_critic(x, a, hidden_sizes=(400,300), activation=tf.nn.relu,
                             output_activation=tf.tanh, action_space=None):
     act_dim = a.shape.as_list()[-1]
     act_limit = action_space.high[0]
@@ -45,7 +45,7 @@ if __name__ == '__main__':
 
     def ddpg_with_actor_critic(bugged, **kwargs):
         actor_critic = bugged_mlp_actor_critic if bugged else mlp_actor_critic
-        return ddpg(actor_critic=actor_critic, 
+        return ddpg(actor_critic=actor_critic,
                     ac_kwargs=dict(hidden_sizes=[args.h]*args.l),
                     start_steps=5000,
                     max_ep_len=150,

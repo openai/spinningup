@@ -11,3 +11,9 @@ from spinup.utils.logx import Logger, EpochLogger
 
 # Version
 from spinup.version import __version__
+
+# User libs
+from spinup.user_config import IMPORT_USER_MODULES
+import importlib
+for module in IMPORT_USER_MODULES:
+    importlib.import_module(module)

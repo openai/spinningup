@@ -11,6 +11,10 @@ FORCE_DATESTAMP = False
 # Whether GridSearch provides automatically-generated default shorthands:
 DEFAULT_SHORTHAND = True
 
-# Tells the GridSearch how many seconds to pause for before launching 
+# Tells the GridSearch how many seconds to pause for before launching
 # experiments.
 WAIT_BEFORE_LAUNCH = 5
+
+IMPORT_USER_MODULES = [
+    # 'pybullet_envs'
+]
