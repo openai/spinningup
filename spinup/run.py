@@ -135,24 +135,26 @@ def parse_and_execute_grid_search(cmd, args):
 
     # Special handling for environment: make sure that env_name is a real,
     # registered gym environment.
-    valid_envs = [e.id for e in list(gym.envs.registry.all())]
     assert 'env_name' in arg_dict, \
         friendly_err("You did not give a value for --env_name! Add one and try again.")
     for env_name in arg_dict['env_name']:
-        err_msg = dedent("""
+        try:
+            gym.envs.registry.spec(env_name)
+        except gym.error.Error as e:
+            err_msg = dedent("""
 
-            %s is not registered with Gym.
+                %s is not registered with Gym. (%s)
 
-            Recommendations:
+                Recommendations:
 
-                * Check for a typo (did you include the version tag?)
+                    * Check for a typo (did you include the version tag?)
 
-                * View the complete list of valid Gym environments at
+                    * View the complete list of valid Gym environments at
 
-                    https://gym.openai.com/envs/
+                        https://gym.openai.com/envs/
 
-            """%env_name)
-        assert env_name in valid_envs, err_msg
+                """%(env_name, str(e)))
+            assert False, err_msg
 
 
     # Construct and execute the experiment grid.
