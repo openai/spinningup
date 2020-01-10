@@ -27,6 +27,11 @@ def placeholders_from_spaces(*args):
     return [placeholder_from_space(space) for space in args]
 
 def mlp(x, hidden_sizes=(32,), activation=tf.tanh, output_activation=None):
+    # support for scalar inputs, eg. discrete observation spaces
+    if len(x.shape) == 1:
+        x = x[:,None]
+    if x.dtype not in [tf.bfloat16, tf.float16, tf.float32, tf.float64, tf.complex64, tf.complex128]:
+        x = tf.dtypes.cast(x, tf.float32)
     for h in hidden_sizes[:-1]:
         x = tf.layers.dense(x, units=h, activation=activation)
     return tf.layers.dense(x, units=hidden_sizes[-1], activation=output_activation)

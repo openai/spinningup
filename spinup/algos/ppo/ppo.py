@@ -2,7 +2,7 @@ import numpy as np
 import tensorflow as tf
 import gym
 import time
-import spinup.algos.ppo.core as core
+import spinup.algos.meta_ppo.core as core
 from spinup.utils.logx import EpochLogger
 from spinup.utils.mpi_tf import MpiAdamOptimizer, sync_all_params
 from spinup.utils.mpi_tools import mpi_fork, mpi_avg, proc_id, mpi_statistics_scalar, num_procs
@@ -60,6 +60,8 @@ class PPOBuffer:
         
         # the next two lines implement GAE-Lambda advantage calculation
         deltas = rews[:-1] + self.gamma * vals[1:] - vals[:-1]
+        # print (deltas)
+        # print (rews)
         self.adv_buf[path_slice] = core.discount_cumsum(deltas, self.gamma * self.lam)
         
         # the next line computes rewards-to-go, to be targets for the value function
@@ -168,11 +170,12 @@ def ppo(env_fn, actor_critic=core.mlp_actor_critic, ac_kwargs=dict(), seed=0,
     logger = EpochLogger(**logger_kwargs)
     logger.save_config(locals())
 
-    seed += 10000 * proc_id()
+    # seed += 10000 * proc_id()
     tf.set_random_seed(seed)
     np.random.seed(seed)
 
     env = env_fn()
+    env.seed(seed)
     obs_dim = env.observation_space.shape
     act_dim = env.action_space.shape
     
@@ -219,15 +222,30 @@ def ppo(env_fn, actor_critic=core.mlp_actor_critic, ac_kwargs=dict(), seed=0,
     sess = tf.Session()
     sess.run(tf.global_variables_initializer())
 
+    # core.save_variables('/tmp/variables', sess = sess)
+    # core.load_variables('/tmp/variables', sess = sess)
+
+    # print (sess.run([tf.get_default_graph().get_tensor_by_name("pi/dense/kernel:0")]))
+
     # Sync params across processes
     sess.run(sync_all_params())
 
     # Setup model saving
     logger.setup_tf_saver(sess, inputs={'x': x_ph}, outputs={'pi': pi, 'v': v})
 
-    def update():
-        inputs = {k:v for k,v in zip(all_phs, buf.get())}
+    def update(epoch):
+        phs_ = buf.get()
+        inputs = {k:v for k,v in zip(all_phs, phs_)}
         pi_l_old, v_l_old, ent = sess.run([pi_loss, v_loss, approx_ent], feed_dict=inputs)
+
+        '''
+        if epoch % 1 == 0:
+            adv_ph_, ret_ph_, v_ = sess.run([adv_ph, ret_ph, v], feed_dict=inputs)
+            for i in range(600):
+                print (adv_ph_[i], ret_ph_[i], v_[i])
+        '''
+        
+        
 
         # Training
         for i in range(train_pi_iters):
@@ -253,13 +271,22 @@ def ppo(env_fn, actor_critic=core.mlp_actor_critic, ac_kwargs=dict(), seed=0,
     # Main loop: collect experience in env and update/log each epoch
     for epoch in range(epochs):
         for t in range(local_steps_per_epoch):
-            a, v_t, logp_t = sess.run(get_action_ops, feed_dict={x_ph: o.reshape(1,-1)})
+            if np.isscalar(o):
+                o = np.array([o])
+            else:
+                o = o.reshape((1,-1))
+            a, v_t, logp_t = sess.run(get_action_ops, feed_dict={x_ph: o})
 
             # save and log
             buf.store(o, a, r, v_t, logp_t)
             logger.store(VVals=v_t)
 
             o, r, d, _ = env.step(a[0])
+            '''
+            if t < 100:
+                print(t, a[0], o, d)
+            '''
+
             ep_ret += r
             ep_len += 1
 
@@ -268,7 +295,11 @@ def ppo(env_fn, actor_critic=core.mlp_actor_critic, ac_kwargs=dict(), seed=0,
                 if not(terminal):
                     print('Warning: trajectory cut off by epoch at %d steps.'%ep_len)
                 # if trajectory didn't reach terminal state, bootstrap value target
-                last_val = r if d else sess.run(v, feed_dict={x_ph: o.reshape(1,-1)})
+                if np.isscalar(o):
+                    o = np.array([o])
+                else:
+                    o = o.reshape((1,-1))
+                last_val = r if d else sess.run(v, feed_dict={x_ph: o})
                 buf.finish_path(last_val)
                 if terminal:
                     # only save EpRet / EpLen if trajectory finished
@@ -280,7 +311,7 @@ def ppo(env_fn, actor_critic=core.mlp_actor_critic, ac_kwargs=dict(), seed=0,
             logger.save_state({'env': env}, None)
 
         # Perform PPO update!
-        update()
+        update(epoch)
 
         # Log info about epoch
         logger.log_tabular('Epoch', epoch)
@@ -307,7 +338,7 @@ if __name__ == '__main__':
     parser.add_argument('--l', type=int, default=2)
     parser.add_argument('--gamma', type=float, default=0.99)
     parser.add_argument('--seed', '-s', type=int, default=0)
-    parser.add_argument('--cpu', type=int, default=4)
+    parser.add_argument('--cpu', type=int, default=1)
     parser.add_argument('--steps', type=int, default=4000)
     parser.add_argument('--epochs', type=int, default=50)
     parser.add_argument('--exp_name', type=str, default='ppo')

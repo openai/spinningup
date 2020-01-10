@@ -2,7 +2,7 @@ import numpy as np
 import tensorflow as tf
 import gym
 import time
-import spinup.algos.vpg.core as core
+import spinup.algos.meta_ppo.core as core
 from spinup.utils.logx import EpochLogger
 from spinup.utils.mpi_tf import MpiAdamOptimizer, sync_all_params
 from spinup.utils.mpi_tools import mpi_fork, mpi_avg, proc_id, mpi_statistics_scalar, num_procs
@@ -207,8 +207,7 @@ def vpg(env_fn, actor_critic=core.mlp_actor_critic, ac_kwargs=dict(), seed=0,
     # Setup model saving
     logger.setup_tf_saver(sess, inputs={'x': x_ph}, outputs={'pi': pi, 'v': v})
 
-    def update():
-        inputs = {k:v for k,v in zip(all_phs, buf.get())}
+    def update(inputs):
         pi_l_old, v_l_old, ent = sess.run([pi_loss, v_loss, approx_ent], feed_dict=inputs)
 
         # Policy gradient step
@@ -231,7 +230,11 @@ def vpg(env_fn, actor_critic=core.mlp_actor_critic, ac_kwargs=dict(), seed=0,
     # Main loop: collect experience in env and update/log each epoch
     for epoch in range(epochs):
         for t in range(local_steps_per_epoch):
-            a, v_t, logp_t = sess.run(get_action_ops, feed_dict={x_ph: o.reshape(1,-1)})
+            if np.isscalar(o):
+                o = np.array([o])
+            else:
+                o = o.reshape((1,-1))
+            a, v_t, logp_t = sess.run(get_action_ops, feed_dict={x_ph: o})
 
             # save and log
             buf.store(o, a, r, v_t, logp_t)
@@ -245,8 +248,12 @@ def vpg(env_fn, actor_critic=core.mlp_actor_critic, ac_kwargs=dict(), seed=0,
             if terminal or (t==local_steps_per_epoch-1):
                 if not(terminal):
                     print('Warning: trajectory cut off by epoch at %d steps.'%ep_len)
+                if np.isscalar(o):
+                    o = np.array([o])
+                else:
+                    o = o.reshape((1,-1))
                 # if trajectory didn't reach terminal state, bootstrap value target
-                last_val = r if d else sess.run(v, feed_dict={x_ph: o.reshape(1,-1)})
+                last_val = r if d else sess.run(v, feed_dict={x_ph: o})
                 buf.finish_path(last_val)
                 if terminal:
                     # only save EpRet / EpLen if trajectory finished
@@ -258,7 +265,14 @@ def vpg(env_fn, actor_critic=core.mlp_actor_critic, ac_kwargs=dict(), seed=0,
             logger.save_state({'env': env}, None)
 
         # Perform VPG update!
-        update()
+        inputs = {k:v for k,v in zip(all_phs, buf.get())}
+
+        if (epoch % 10 == 0):
+            adv_ph_, ret_ph_, v_, act_, logp_ = sess.run([adv_ph, ret_ph, v, a_ph, logp_old_ph], feed_dict=inputs)
+            for i in range(200):
+                print (adv_ph_[i], ret_ph_[i], v_[i], act_[i], logp_[i])
+
+        update(inputs)
 
         # Log info about epoch
         logger.log_tabular('Epoch', epoch)
