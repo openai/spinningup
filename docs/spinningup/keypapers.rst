@@ -27,6 +27,8 @@ a. Deep Q-Learning
 
 .. [#] `Rainbow: Combining Improvements in Deep Reinforcement Learning <https://arxiv.org/abs/1710.02298>`_, Hessel et al, 2017. **Algorithm: Rainbow DQN.**
 
+.. [#] `Reconciling λ-Returns with Experience Replay <https://arxiv.org/abs/1810.09967>`_, Daley and Amato, 2019. **Algorithm: DQN(λ).**
+
 
 b. Policy Gradients
 -------------------
