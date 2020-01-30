@@ -33,7 +33,7 @@ class Mock(MagicMock):
     def __getattr__(cls, name):
         return MagicMock()
 
-MOCK_MODULES = ['mpi4py', 'torch']
+MOCK_MODULES = ['mpi4py', 'torch', 'torch.optim', 'torch.nn']
 sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 
 # Finish imports
