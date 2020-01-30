@@ -25,6 +25,7 @@ dirname = os.path.dirname
 sys.path.insert(0, dirname(dirname(__file__)))
 
 # Mock mpi4py to get around having to install it on RTD server (which fails)
+# Also to mock PyTorch, because it is too large for the RTD server to download
 from unittest.mock import MagicMock
 
 class Mock(MagicMock):
@@ -32,7 +33,7 @@ class Mock(MagicMock):
     def __getattr__(cls, name):
         return MagicMock()
 
-MOCK_MODULES = ['mpi4py']
+MOCK_MODULES = ['mpi4py', 'torch']
 sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 
 # Finish imports
