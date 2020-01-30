@@ -18,6 +18,8 @@ The following algorithms are implemented in the Spinning Up package:
 
 They are all implemented with `MLP`_ (non-recurrent) actor-critics, making them suitable for fully-observed, non-image-based RL environments, e.g. the `Gym Mujoco`_ environments.
 
+Spinning Up has two implementations for each algorithm (except for TRPO): one that uses `PyTorch`_ as the neural network library, and one that uses `Tensorflow v1`_ as the neural network library. (TRPO is currently only available in Tensorflow.)
+
 .. _`Gym Mujoco`: https://gym.openai.com/envs/#mujoco
 .. _`Vanilla Policy Gradient`: ../algorithms/vpg.html
 .. _`Trust Region Policy Optimization`: ../algorithms/trpo.html
@@ -26,6 +28,8 @@ They are all implemented with `MLP`_ (non-recurrent) actor-critics, making them 
 .. _`Twin Delayed DDPG`: ../algorithms/td3.html
 .. _`Soft Actor-Critic`: ../algorithms/sac.html
 .. _`MLP`: https://en.wikipedia.org/wiki/Multilayer_perceptron
+.. _`PyTorch`: https://pytorch.org/
+.. _`Tensorflow v1`: https://www.tensorflow.org/versions/r1.15/api_docs
 
 
 Why These Algorithms?
@@ -56,13 +60,48 @@ Code Format
 
 All implementations in Spinning Up adhere to a standard template. They are split into two files: an algorithm file, which contains the core logic of the algorithm, and a core file, which contains various utilities needed to run the algorithm.
 
-The Algorithm File
-------------------
+The algorithm file always starts with a class definition for an experience buffer object, which is used to store information from agent-environment interactions. Next, there is a single function which runs the algorithm. The algorithm function follows a template that is roughly the same across the PyTorch and Tensorflow versions, but we'll break it down for each separately below. Finally, there's some support in each algorithm file for directly running the algorithm in Gym environments from the command line (though this is not the recommended way to run the algorithms---we'll describe how to do that on the `Running Experiments`_ page).
 
-The algorithm file always starts with a class definition for an experience buffer object, which is used to store information from agent-environment interactions.
+.. _`Running Experiments`: ../user/running.html
 
-Next, there is a single function which runs the algorithm, performing the following tasks (in this order):
+The Algorithm Function: PyTorch Version
+---------------------------------------
+
+The algorithm function for a PyTorch implementation performs the following tasks in (roughly) this order:
     
+    1) Logger setup
+
+    2) Random seed setting
+    
+    3) Environment instantiation
+    
+    4) Constructing the actor-critic PyTorch module via the ``actor_critic`` function passed to the algorithm function as an argument
+    
+    5) Instantiating the experience buffer
+    
+    6) Setting up callable loss functions that also provide diagnostics specific to the algorithm
+    
+    7) Making PyTorch optimizers
+    
+    8) Setting up model saving through the logger
+
+    9) Setting up an update function that runs one epoch of optimization or one step of descent
+    
+    10) Running the main loop of the algorithm:
+    
+        a) Run the agent in the environment
+    
+        b) Periodically update the parameters of the agent according to the main equations of the algorithm
+    
+        c) Log key performance metrics and save agent
+
+
+
+The Algorithm Function: Tensorflow Version
+------------------------------------------
+
+The algorithm function for a Tensorflow implementation performs the following tasks in (roughly) this order:
+
     1) Logger setup
 
     2) Random seed setting
@@ -94,15 +133,13 @@ Next, there is a single function which runs the algorithm, performing the follow
         c) Log key performance metrics and save agent
 
 
-Finally, there's some support for directly running the algorithm in Gym environments from the command line.
-
 
 The Core File
 -------------
 
 The core files don't adhere as closely as the algorithms files to a template, but do have some approximate structure:
 
-    1) Functions related to making and managing placeholders
+    1) **Tensorflow only:** Functions related to making and managing placeholders
 
     2) Functions for building sections of computation graph relevant to the ``actor_critic`` method for a particular algorithm
 

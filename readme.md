@@ -16,3 +16,17 @@ This module contains a variety of helpful resources, including:
 - and a few [exercises](https://spinningup.openai.com/en/latest/spinningup/exercises.html) to serve as warm-ups.
 
 Get started at [spinningup.openai.com](https://spinningup.openai.com)!
+
+
+Citing Spinning Up
+------------------
+
+If you reference or use Spinning Up in your research, please cite:
+
+```
+@article{SpinningUp2018,
+    author = {Achiam, Joshua},
+    title = {{Spinning Up in Deep Reinforcement Learning}},
+    year = {2018}
+}
+```

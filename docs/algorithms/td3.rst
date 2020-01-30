@@ -11,7 +11,7 @@ Background
 
 .. _`Background for DDPG`: ../algorithms/ddpg.html#background
 
-While DDPG can achieve great performance sometimes, it is frequently brittle with respect to hyperparameters and other kinds of tuning. A common failure mode for DDPG is that the learned Q-function begins to dramatically overestimate Q-values, which then leads to the policy breaking, because it exploits the errors in the Q-function. Twin Delayed DDPG (TD3) is an algorithm which addresses this issue by introducing three critical tricks:
+While DDPG can achieve great performance sometimes, it is frequently brittle with respect to hyperparameters and other kinds of tuning. A common failure mode for DDPG is that the learned Q-function begins to dramatically overestimate Q-values, which then leads to the policy breaking, because it exploits the errors in the Q-function. Twin Delayed DDPG (TD3) is an algorithm that addresses this issue by introducing three critical tricks:
 
 **Trick One: Clipped Double-Q Learning.** TD3 learns *two* Q-functions instead of one (hence "twin"), and uses the smaller of the two Q-values to form the targets in the Bellman error loss functions.
 
@@ -116,16 +116,16 @@ Pseudocode
                     \end{equation*}
                     \STATE Update Q-functions by one step of gradient descent using
                     \begin{align*}
-                        & \nabla_{\phi_i} \frac{1}{|B|}\sum_{(s,a,r,s',d) \in B} \left( Q_{\phi,i}(s,a) - y(r,s',d) \right)^2 && \text{for } i=1,2
+                        & \nabla_{\phi_i} \frac{1}{|B|}\sum_{(s,a,r,s',d) \in B} \left( Q_{\phi_i}(s,a) - y(r,s',d) \right)^2 && \text{for } i=1,2
                     \end{align*}
                     \IF{ $j \mod$ \texttt{policy\_delay} $ = 0$}
                         \STATE Update policy by one step of gradient ascent using
                         \begin{equation*}
-                            \nabla_{\theta} \frac{1}{|B|}\sum_{s \in B}Q_{\phi,1}(s, \mu_{\theta}(s))
+                            \nabla_{\theta} \frac{1}{|B|}\sum_{s \in B}Q_{\phi_1}(s, \mu_{\theta}(s))
                         \end{equation*}
                         \STATE Update target networks with
                         \begin{align*}
-                            \phi_{\text{targ},i} &\leftarrow \rho \phi_{\text{targ},i} + (1-\rho) \phi_i && \text{for } i=1,2\\
+                            \phi_{\text{targ},i} &\leftarrow \rho \phi_{\text{targ}, i} + (1-\rho) \phi_i && \text{for } i=1,2\\
                             \theta_{\text{targ}} &\leftarrow \rho \theta_{\text{targ}} + (1-\rho) \theta
                         \end{align*}
                     \ENDIF
@@ -136,15 +136,39 @@ Pseudocode
     \end{algorithm}
 
 
-
-
 Documentation
 =============
 
-.. autofunction:: spinup.td3
+.. admonition:: You Should Know
 
-Saved Model Contents
---------------------
+    In what follows, we give documentation for the PyTorch and Tensorflow implementations of TD3 in Spinning Up. They have nearly identical function calls and docstrings, except for details relating to model construction. However, we include both full docstrings for completeness.
+
+
+
+Documentation: PyTorch Version
+------------------------------
+
+.. autofunction:: spinup.td3_pytorch
+
+Saved Model Contents: PyTorch Version
+-------------------------------------
+
+The PyTorch saved model can be loaded with ``ac = torch.load('path/to/model.pt')``, yielding an actor-critic object (``ac``) that has the properties described in the docstring for ``td3_pytorch``. 
+
+You can get actions from this model with
+
+.. code-block:: python
+
+    actions = ac.act(torch.as_tensor(obs, dtype=torch.float32))
+
+
+Documentation: Tensorflow Version
+---------------------------------
+
+.. autofunction:: spinup.td3_tf1
+
+Saved Model Contents: Tensorflow Version
+----------------------------------------
 
 The computation graph saved by the logger includes:
 

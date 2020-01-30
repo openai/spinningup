@@ -8,8 +8,13 @@ Solution to Exercise 2.2
     Learning curves for DDPG in HalfCheetah-v2 for bugged and non-bugged actor-critic implementations, averaged over three random seeds.
 
 
-The Bug in the Code
-===================
+.. admonition:: You Should Know
+
+    This page will give the solution primarily in terms of a detailed analysis of the Tensorflow version of this exercise. However, the problem in the PyTorch version is basically the same and so is its solution.
+
+
+The Bug in the Code: Tensorflow Version
+=======================================
 
 The only difference between the correct actor-critic code,
 
@@ -54,8 +59,48 @@ and the bugged actor-critic code,
 is the tensor shape for the Q-functions. The correct version squeezes ouputs so that they have shape ``[batch size]``, whereas the bugged version doesn't, resulting in Q-functions with shape ``[batch size, 1]``.
 
 
-How it Gums Up the Works
-========================
+The Bug in the Code: PyTorch Version
+====================================
+
+In the PyTorch version of the exercise, the difference is virtually the same. The correct actor-critic code computes a forward pass on the Q-function that squeezes its output:
+
+
+.. code-block:: python
+    :emphasize-lines: 12
+
+    """
+    Correct Q-Function
+    """
+    class MLPQFunction(nn.Module):
+
+        def __init__(self, obs_dim, act_dim, hidden_sizes, activation):
+            super().__init__()
+            self.q = mlp([obs_dim + act_dim] + list(hidden_sizes) + [1], activation)
+
+        def forward(self, obs, act):
+            q = self.q(torch.cat([obs, act], dim=-1))
+            return torch.squeeze(q, -1) # Critical to ensure q has right shape.
+
+
+while the bugged version does not:
+
+.. code-block:: python
+    :emphasize-lines: 11
+
+    """
+    Bugged Q-Function
+    """
+    class BuggedMLPQFunction(nn.Module):
+
+        def __init__(self, obs_dim, act_dim, hidden_sizes, activation):
+            super().__init__()
+            self.q = mlp([obs_dim + act_dim] + list(hidden_sizes) + [1], activation)
+
+        def forward(self, obs, act):
+            return self.q(torch.cat([obs, act], dim=-1))
+
+How it Gums Up the Works: Tensorflow Version
+============================================
 
 Consider the excerpt from the part in the code that builds the DDPG computation graph:
 
@@ -144,3 +189,19 @@ and a messed up loss function
     \frac{1}{n^2} \sum_{i=1}^n \sum_{j=1}^n (q_j - z_{ij})^2.
 
 If you leave this to run in HalfCheetah long enough, you'll actually see some non-trivial learning process, because weird details specific to this environment partly cancel out the errors. But almost everywhere else, it fails completely.
+
+
+How it Gums Up the Works: PyTorch Version
+=========================================
+
+Exactly the same broadcasting shenanigans as in the Tensorflow version. Check out `this note`_ in the PyTorch documentation about it.
+
+
+.. figure:: ../images/ex2-2_ddpg_bug_pytorch.png
+    :align: center
+
+    Learning curves for DDPG in HalfCheetah-v2 for bugged and non-bugged actor-critic implementations using PyTorch, averaged over three random seeds.
+
+
+
+.. _`this note`: https://pytorch.org/docs/stable/notes/broadcasting.html#backwards-compatibility

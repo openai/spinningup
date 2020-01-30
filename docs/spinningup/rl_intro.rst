@@ -122,15 +122,29 @@ We often denote the parameters of such a policy by :math:`\theta` or :math:`\phi
 Deterministic Policies
 ^^^^^^^^^^^^^^^^^^^^^^
 
-**Example: Deterministic Policies.** Here is a code snippet for building a simple deterministic policy for a continuous action space in Tensorflow:
+**Example: Deterministic Policies.** Here is a code snippet for building a simple deterministic policy for a continuous action space in PyTorch, using the ``torch.nn`` package:
 
 .. code-block:: python
 
-    obs = tf.placeholder(shape=(None, obs_dim), dtype=tf.float32)
-    net = mlp(obs, hidden_dims=(64,64), activation=tf.tanh)
-    actions = tf.layers.dense(net, units=act_dim, activation=None)
+    pi_net = nn.Sequential(
+                  nn.Linear(obs_dim, 64),
+                  nn.Tanh(),
+                  nn.Linear(64, 64),
+                  nn.Tanh(),
+                  nn.Linear(64, act_dim)
+                )
 
-where ``mlp`` is a function that stacks multiple ``dense`` layers on top of each other with the given sizes and activation.
+This builds a multi-layer perceptron (MLP) network with two hidden layers of size 64 and :math:`\tanh` activation functions. If ``obs`` is a Numpy array containing a batch of observations, ``pi_net`` can be used to obtain a batch of actions as follows:
+
+.. code-block:: python
+
+    obs_tensor = torch.as_tensor(obs, dtype=torch.float32)
+    actions = pi_net(obs_tensor)
+
+.. admonition:: You Should Know
+
+    Don't worry about it if this neural network stuff is unfamiliar to you---this tutorial will focus on RL, and not on the neural network side of things. So you can skip this example and come back to it later. But we figured that if you already knew, it could be helpful.
+
 
 Stochastic Policies
 ^^^^^^^^^^^^^^^^^^^
@@ -150,7 +164,7 @@ In what follows, we'll describe how to do these for both categorical and diagona
 
     A categorical policy is like a classifier over discrete actions. You build the neural network for a categorical policy the same way you would for a classifier: the input is the observation, followed by some number of layers (possibly convolutional or densely-connected, depending on the kind of input), and then you have one final linear layer that gives you logits for each action, followed by a `softmax`_ to convert the logits into probabilities. 
 
-    **Sampling.** Given the probabilities for each action, frameworks like Tensorflow have built-in tools for sampling. For example, see the `tf.distributions.Categorical`_ documentation, or `tf.multinomial`_.
+    **Sampling.** Given the probabilities for each action, frameworks like PyTorch and Tensorflow have built-in tools for sampling. For example, see the documentation for `Categorical distributions in PyTorch`_, `torch.multinomial`_, `tf.distributions.Categorical`_, or `tf.multinomial`_.
 
     **Log-Likelihood.** Denote the last layer of probabilities as :math:`P_{\theta}(s)`. It is a vector with however many entries as there are actions, so we can treat the actions as indices for the vector. The log likelihood for an action :math:`a` can then be obtained by indexing into the vector:
 
@@ -177,7 +191,7 @@ In what follows, we'll describe how to do these for both categorical and diagona
 
         a = \mu_{\theta}(s) + \sigma_{\theta}(s) \odot z,
 
-    where :math:`\odot` denotes the elementwise product of two vectors. Standard frameworks have built-in ways to compute the noise vectors, such as `tf.random_normal`_. Alternatively, you can just provide the mean and standard deviation directly to a `tf.distributions.Normal`_ object and use that to sample.
+    where :math:`\odot` denotes the elementwise product of two vectors. Standard frameworks have built-in ways to generate the noise vectors, such as `torch.normal`_ or `tf.random_normal`_. Alternatively, you can build distribution objects, eg through `torch.distributions.Normal`_ or `tf.distributions.Normal`_, and use them to generate samples. (The advantage of the latter approach is that those objects can also calculate log-likelihoods for you.)
 
     **Log-Likelihood.** The log-likelihood of a :math:`k` -dimensional action :math:`a`, for a diagonal Gaussian with mean :math:`\mu = \mu_{\theta}(s)` and standard deviation :math:`\sigma = \sigma_{\theta}(s)`, is given by
 
@@ -190,10 +204,14 @@ In what follows, we'll describe how to do these for both categorical and diagona
 .. _`Categorical`: https://en.wikipedia.org/wiki/Categorical_distribution
 .. _`Gaussian`: https://en.wikipedia.org/wiki/Multivariate_normal_distribution
 .. _`softmax`: https://developers.google.com/machine-learning/crash-course/multi-class-neural-networks/softmax
-.. _`tf.distributions.Categorical`: https://www.tensorflow.org/api_docs/python/tf/distributions/Categorical
-.. _`tf.multinomial`: https://www.tensorflow.org/api_docs/python/tf/multinomial
-.. _`tf.random_normal`: https://www.tensorflow.org/api_docs/python/tf/random_normal
-.. _`tf.distributions.Normal`: https://www.tensorflow.org/api_docs/python/tf/distributions/Normal
+.. _`Categorical distributions in PyTorch`: https://pytorch.org/docs/stable/distributions.html#categorical
+.. _`torch.multinomial`: https://pytorch.org/docs/stable/torch.html#torch.multinomial
+.. _`tf.distributions.Categorical`: https://www.tensorflow.org/versions/r1.15/api_docs/python/tf/distributions/Categorical
+.. _`tf.multinomial`: https://www.tensorflow.org/versions/r1.15/api_docs/python/tf/random/multinomial
+.. _`torch.normal`: https://pytorch.org/docs/stable/torch.html#torch.normal
+.. _`tf.random_normal`: https://www.tensorflow.org/versions/r1.15/api_docs/python/tf/random/normal
+.. _`torch.distributions.Normal`: https://pytorch.org/docs/stable/distributions.html#normal
+.. _`tf.distributions.Normal`: https://www.tensorflow.org/versions/r1.15/api_docs/python/tf/distributions/Normal
 
 Trajectories
 ------------

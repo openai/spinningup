@@ -11,11 +11,20 @@ Problem Set 1: Basics of Implementation
 
 .. admonition:: Exercise 1.1: Gaussian Log-Likelihood
 
-    **Path to Exercise.** ``spinup/exercises/problem_set_1/exercise1_1.py``
+    **Path to Exercise:** 
 
-    **Path to Solution.** ``spinup/exercises/problem_set_1_solutions/exercise1_1_soln.py``
+    * PyTorch version: ``spinup/exercises/pytorch/problem_set_1/exercise1_1.py``
+    
+    * Tensorflow version: ``spinup/exercises/tf1/problem_set_1/exercise1_1.py``
 
-    **Instructions.** Write a function which takes in Tensorflow symbols for the means and log stds of a batch of diagonal Gaussian distributions, along with a Tensorflow placeholder for (previously-generated) samples from those distributions, and returns a Tensorflow symbol for computing the log likelihoods of those samples.
+    **Path to Solution:** 
+
+    * PyTorch version: ``spinup/exercises/pytorch/problem_set_1_solutions/exercise1_1_soln.py``
+
+    * Tensorflow version: ``spinup/exercises/tf1/problem_set_1_solutions/exercise1_1_soln.py``
+
+
+    **Instructions.** Write a function that takes in the means and log stds of a batch of diagonal Gaussian distributions, along with (previously-generated) samples from those distributions, and returns the log likelihoods of those samples. (In the Tensorflow version, you will write a function that creates computation graph operations to do this; in the PyTorch version, you will directly operate on given Tensors.)
 
     You may find it useful to review the formula given in `this section of the RL introduction`_.
 
@@ -28,9 +37,17 @@ Problem Set 1: Basics of Implementation
 
 .. admonition:: Exercise 1.2: Policy for PPO
 
-    **Path to Exercise.** ``spinup/exercises/problem_set_1/exercise1_2.py``
+    **Path to Exercise:** 
 
-    **Path to Solution.** ``spinup/exercises/problem_set_1_solutions/exercise1_2_soln.py``
+    * PyTorch version: ``spinup/exercises/pytorch/problem_set_1/exercise1_2.py``
+    
+    * Tensorflow version: ``spinup/exercises/tf1/problem_set_1/exercise1_2.py``
+
+    **Path to Solution:** 
+
+    * PyTorch version: ``spinup/exercises/pytorch/problem_set_1_solutions/exercise1_2_soln.py``
+
+    * Tensorflow version: ``spinup/exercises/tf1/problem_set_1_solutions/exercise1_2_soln.py``
 
     **Instructions.** Implement an MLP diagonal Gaussian policy for PPO. 
 
@@ -41,13 +58,21 @@ Problem Set 1: Basics of Implementation
 
 .. admonition:: Exercise 1.3: Computation Graph for TD3
 
-    **Path to Exercise.** ``spinup/exercises/problem_set_1/exercise1_3.py``
+    **Path to Exercise.** 
 
-    **Path to Solution.** ``spinup/algos/td3/td3.py``
+    * PyTorch version: ``spinup/exercises/pytorch/problem_set_1/exercise1_3.py``
+    
+    * Tensorflow version: ``spinup/exercises/tf1/problem_set_1/exercise1_3.py``
 
-    **Instructions.** Implement the core computation graph for the TD3 algorithm.
+    **Path to Solution.** 
 
-    As starter code, you are given the entirety of the TD3 algorithm except for the computation graph. Find "YOUR CODE HERE" to begin. 
+    * PyTorch version: ``spinup/algos/pytorch/td3/td3.py``
+
+    * Tensorflow version: ``spinup/algos/tf1/td3/td3.py``
+
+    **Instructions.** Implement the main mathematical logic for the TD3 algorithm.
+
+    As starter code, you are given the entirety of the TD3 algorithm except for the main mathematical logic (essentially, the loss functions and intermediate calculations needed for them). Find "YOUR CODE HERE" to begin. 
 
     You may find it useful to review the pseudocode in our `page on TD3`_.
 
@@ -83,13 +108,17 @@ Problem Set 2: Algorithm Failure Modes
 
 .. admonition:: Exercise 2.2: Silent Bug in DDPG
 
-    **Path to Exercise.** ``spinup/exercises/problem_set_2/exercise2_2.py``
+    **Path to Exercise.** 
+
+    * PyTorch version: ``spinup/exercises/pytorch/problem_set_2/exercise2_2.py``
+    
+    * Tensorflow version: ``spinup/exercises/tf1/problem_set_2/exercise2_2.py``
 
     **Path to Solution.** `Solution available here. <../spinningup/exercise2_2_soln.html>`_
 
     The hardest part of writing RL code is dealing with bugs, because failures are frequently silent. The code will appear to run correctly, but the agent's performance will degrade relative to a bug-free implementation---sometimes to the extent that it never learns anything.
 
-    In this exercise, you will observe a bug in vivo and compare results against correct code.
+    In this exercise, you will observe a bug in vivo and compare results against correct code. The bug is the same (conceptually, if not in exact implementation) for both the PyTorch and Tensorflow versions of this exercise. 
 
     **Instructions.** Run ``exercise2_2.py``, which will launch DDPG experiments with and without a bug. The non-bugged version runs the default Spinning Up implementation of DDPG, using a default method for creating the actor and critic networks. The bugged version runs the same DDPG code, except uses a bugged method for creating the networks.
 
@@ -97,7 +126,7 @@ Problem Set 2: Algorithm Failure Modes
 
     Without referencing the correct actor-critic code (which is to say---don't look in DDPG's ``core.py`` file), try to figure out what the bug is and explain how it breaks things.
 
-    **Hint.** To figure out what's going wrong, think about how the DDPG code implements the DDPG computation graph. Specifically, look at this excerpt:
+    **Hint.** To figure out what's going wrong, think about how the DDPG code implements the DDPG computation graph. For the Tensorflow version, look at this excerpt:
 
     .. code-block:: python
 

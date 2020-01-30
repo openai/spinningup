@@ -38,10 +38,12 @@ eg:
     .. parsed-literal::
 
         python -m spinup.run ppo --exp_name ppo_ant --env Ant-v2 --clip_ratio 0.1 0.2 
-            --hid[h] [32,32] [64,32] --act tf.nn.tanh --seed 0 10 20 --dt
+            --hid[h] [32,32] [64,32] --act torch.nn.Tanh --seed 0 10 20 --dt
             --data_dir path/to/data
 
     runs PPO in the ``Ant-v2`` Gym environment, with various settings controlled by the flags.
+
+    By default, the PyTorch version will run (except for with TRPO, since Spinning Up doesn't have a PyTorch TRPO yet). Substitute ``ppo`` with ``ppo_tf1`` for the Tensorflow version.
 
     ``clip_ratio``, ``hid``, and ``act`` are flags to set some algorithm hyperparameters. You can provide multiple values for hyperparameters to run multiple experiments. Check the docs to see what hyperparameters you can set (click here for the `PPO documentation`_).
 
@@ -63,6 +65,23 @@ eg:
 .. _`special shortcut flags`: ../user/running.html#shortcut-flags
 .. _`Save directory names`: ../user/running.html#where-results-are-saved
 
+Choosing PyTorch or Tensorflow from the Command Line
+----------------------------------------------------
+
+To use a PyTorch version of an algorithm, run with 
+
+.. parsed-literal::
+
+    python -m spinup.run [algo]_pytorch
+
+To use a Tensorflow version of an algorithm, run with 
+
+.. parsed-literal::
+
+    python -m spinup.run [algo]_tf1 
+
+If you run ``python -m spinup.run [algo]`` without ``_pytorch`` or ``_tf1``, the runner will look in ``spinup/user_config.py`` for which version it should default to for that algorithm.
+
 Setting Hyperparameters from the Command Line
 ---------------------------------------------
 
@@ -80,9 +99,9 @@ to see a readout of the docstring.
 
     .. parsed-literal::
 
-        python -m spinup.run ppo --env Walker2d-v2 --exp_name walker --act tf.nn.elu
+        python -m spinup.run ppo --env Walker2d-v2 --exp_name walker --act torch.nn.ELU
 
-    sets ``tf.nn.elu`` as the activation function.
+    sets ``torch.nn.ELU`` as the activation function. (Tensorflow equivalent: run ``ppo_tf1`` with ``--act tf.nn.elu``.)
 
 .. admonition:: You Should Know
 
@@ -193,7 +212,7 @@ For example, consider:
 
 .. parsed-literal::
 
-    python -m spinup.run ddpg --env Hopper-v2 --hid[h] [300] [128,128] --act tf.nn.tanh tf.nn.relu
+    python -m spinup.run ddpg_tf1 --env Hopper-v2 --hid[h] [300] [128,128] --act tf.nn.tanh tf.nn.relu
 
 Here, the ``--hid`` flag is given a **user-supplied shorthand**, ``h``. The ``--act`` flag is not given a shorthand by the user, so one will be constructed for it automatically.
 
@@ -213,7 +232,7 @@ Extra
 
 .. admonition:: You Don't Actually Need to Know This One
 
-    Each individual algorithm is located in a file ``spinup/algos/ALGO_NAME/ALGO_NAME.py``, and these files can be run directly from the command line with a limited set of arguments (some of which differ from what's available to ``spinup/run.py``). The command line support in the individual algorithm files is essentially vestigial, however, and this is **not** a recommended way to perform experiments. 
+    Each individual algorithm is located in a file ``spinup/algos/BACKEND/ALGO_NAME/ALGO_NAME.py``, and these files can be run directly from the command line with a limited set of arguments (some of which differ from what's available to ``spinup/run.py``). The command line support in the individual algorithm files is essentially vestigial, however, and this is **not** a recommended way to perform experiments. 
 
     This documentation page will not describe those command line calls, and will *only* describe calls through ``spinup/run.py``. 
 
@@ -222,13 +241,13 @@ Launching from Scripts
 
 Each algorithm is implemented as a python function, which can be imported directly from the ``spinup`` package, eg
 
->>> from spinup import ppo
+>>> from spinup import ppo_pytorch as ppo
 
 See the documentation page for each algorithm for a complete account of possible arguments. These methods can be used to set up specialized custom experiments, for example:
 
 .. code-block:: python
 
-    from spinup import ppo
+    from spinup import ppo_tf1 as ppo
     import tensorflow as tf
     import gym
 
@@ -247,14 +266,14 @@ Using ExperimentGrid
 It's often useful in machine learning research to run the same algorithm with many possible hyperparameters. Spinning Up ships with a simple tool for facilitating this, called `ExperimentGrid`_. 
 
 
-Consider the example in ``spinup/examples/bench_ppo_cartpole.py``:
+Consider the example in ``spinup/examples/pytorch/bench_ppo_cartpole.py``:
 
 .. code-block:: python
    :linenos:
 
     from spinup.utils.run_utils import ExperimentGrid
-    from spinup import ppo
-    import tensorflow as tf
+    from spinup import ppo_pytorch
+    import torch
 
     if __name__ == '__main__':
         import argparse
@@ -263,14 +282,16 @@ Consider the example in ``spinup/examples/bench_ppo_cartpole.py``:
         parser.add_argument('--num_runs', type=int, default=3)
         args = parser.parse_args()
 
-        eg = ExperimentGrid(name='ppo-bench')
+        eg = ExperimentGrid(name='ppo-pyt-bench')
         eg.add('env_name', 'CartPole-v0', '', True)
         eg.add('seed', [10*i for i in range(args.num_runs)])
         eg.add('epochs', 10)
         eg.add('steps_per_epoch', 4000)
         eg.add('ac_kwargs:hidden_sizes', [(32,), (64,64)], 'hid')
-        eg.add('ac_kwargs:activation', [tf.tanh, tf.nn.relu], '')
-        eg.run(ppo, num_cpu=args.cpu)
+        eg.add('ac_kwargs:activation', [torch.nn.Tanh, torch.nn.ReLU], '')
+        eg.run(ppo_pytorch, num_cpu=args.cpu)
+
+(An equivalent Tensorflow example is available in ``spinup/examples/tf1/bench_ppo_cartpole.py``.)
 
 After making the ExperimentGrid object, parameters are added to it with
 

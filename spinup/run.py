@@ -1,4 +1,5 @@
 import spinup
+from spinup.user_config import DEFAULT_BACKEND
 from spinup.utils.run_utils import ExperimentGrid
 from spinup.utils.serialization_utils import convert_json
 import argparse
@@ -8,6 +9,8 @@ import os, subprocess, sys
 import os.path as osp
 import string
 import tensorflow as tf
+import torch
+from copy import deepcopy
 from textwrap import dedent
 
 
@@ -25,6 +28,17 @@ SUBSTITUTIONS = {'env': 'env_name',
 # Only some algorithms can be parallelized (have num_cpu > 1):
 MPI_COMPATIBLE_ALGOS = ['vpg', 'trpo', 'ppo']
 
+# Algo names (used in a few places)
+BASE_ALGO_NAMES = ['vpg', 'trpo', 'ppo', 'ddpg', 'td3', 'sac']
+
+
+def add_with_backends(algo_list):
+    # helper function to build lists with backend-specific function names
+    algo_list_with_backends = deepcopy(algo_list)
+    for algo in algo_list:
+        algo_list_with_backends += [algo + '_tf1', algo + '_pytorch']
+    return algo_list_with_backends
+
 
 def friendly_err(err_msg):
     # add whitespace to error message to make it more readable
@@ -34,7 +48,11 @@ def friendly_err(err_msg):
 def parse_and_execute_grid_search(cmd, args):
     """Interprets algorithm name and cmd line args into an ExperimentGrid."""
 
-    # Parse which algorithm to execute
+    if cmd in BASE_ALGO_NAMES:
+        backend = DEFAULT_BACKEND[cmd]
+        print('\n\nUsing default backend (%s) for %s.\n'%(backend, cmd))
+        cmd = cmd + '_' + backend
+
     algo = eval('spinup.'+cmd)
 
     # Before all else, check to see if any of the flags is 'help'.
@@ -130,7 +148,7 @@ def parse_and_execute_grid_search(cmd, args):
     # Make sure that if num_cpu > 1, the algorithm being used is compatible
     # with MPI.
     if 'num_cpu' in run_kwargs and not(run_kwargs['num_cpu'] == 1):
-        assert cmd in MPI_COMPATIBLE_ALGOS, \
+        assert cmd in add_with_backends(MPI_COMPATIBLE_ALGOS), \
             friendly_err("This algorithm can't be run with num_cpu > 1.")
 
     # Special handling for environment: make sure that env_name is a real,
@@ -175,7 +193,7 @@ if __name__ == '__main__':
     """
 
     cmd = sys.argv[1] if len(sys.argv) > 1 else 'help'
-    valid_algos = ['vpg', 'trpo', 'ppo', 'ddpg', 'td3', 'sac']
+    valid_algos = add_with_backends(BASE_ALGO_NAMES)
     valid_utils = ['plot', 'test_policy']
     valid_help = ['--help', '-h', 'help']
     valid_cmds = valid_algos + valid_utils + valid_help

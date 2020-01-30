@@ -40,6 +40,8 @@ def plot_data(data, xaxis='Epoch', value="AverageEpRet", condition="Condition1",
     Changes the colorscheme and the default legend style, though.
     """
     plt.legend(loc='best').set_draggable(True)
+    #plt.legend(loc='upper center', ncol=3, handlelength=1,
+    #           borderaxespad=0., prop={'size': 13})
 
     """
     For the version of the legend used in the Spinning Up benchmarking page, 

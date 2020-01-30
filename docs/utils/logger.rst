@@ -128,6 +128,15 @@ In this example, observe that
 .. _`logger.dump_tabular`: ../utils/logger.html#spinup.utils.logx.Logger.dump_tabular
 
 
+Logging and PyTorch
+-------------------
+
+The preceding example was given in Tensorflow. For PyTorch, everything is the same except for L42-43: instead of ``logger.setup_tf_saver``, you would use ``logger.setup_pytorch_saver``, and you would pass it `a PyTorch module`_ (the network you are training) as an argument.
+
+The behavior of ``logger.save_state`` is the same as in the Tensorflow case: each time it is called, it'll save the latest version of the PyTorch module.
+
+.. _`a PyTorch module`: https://pytorch.org/docs/stable/nn.html#torch.nn.Module
+
 Logging and MPI
 ---------------
 
@@ -150,13 +159,28 @@ Logger Classes
     :members:
 
 
+Loading Saved Models (PyTorch Only)
+===================================
 
-Loading Saved Graphs
-====================
+To load an actor-critic model saved by a PyTorch Spinning Up implementation, run:
+
+.. code-block:: python
+
+    ac = torch.load('path/to/model.pt')
+
+When you use this method to load an actor-critic model, you can minimally expect it to have an ``act`` method that allows you to sample actions from the policy, given observations:
+
+.. code-block:: python
+
+    actions = ac.act(torch.as_tensor(obs, dtype=torch.float32))
+
+
+Loading Saved Graphs (Tensorflow Only)
+======================================
 
 .. autofunction:: spinup.utils.logx.restore_tf_graph
 
-When you use this method to restore a graph saved by a Spinning Up implementation, you can minimally expect it to include the following:
+When you use this method to restore a graph saved by a Tensorflow Spinning Up implementation, you can minimally expect it to include the following:
 
 ======  ===============================================
 Key     Value

@@ -70,24 +70,35 @@ They are almost completely self-contained, with virtually no common code shared 
 
 Importantly, they're all structured similarly, so if you clearly understand one, jumping into the next is painless. 
 
-We tried to minimize the number of tricks used in each algorithm's implementation, and minimize the differences between otherwise-similar algorithms. To give some examples of removed tricks: we omit regularization_ terms present in the original Soft-Actor Critic code, as well as `observation normalization`_ from all algorithms. For an example of where we've removed differences between algorithms: our implementations of DDPG, TD3, and SAC all follow a convention laid out in the `original TD3 code`_, where all gradient descent updates are performed at the ends of episodes (instead of happening all throughout the episode). 
+We tried to minimize the number of tricks used in each algorithm's implementation, and minimize the differences between otherwise-similar algorithms. To give some examples of removed tricks: we omit regularization_ terms present in the original Soft-Actor Critic code, as well as `observation normalization`_ from all algorithms. For an example of where we've removed differences between algorithms: our implementations of DDPG, TD3, and SAC all follow a convention of running gradient descent updates after fixed intervals of environment interaction. (By contrast, other public implementations of these algorithms usually take slightly different approaches from each other, making them a little bit harder to compare.)
 
 All algorithms are "reasonably good" in the sense that they achieve roughly the intended performance, but don't necessarily match the best reported results in the literature on every task. Consequently, be careful if using any of these implementations for scientific benchmarking comparisons. Details on each implementation's specific performance level can be found on our `benchmarks`_ page.
 
 
-Support Plan
-============
+Long-Term Support and Support History
+=====================================
 
-We plan to support Spinning Up to ensure that it serves as a helpful resource for learning about deep reinforcement learning. The exact nature of long-term (multi-year) support for Spinning Up is yet to be determined, but in the short run, we commit to:
+Spinning Up is currently in maintenance mode. If there are any breaking bugs, we'll repair them to ensure that Spinning Up can continue to help people study deep RL. 
 
-- High-bandwidth support for the first three weeks after release (Nov 8, 2018 to Nov 29, 2018).
+Support history so far:
 
-    + We'll move quickly on bug-fixes, question-answering, and modifications to the docs to clear up ambiguities.
-    + We'll work hard to streamline the user experience, in order to make it as easy as possible to self-study with Spinning Up. 
+- **Nov 8, 2018:** Initial release!
 
-- Approximately six months after release (in April 2019), we'll do a serious review of the state of the package based on feedback we receive from the community, and announce any plans for future modification, including a long-term roadmap.
+- **Nov, 2018:** Release was followed by a three-week period of high-bandwidth support.
 
-Additionally, as discussed in the blog post, we are using Spinning Up in the curriculum for our upcoming cohorts of Scholars_ and Fellows_. Any changes and updates we make for their benefit will immediately become public as well.
+- **April, 2019:** Approximately six months after release, we conducted an internal review of Spinning Up based on feedback from the community. The review surfaced interest in a few key features:
+
+    * **Implementations in Other Neural Network Libraries.** Several people expressed interest in seeing Spinning Up use alternatives to Tensorflow v1 for the RL implementations. A few members of the community even developed their own PyTorch versions of Spinning Up algorithms, such as Kashif Rasul's `Fired Up`_,  Kai Arulkumaran's `Spinning Up Basic`_, and Misha Laskin's `Torching Up`_. As a result, making this kind of "Rosetta Stone" for deep RL became a high priority for future work.
+
+    * **Open Source RL Environments.** Many people expressed an interest in seeing Spinning Up use more open source RL environments (eg `PyBullet`_) for benchmarks, examples, and exercises.
+
+    * **More Algorithms.** There was some interest in seeing other algorithms included in Spinning Up, especially Deep Q-Networks.
+
+- **Jan, 2020:** The PyTorch update to Spinning Up was released! 
+
+- **Future:** No major updates are currently planned for Spinning Up. In the event it makes sense for us to release an additional update, following what we found in the 6-month review, the next-highest priority features are to focus more on open source RL environments and adding algorithms.
+
+Additionally, as discussed in the blog post, Spinning Up has been integrated into the curriculum for our Scholars_ and Fellows_ programs.
 
 
 .. _`introduction`: ../spinningup/rl_intro.html
@@ -104,5 +115,10 @@ Additionally, as discussed in the blog post, we are using Spinning Up in the cur
 .. _`observation normalization`: https://github.com/openai/baselines/blob/28aca637d0f13f4415cc5ebb778144154cff3110/baselines/run.py#L131
 .. _`original TD3 code`: https://github.com/sfujim/TD3/blob/25dfc0a6562c54ae5575fad5b8f08bc9d5c4e26c/main.py#L89
 .. _`benchmarks`: ../spinningup/bench.html
-.. _Scholars : https://jobs.lever.co/openai/cf6de4ed-4afd-4ace-9273-8842c003c842
-.. _Fellows : https://jobs.lever.co/openai/c9ba3f64-2419-4ff9-b81d-0526ae059f57
+.. _`Fired Up`: https://github.com/kashif/firedup
+.. _`Spinning Up Basic`: https://github.com/Kaixhin/spinning-up-basic
+.. _`Torching Up`: https://github.com/MishaLaskin/torchingup
+.. _`PyBullet`: https://pybullet.org/wordpress/
+.. _`MuJoCo`: http://mujoco.org/
+.. _Scholars : https://openai.com/blog/openai-scholars-spring-2020/
+.. _Fellows : https://openai.com/blog/openai-fellows-fall-2018/

@@ -100,37 +100,58 @@ This last expression is the simplest version of the computable expression we des
 Implementing the Simplest Policy Gradient
 =========================================
 
-We give a short Tensorflow implementation of this simple version of the policy gradient algorithm in ``spinup/examples/pg_math/1_simple_pg.py``. (It can also be viewed `on github <https://github.com/openai/spinningup/blob/master/spinup/examples/pg_math/1_simple_pg.py>`_.) It is only 122 lines long, so we highly recommend reading through it in depth. While we won't go through the entirety of the code here, we'll highlight and explain a few important pieces.
+We give a short PyTorch implementation of this simple version of the policy gradient algorithm in ``spinup/examples/pytorch/pg_math/1_simple_pg.py``. (It can also be viewed `on github <https://github.com/openai/spinningup/blob/master/spinup/examples/pytorch/pg_math/1_simple_pg.py>`_.) It is only 128 lines long, so we highly recommend reading through it in depth. While we won't go through the entirety of the code here, we'll highlight and explain a few important pieces.
+
+
+.. admonition:: You Should Know
+
+    This section was previously written with a Tensorflow example. The old Tensorflow section can be found `here <../spinningup/extra_tf_pg_implementation.html#implementing-the-simplest-policy-gradient>`_. 
 
 **1. Making the Policy Network.** 
 
 .. code-block:: python
     :linenos:
-    :lineno-start: 25
+    :lineno-start: 30
 
     # make core of policy network
-    obs_ph = tf.placeholder(shape=(None, obs_dim), dtype=tf.float32)
-    logits = mlp(obs_ph, sizes=hidden_sizes+[n_acts])
+    logits_net = mlp(sizes=[obs_dim]+hidden_sizes+[n_acts])
 
-    # make action selection op (outputs int actions, sampled from policy)
-    actions = tf.squeeze(tf.multinomial(logits=logits,num_samples=1), axis=1)
+    # make function to compute action distribution
+    def get_policy(obs):
+        logits = logits_net(obs)
+        return Categorical(logits=logits)
 
-This block builds a feedforward neural network categorical policy. (See the `Stochastic Policies`_ section in Part 1 for a refresher.) The ``logits`` tensor can be used to construct log-probabilities and probabilities for actions, and the ``actions`` tensor samples actions based on the probabilities implied by ``logits``.
+    # make action selection function (outputs int actions, sampled from policy)
+    def get_action(obs):
+        return get_policy(obs).sample().item()
+
+This block builds modules and functions for using a feedforward neural network categorical policy. (See the `Stochastic Policies`_ section in Part 1 for a refresher.) The output from the ``logits_net`` module can be used to construct log-probabilities and probabilities for actions, and the ``get_action`` function samples actions based on probabilities computed from the logits. (Note: this particular ``get_action`` function assumes that there will only be one ``obs`` provided, and therefore only one integer action output. That's why it uses ``.item()``, which is used to `get the contents of a Tensor with only one element`_.)
+
+A lot of work in this example is getting done by the ``Categorical`` object on L36. This is a PyTorch ``Distribution`` object that wraps up some mathematical functions associated with probability distributions. In particular, it has a method for sampling from the distribution (which we use on L40) and a method for computing log probabilities of given samples (which we use later). Since PyTorch distributions are really useful for RL, check out `their documentation`_ to get a feel for how they work.
+
+.. admonition:: You Should Know
+
+    Friendly reminder! When we talk about a categorical distribution having "logits," what we mean is that the probabilities for each outcome are given by the Softmax function of the logits. That is, the probability for action :math:`j` under a categorical distribution with logits :math:`x_j` is:
+
+    .. math::
+
+        p_j = \frac{\exp(x_j)}{\sum_{i} \exp(x_i)}
+
 
 .. _`Stochastic Policies`: ../spinningup/rl_intro.html#stochastic-policies
+.. _`their documentation`: https://pytorch.org/docs/stable/distributions.html
+.. _`get the contents of a Tensor with only one element`: https://pytorch.org/docs/stable/tensors.html#torch.Tensor.item
 
 **2. Making the Loss Function.**
 
 .. code-block:: python
     :linenos:
-    :lineno-start: 32
+    :lineno-start: 42
 
     # make loss function whose gradient, for the right data, is policy gradient
-    weights_ph = tf.placeholder(shape=(None,), dtype=tf.float32)
-    act_ph = tf.placeholder(shape=(None,), dtype=tf.int32)
-    action_masks = tf.one_hot(act_ph, n_acts)
-    log_probs = tf.reduce_sum(action_masks * tf.nn.log_softmax(logits), axis=1)
-    loss = -tf.reduce_mean(weights_ph * log_probs)
+    def compute_loss(obs, act, weights):
+        logp = get_policy(obs).log_prob(act)
+        return -(logp * weights).mean()
 
 
 In this block, we build a "loss" function for the policy gradient algorithm. When the right data is plugged in, the gradient of this loss is equal to the policy gradient. The right data means a set of (state, action, weight) tuples collected while acting according to the current policy, where the weight for a state-action pair is the return from the episode to which it belongs. (Although as we will show in later subsections, there are other values you can plug in for the weight which also work correctly.)
@@ -153,86 +174,99 @@ In this block, we build a "loss" function for the policy gradient algorithm. Whe
 
 .. admonition:: You Should Know
     
-    The approach used here to make the ``log_probs`` tensor---creating an action mask, and using it to select out particular log probabilities---*only* works for categorical policies. It does not work in general. 
+    The approach used here to make the ``logp`` tensor--calling the ``log_prob`` method of a PyTorch ``Categorical`` object--may require some modification to work with other kinds of distribution objects. 
 
+    For example, if you are using a `Normal distribution`_ (for a diagonal Gaussian policy), the output from calling ``policy.log_prob(act)`` will give you a Tensor containing separate log probabilities for each component of each vector-valued action. That is to say, you put in a Tensor of shape ``(batch, act_dim)``, and get out a Tensor of shape ``(batch, act_dim)``, when what you need for making an RL loss is a Tensor of shape ``(batch,)``. In that case, you would sum up the log probabilities of the action components to get the log probabilities of the actions. That is, you would compute: 
+
+    .. code-block:: python
+
+        logp = get_policy(obs).log_prob(act).sum(axis=-1)
+
+
+.. _`Normal distribution`: https://pytorch.org/docs/stable/distributions.html#normal
 
 
 **3. Running One Epoch of Training.**
 
 .. code-block:: python
     :linenos:
-    :lineno-start: 45
+    :lineno-start: 50
 
-        # for training policy
-        def train_one_epoch():
-            # make some empty lists for logging.
-            batch_obs = []          # for observations
-            batch_acts = []         # for actions
-            batch_weights = []      # for R(tau) weighting in policy gradient
-            batch_rets = []         # for measuring episode returns
-            batch_lens = []         # for measuring episode lengths
+    # for training policy
+    def train_one_epoch():
+        # make some empty lists for logging.
+        batch_obs = []          # for observations
+        batch_acts = []         # for actions
+        batch_weights = []      # for R(tau) weighting in policy gradient
+        batch_rets = []         # for measuring episode returns
+        batch_lens = []         # for measuring episode lengths
 
-            # reset episode-specific variables
-            obs = env.reset()       # first obs comes from starting distribution
-            done = False            # signal from environment that episode is over
-            ep_rews = []            # list for rewards accrued throughout ep
+        # reset episode-specific variables
+        obs = env.reset()       # first obs comes from starting distribution
+        done = False            # signal from environment that episode is over
+        ep_rews = []            # list for rewards accrued throughout ep
 
-            # render first episode of each epoch
-            finished_rendering_this_epoch = False
+        # render first episode of each epoch
+        finished_rendering_this_epoch = False
 
-            # collect experience by acting in the environment with current policy
-            while True:
+        # collect experience by acting in the environment with current policy
+        while True:
 
-                # rendering
-                if not(finished_rendering_this_epoch):
-                    env.render()
+            # rendering
+            if (not finished_rendering_this_epoch) and render:
+                env.render()
 
-                # save obs
-                batch_obs.append(obs.copy())
+            # save obs
+            batch_obs.append(obs.copy())
 
-                # act in the environment
-                act = sess.run(actions, {obs_ph: obs.reshape(1,-1)})[0]
-                obs, rew, done, _ = env.step(act)
+            # act in the environment
+            act = get_action(torch.as_tensor(obs, dtype=torch.float32))
+            obs, rew, done, _ = env.step(act)
 
-                # save action, reward
-                batch_acts.append(act)
-                ep_rews.append(rew)
+            # save action, reward
+            batch_acts.append(act)
+            ep_rews.append(rew)
 
-                if done:
-                    # if episode is over, record info about episode
-                    ep_ret, ep_len = sum(ep_rews), len(ep_rews)
-                    batch_rets.append(ep_ret)
-                    batch_lens.append(ep_len)
+            if done:
+                # if episode is over, record info about episode
+                ep_ret, ep_len = sum(ep_rews), len(ep_rews)
+                batch_rets.append(ep_ret)
+                batch_lens.append(ep_len)
 
-                    # the weight for each logprob(a|s) is R(tau)
-                    batch_weights += [ep_ret] * ep_len
+                # the weight for each logprob(a|s) is R(tau)
+                batch_weights += [ep_ret] * ep_len
 
-                    # reset episode-specific variables
-                    obs, done, ep_rews = env.reset(), False, []
+                # reset episode-specific variables
+                obs, done, ep_rews = env.reset(), False, []
 
-                    # won't render again this epoch
-                    finished_rendering_this_epoch = True
+                # won't render again this epoch
+                finished_rendering_this_epoch = True
 
-                    # end experience loop if we have enough of it
-                    if len(batch_obs) > batch_size:
-                        break
+                # end experience loop if we have enough of it
+                if len(batch_obs) > batch_size:
+                    break
 
-            # take a single policy gradient update step
-            batch_loss, _ = sess.run([loss, train_op],
-                                     feed_dict={
-                                        obs_ph: np.array(batch_obs),
-                                        act_ph: np.array(batch_acts),
-                                        weights_ph: np.array(batch_weights)
-                                     })
-            return batch_loss, batch_rets, batch_lens
+        # take a single policy gradient update step
+        optimizer.zero_grad()
+        batch_loss = compute_loss(obs=torch.as_tensor(batch_obs, dtype=torch.float32),
+                                  act=torch.as_tensor(batch_acts, dtype=torch.int32),
+                                  weights=torch.as_tensor(batch_weights, dtype=torch.float32)
+                                  )
+        batch_loss.backward()
+        optimizer.step()
+        return batch_loss, batch_rets, batch_lens
 
 The ``train_one_epoch()`` function runs one "epoch" of policy gradient, which we define to be 
 
-1) the experience collection step (L62-97), where the agent acts for some number of episodes in the environment using the most recent policy, followed by 
+1) the experience collection step (L67-102), where the agent acts for some number of episodes in the environment using the most recent policy, followed by 
 
-2) a single policy gradient update step (L99-105). 
+2) a single policy gradient update step (L104-111). 
 
 The main loop of the algorithm just repeatedly calls ``train_one_epoch()``. 
+
+.. admonition:: You Should Know
+
+    If you aren't already familiar with optimization in PyTorch, observe the pattern for taking one gradient descent step as shown in lines 104-111. First, clear the gradient buffers. Then, compute the loss function. Then, compute a backward pass on the loss function; this accumulates fresh gradients into the gradient buffers. Finally, take a step with the optimizer. 
 
 
 Expected Grad-Log-Prob Lemma
@@ -311,13 +345,14 @@ An (optional) proof of this claim can be found `here`_, and it ultimately depend
 Implementing Reward-to-Go Policy Gradient
 =========================================
 
-We give a short Tensorflow implementation of the reward-to-go policy gradient in ``spinup/examples/pg_math/2_rtg_pg.py``. (It can also be viewed `on github <https://github.com/openai/spinningup/blob/master/spinup/examples/pg_math/2_rtg_pg.py>`_.) 
+
+We give a short PyTorch implementation of the reward-to-go policy gradient in ``spinup/examples/pytorch/pg_math/2_rtg_pg.py``. (It can also be viewed `on github <https://github.com/openai/spinningup/blob/master/spinup/examples/pytorch/pg_math/2_rtg_pg.py>`_.) 
 
 The only thing that has changed from ``1_simple_pg.py`` is that we now use different weights in the loss function. The code modification is very slight: we add a new function, and change two other lines. The new function is:
 
 .. code-block:: python
     :linenos:
-    :lineno-start: 12
+    :lineno-start: 17
 
     def reward_to_go(rews):
         n = len(rews)
@@ -327,11 +362,11 @@ The only thing that has changed from ``1_simple_pg.py`` is that we now use diffe
         return rtgs
 
 
-And then we tweak the old L86-87 from:
+And then we tweak the old L91-92 from:
 
 .. code-block:: python
     :linenos:
-    :lineno-start: 86
+    :lineno-start: 91
 
                     # the weight for each logprob(a|s) is R(tau)
                     batch_weights += [ep_ret] * ep_len
@@ -340,11 +375,15 @@ to:
 
 .. code-block:: python
     :linenos:
-    :lineno-start: 93
+    :lineno-start: 98
 
                     # the weight for each logprob(a_t|s_t) is reward-to-go from t
                     batch_weights += list(reward_to_go(ep_rews))
 
+
+.. admonition:: You Should Know
+
+    This section was previously written with a Tensorflow example. The old Tensorflow section can be found `here <../spinningup/extra_tf_pg_implementation.html#implementing-reward-to-go-policy-gradient>`_. 
 
 
 Baselines in Policy Gradients

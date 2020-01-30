@@ -154,7 +154,11 @@ Pseudocode
 Documentation
 =============
 
-.. autofunction:: spinup.trpo
+.. admonition:: You Should Know
+
+    Spinning Up currently only has a Tensorflow implementation of TRPO. 
+
+.. autofunction:: spinup.trpo_tf1
 
 
 Saved Model Contents
