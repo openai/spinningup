@@ -14,7 +14,7 @@ In this section, we will show that
 for the finite-horizon undiscounted return setting. (An analagous result holds in the infinite-horizon discounted case using basically the same proof.)
 
 
-The proof of this claim depends on the `law of iterated expectations`_. First, let's rewrite the expression for the policy gradient, starting from the reward-to-go form (using the notation :math:`\hat{R}_t = \sum_{t'=t}^T R(s_t, a_t, s_{t+1})` to help shorten things):
+The proof of this claim depends on the `law of iterated expectations`_. First, let's rewrite the expression for the policy gradient, starting from the reward-to-go form (using the notation :math:`\hat{R}_t = \sum_{t'=t}^T R(s_t', a_t', s_{t'+1})` to help shorten things):
 
 .. math::
 
