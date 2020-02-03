@@ -285,7 +285,7 @@ def trpo(env_fn, actor_critic=core.MLPActorCritic, ac_kwargs=dict(), seed=0,
 
         # Core calculations for TRPO or NPG
         Hx = lambda v: hessian_vector_product(data, old_pi, v)
-        x = core.conjugate_gradients(Hx, grads, 10)
+        x = core.conjugate_gradients(Hx, grads, cg_iters)
 
         alpha = torch.sqrt(2 * delta / (torch.matmul(x, Hx(x)) + EPS))
 
