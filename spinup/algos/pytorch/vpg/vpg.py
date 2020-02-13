@@ -244,7 +244,7 @@ def vpg(env_fn, actor_critic=core.MLPActorCritic, ac_kwargs=dict(),  seed=0,
 
         # Train policy with a single step of gradient descent
         pi_optimizer.zero_grad()
-        loss_pi, pi_info = compute_loss_pi(data)
+        loss_pi, _ = compute_loss_pi(data)
         loss_pi.backward()
         mpi_avg_grads(ac.pi)    # average grads across MPI processes
         pi_optimizer.step()
@@ -257,6 +257,10 @@ def vpg(env_fn, actor_critic=core.MLPActorCritic, ac_kwargs=dict(),  seed=0,
             mpi_avg_grads(ac.v)    # average grads across MPI processes
             vf_optimizer.step()
 
+        # Get loss and info values after update
+        loss_pi, pi_info = compute_loss_pi(data)
+        loss_v = compute_loss_v(data)
+        
         # Log changes from update
         kl, ent = pi_info['kl'], pi_info_old['ent']
         logger.store(LossPi=pi_l_old, LossV=v_l_old,
