@@ -16,7 +16,7 @@ The following algorithms are implemented in the Spinning Up package:
 - `Twin Delayed DDPG`_ (TD3)
 - `Soft Actor-Critic`_ (SAC)
 
-They are all implemented with `MLP`_ (non-recurrent) actor-critics, making them suitable for fully-observed, non-image-based RL environments, e.g. the `Gym Mujoco`_ environments.
+They are all implemented with multilayer perceptrons (`MLP`_) - very simple artificial neural networks - (non-recurrent) actor-critics, making them suitable for fully-observed, non-image-based RL environments, e.g. the `Gym Mujoco`_ environments.
 
 Spinning Up has two implementations for each algorithm (except for TRPO): one that uses `PyTorch`_ as the neural network library, and one that uses `Tensorflow v1`_ as the neural network library. (TRPO is currently only available in Tensorflow.)
 
