@@ -351,7 +351,7 @@ def trpo(env_fn, actor_critic=core.mlp_actor_critic, ac_kwargs=dict(), seed=0,
                 if epoch_ended and not (terminal):
                     print('Warning: trajectory cut off by epoch at %d steps.' % ep_len)
                 # if trajectory didn't reach terminal state, bootstrap value target
-                last_val = 0 if d else sess.run(v, feed_dict={x_ph: o.reshape(1, -1)})
+                last_val = 0 if d and not timeout else sess.run(v, feed_dict={x_ph: o.reshape(1, -1)})
                 buf.finish_path(last_val)
                 if terminal:
                     # only save EpRet / EpLen if trajectory finished
