@@ -241,9 +241,12 @@ def vpg(env_fn, actor_critic=core.mlp_actor_critic, ac_kwargs=dict(), seed=0,
             # Update obs (critical!)
             o = o2
 
-            terminal = d or (ep_len == max_ep_len)
-            if terminal or (t==local_steps_per_epoch-1):
-                if not(terminal):
+            timeout = ep_len == max_ep_len
+            terminal = d or timeout
+            epoch_ended = t == local_steps_per_epoch-1
+
+            if terminal or epoch_ended:
+                if epoch_ended and not(terminal):
                     print('Warning: trajectory cut off by epoch at %d steps.'%ep_len)
                 # if trajectory didn't reach terminal state, bootstrap value target
                 last_val = 0 if d else sess.run(v, feed_dict={x_ph: o.reshape(1,-1)})
