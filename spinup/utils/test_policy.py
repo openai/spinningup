@@ -151,3 +151,4 @@ if __name__ == '__main__':
                                           args.itr if args.itr >=0 else 'last',
                                           args.deterministic)
     run_policy(env, get_action, args.len, args.episodes, not(args.norender))
+    env.close()
