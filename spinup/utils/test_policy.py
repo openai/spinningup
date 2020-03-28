@@ -101,7 +101,7 @@ def load_pytorch_policy(fpath, itr, deterministic=False):
     def get_action(x):
         with torch.no_grad():
             x = torch.as_tensor(x, dtype=torch.float32)
-            action = model.act(x)
+            action = model.act(x) if not deterministic else model.act(x, True)
         return action
 
     return get_action
@@ -151,3 +151,4 @@ if __name__ == '__main__':
                                           args.itr if args.itr >=0 else 'last',
                                           args.deterministic)
     run_policy(env, get_action, args.len, args.episodes, not(args.norender))
+    env.close()
