@@ -94,7 +94,7 @@ SAC concurrently learns a policy :math:`\pi_{\theta}` and two Q-functions :math:
 
 First, what's similar?
 
-1) Like in TD3, both Q-functions are learned with MSBE minimization, by regressing to a single shared target.
+1) Like in TD3, both Q-functions are learned with MSBE (Mean Squared Bellman Error) minimization, by regressing to a single shared target.
 
 2) Like in TD3, the shared target is computed using target Q-networks, and the target Q-networks are obtained by polyak averaging the Q-network parameters over the course of training.
 
