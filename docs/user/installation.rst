@@ -61,7 +61,7 @@ Ubuntu
 
 .. parsed-literal::
 
-    sudo apt-get update && sudo apt-get install libopenmpi-dev
+    sudo apt-get update && sudo apt-get install libopenmpi-dev python3-dev
 
 
 Mac OS X
