@@ -294,6 +294,8 @@ b. Model is Given
 
 .. [#] `Benchmarking Model-Based Reinforcement Learning <https://arxiv.org/abs/1907.02057>`_, Wang et al, 2019.
 
+.. [#] `Behaviour Suite for Reinforcement Learning <https://arxiv.org/abs/1908.03568>`_, Osband et al, 2019.
+
 13. Bonus: Classic Papers in RL Theory or Review
 ================================================
 
