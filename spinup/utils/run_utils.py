@@ -151,9 +151,9 @@ def call_experiment(exp_name, thunk, seed=0, num_cpu=1, data_dir=None,
         # Make 'env_fn' from 'env_name'
         if 'env_name' in kwargs:
             import gym
-            env_name = kwargs['env_name']
-            kwargs['env_fn'] = lambda : gym.make(env_name)
-            del kwargs['env_name']
+            env_name = kwargs.pop('env_name')
+            env_kwargs = kwargs.pop('env_kwargs', {})
+            kwargs['env_fn'] = lambda : gym.make(env_name, **env_kwargs)
 
         # Fork into multiple processes
         mpi_fork(num_cpu)
