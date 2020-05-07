@@ -394,7 +394,7 @@ The Bellman equations for the on-policy value functions are
 
     \begin{align*}
     V^{\pi}(s) &= \underE{a \sim \pi \\ s'\sim P}{r(s,a) + \gamma V^{\pi}(s')}, \\
-    Q^{\pi}(s,a) &= \underE{s'\sim P}{r(s,a) + \gamma \underE{a'\sim \pi}{Q^{\pi}(s',a')}},
+    Q^{\pi}(s,a) &= \underE{s'\sim P}{r(s,a) + \gamma Q^{\pi}(s',a')},
     \end{align*}
 
 where :math:`s' \sim P` is shorthand for :math:`s' \sim P(\cdot |s,a)`, indicating that the next state :math:`s'` is sampled from the environment's transition rules; :math:`a \sim \pi` is shorthand for :math:`a \sim \pi(\cdot|s)`; and :math:`a' \sim \pi` is shorthand for :math:`a' \sim \pi(\cdot|s')`. 
