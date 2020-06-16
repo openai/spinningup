@@ -54,7 +54,8 @@ There are two main approaches to representing and training agents with model-fre
 
 A couple of examples of policy optimization methods are:
 
-* `A2C / A3C`_, which performs gradient ascent to directly maximize performance,
+* `VPG`_, Vanilla Policy Gradient (also known as REINFORCE) this optimizes the on-policy value function.
+* `A2C / A3C`_, which performs gradient ascent to directly maximize performance.
 * and `PPO`_, whose updates indirectly maximize performance, by instead maximizing a *surrogate objective* function which gives a conservative estimate for how much :math:`J(\pi_{\theta})` will change as a result of the update. 
 
 **Q-Learning.** Methods in this family learn an approximator :math:`Q_{\theta}(s,a)` for the optimal action-value function, :math:`Q^*(s,a)`. Typically they use an objective function based on the `Bellman equation`_. This optimization is almost always performed **off-policy**, which means that each update can use data collected at any point during training, regardless of how the agent was choosing to explore the environment when the data was obtained. The corresponding policy is obtained via the connection between :math:`Q^*` and :math:`\pi^*`: the actions taken by the Q-learning agent are given by 
@@ -65,14 +66,15 @@ A couple of examples of policy optimization methods are:
 
 Examples of Q-learning methods include
 
-* `DQN`_, a classic which substantially launched the field of deep RL,
+* `DQN`_, a classic which substantially launched the field of deep RL.
 * and `C51`_, a variant that learns a distribution over return whose expectation is :math:`Q^*`.
 
 **Trade-offs Between Policy Optimization and Q-Learning.** The primary strength of policy optimization methods is that they are principled, in the sense that *you directly optimize for the thing you want.* This tends to make them stable and reliable. By contrast, Q-learning methods only *indirectly* optimize for agent performance, by training :math:`Q_{\theta}` to satisfy a self-consistency equation. There are many failure modes for this kind of learning, so it tends to be less stable. [1]_ But, Q-learning methods gain the advantage of being substantially more sample efficient when they do work, because they can reuse data more effectively than policy optimization techniques. 
 
 **Interpolating Between Policy Optimization and Q-Learning.** Serendipitously, policy optimization and Q-learning are not incompatible (and under some circumstances, it turns out, `equivalent`_), and there exist a range of algorithms that live in between the two extremes. Algorithms that live on this spectrum are able to carefully trade-off between the strengths and weaknesses of either side. Examples include
 
-* `DDPG`_, an algorithm which concurrently learns a deterministic policy and a Q-function by using each to improve the other,
+* `DDPG`_, an algorithm which concurrently learns a deterministic policy and a Q-function by using each to improve the other.
+* `TD3`_, a variant with two critic networks in order to mitigate the overestimation in the Q-function prediction, which slows down the actor updates in order to increase stability and adds noise to actions while training the critic in order to smooth out the critic's predictions.
 * and `SAC`_, a variant which uses stochastic policies, entropy regularization, and a few other tricks to stabilize learning and score higher than DDPG on standard benchmarks.
 
 
@@ -98,7 +100,8 @@ Unlike model-free RL, there aren't a small number of easy-to-define clusters of 
 **Expert Iteration.** A straightforward follow-on to pure planning involves using and learning an explicit representation of the policy, :math:`\pi_{\theta}(a|s)`. The agent uses a planning algorithm (like Monte Carlo Tree Search) in the model, generating candidate actions for the plan by sampling from its current policy. The planning algorithm produces an action which is better than what the policy alone would have produced, hence it is an "expert" relative to the policy. The policy is afterwards updated to produce an action more like the planning algorithm's output.
 
 * The `ExIt`_ algorithm uses this approach to train deep neural networks to play Hex.
-* `AlphaZero`_ is another example of this approach.
+* `AlphaZero`_ is another example, where a model of the world is provided.
+* `MuZero`_ a variant, which learns a model of the world
 
 **Data Augmentation for Model-Free Methods.** Use a model-free RL algorithm to train a policy or Q-function, but either 1) augment real experiences with fictitious ones in updating the agent, or 2) use *only* fictitous experience for updating the agent. 
 
@@ -120,6 +123,7 @@ Links to Algorithms in Taxonomy
 
 .. _`Citations below.`: 
 
+.. [#] `VPG <https://papers.nips.cc/paper/1713-policy-gradient-methods-for-reinforcement-learning-with-function-approximation.pdf>`_ (Policy Gradient Methods for Reinforcement Learning with Function Approximation): Sutton et al, 1999
 .. [#] `A2C / A3C <https://arxiv.org/abs/1602.01783>`_ (Asynchronous Advantage Actor-Critic): Mnih et al, 2016
 .. [#] `PPO <https://arxiv.org/abs/1707.06347>`_ (Proximal Policy Optimization): Schulman et al, 2017 
 .. [#] `TRPO <https://arxiv.org/abs/1502.05477>`_ (Trust Region Policy Optimization): Schulman et al, 2015
@@ -134,4 +138,5 @@ Links to Algorithms in Taxonomy
 .. [#] `I2A <https://arxiv.org/abs/1707.06203>`_ (Imagination-Augmented Agents): Weber et al, 2017 
 .. [#] `MBMF <https://sites.google.com/view/mbmf>`_ (Model-Based RL with Model-Free Fine-Tuning): Nagabandi et al, 2017 
 .. [#] `MBVE <https://arxiv.org/abs/1803.00101>`_ (Model-Based Value Expansion): Feinberg et al, 2018
-.. [#] `AlphaZero <https://arxiv.org/abs/1712.01815>`_: Silver et al, 2017 
+.. [#] `AlphaZero <https://arxiv.org/abs/1712.01815>`_: Silver et al, 2017
+.. [#] `MuZero <https://arxiv.org/abs/1911.08265>`_: Schrittwieser et al, 2019
