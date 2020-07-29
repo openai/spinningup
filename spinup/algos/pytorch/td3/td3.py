@@ -1,3 +1,4 @@
+from collections import deque
 from copy import deepcopy
 import itertools
 import numpy as np
@@ -19,14 +20,16 @@ class ReplayBuffer:
         self.obs2_buf = np.zeros(core.combined_shape(size, obs_dim), dtype=np.float32)
         self.act_buf = np.zeros(core.combined_shape(size, act_dim), dtype=np.float32)
         self.rew_buf = np.zeros(size, dtype=np.float32)
+        self.gamma_buf = np.zeros(size, dtype=np.float32)
         self.done_buf = np.zeros(size, dtype=np.float32)
         self.ptr, self.size, self.max_size = 0, 0, size
 
-    def store(self, obs, act, rew, next_obs, done):
+    def store(self, obs, act, rew, g, next_obs, done):
         self.obs_buf[self.ptr] = obs
         self.obs2_buf[self.ptr] = next_obs
         self.act_buf[self.ptr] = act
         self.rew_buf[self.ptr] = rew
+        self.gamma_buf[self.ptr] = g
         self.done_buf[self.ptr] = done
         self.ptr = (self.ptr+1) % self.max_size
         self.size = min(self.size+1, self.max_size)
@@ -37,13 +40,14 @@ class ReplayBuffer:
                      obs2=self.obs2_buf[idxs],
                      act=self.act_buf[idxs],
                      rew=self.rew_buf[idxs],
+                     gamma=self.gamma_buf[idxs],
                      done=self.done_buf[idxs])
         return {k: torch.as_tensor(v, dtype=torch.float32) for k,v in batch.items()}
 
 
 
 def td3(env_fn, actor_critic=core.MLPActorCritic, ac_kwargs=dict(), seed=0, 
-        steps_per_epoch=4000, epochs=100, replay_size=int(1e6), gamma=0.99, 
+        steps_per_epoch=4000, epochs=100, replay_size=int(1e6), gamma=0.99, n_steps=5,
         polyak=0.995, pi_lr=1e-3, q_lr=1e-3, batch_size=100, start_steps=10000, 
         update_after=1000, update_every=50, act_noise=0.1, target_noise=0.2, 
         noise_clip=0.5, policy_delay=2, num_test_episodes=10, max_ep_len=1000, 
@@ -93,6 +97,8 @@ def td3(env_fn, actor_critic=core.MLPActorCritic, ac_kwargs=dict(), seed=0,
         replay_size (int): Maximum length of replay buffer.
 
         gamma (float): Discount factor. (Always between 0 and 1.)
+
+        n_steps (int): Number of N-step returns
 
         polyak (float): Interpolation factor in polyak averaging for target 
             networks. Target networks are updated towards main networks 
@@ -170,6 +176,9 @@ def td3(env_fn, actor_critic=core.MLPActorCritic, ac_kwargs=dict(), seed=0,
     # List of parameters for both Q-networks (save this for convenience)
     q_params = itertools.chain(ac.q1.parameters(), ac.q2.parameters())
 
+    # Initialise buffer to store experiences for N-step returns
+    exp_buffer = deque()
+
     # Experience buffer
     replay_buffer = ReplayBuffer(obs_dim=obs_dim, act_dim=act_dim, size=replay_size)
 
@@ -179,7 +188,7 @@ def td3(env_fn, actor_critic=core.MLPActorCritic, ac_kwargs=dict(), seed=0,
 
     # Set up function for computing TD3 Q-losses
     def compute_loss_q(data):
-        o, a, r, o2, d = data['obs'], data['act'], data['rew'], data['obs2'], data['done']
+        o, a, r, g, o2, d = data['obs'], data['act'], data['rew'], data['gamma'], data['obs2'], data['done']
 
         q1 = ac.q1(o,a)
         q2 = ac.q2(o,a)
@@ -198,7 +207,7 @@ def td3(env_fn, actor_critic=core.MLPActorCritic, ac_kwargs=dict(), seed=0,
             q1_pi_targ = ac_targ.q1(o2, a2)
             q2_pi_targ = ac_targ.q2(o2, a2)
             q_pi_targ = torch.min(q1_pi_targ, q2_pi_targ)
-            backup = r + gamma * (1 - d) * q_pi_targ
+            backup = r + g * (1 - d) * q_pi_targ
 
         # MSE loss against Bellman backup
         loss_q1 = ((q1 - backup)**2).mean()
@@ -278,6 +287,17 @@ def td3(env_fn, actor_critic=core.MLPActorCritic, ac_kwargs=dict(), seed=0,
                 ep_len += 1
             logger.store(TestEpRet=ep_ret, TestEpLen=ep_len)
 
+    def N_Step_Reward():
+        state_0, action_0, reward_0 = exp_buffer.popleft()
+        discounted_reward = reward_0
+        g = gamma
+
+        for (_, _, r) in exp_buffer:
+            discounted_reward += r * g
+            g *= gamma
+        
+        return state_0, action_0, discounted_reward, g
+
     # Prepare for interaction with environment
     total_steps = steps_per_epoch * epochs
     start_time = time.time()
@@ -304,8 +324,15 @@ def td3(env_fn, actor_critic=core.MLPActorCritic, ac_kwargs=dict(), seed=0,
         # that isn't based on the agent's state)
         d = False if ep_len==max_ep_len else d
 
-        # Store experience to replay buffer
-        replay_buffer.store(o, a, r, o2, d)
+        # Check if experiences are sufficient for calc N-step reward
+        if len(exp_buffer) >= n_steps:
+            o_0, a_0, d_r, g_N = N_Step_Reward()
+            
+            # Store experience to replay buffer
+            replay_buffer.store(o_0, a_0, d_r, g_N, o2, d)
+
+        # Store (o,a,r) to experiences buffer
+        exp_buffer.append((o, a, r))
 
         # Super critical, easy to overlook step: make sure to update 
         # most recent observation!
@@ -313,6 +340,13 @@ def td3(env_fn, actor_critic=core.MLPActorCritic, ac_kwargs=dict(), seed=0,
 
         # End of trajectory handling
         if d or (ep_len == max_ep_len):
+            # Use all saved experiences in buffer for training agent
+            while len(exp_buffer) != 0:
+                o_0, a_0, d_r, g_N = N_Step_Reward()
+            
+                # Store experience to replay buffer
+                replay_buffer.store(o_0, a_0, d_r, g_N, o2, d)
+
             logger.store(EpRet=ep_ret, EpLen=ep_len)
             o, ep_ret, ep_len = env.reset(), 0, 0
 
@@ -354,6 +388,7 @@ if __name__ == '__main__':
     parser.add_argument('--hid', type=int, default=256)
     parser.add_argument('--l', type=int, default=2)
     parser.add_argument('--gamma', type=float, default=0.99)
+    parser.add_argument('--n_steps', type=int, default=5)
     parser.add_argument('--seed', '-s', type=int, default=0)
     parser.add_argument('--epochs', type=int, default=50)
     parser.add_argument('--exp_name', type=str, default='td3')
@@ -364,5 +399,5 @@ if __name__ == '__main__':
 
     td3(lambda : gym.make(args.env), actor_critic=core.MLPActorCritic,
         ac_kwargs=dict(hidden_sizes=[args.hid]*args.l), 
-        gamma=args.gamma, seed=args.seed, epochs=args.epochs,
+        gamma=args.gamma, n_steps=args.n_steps, seed=args.seed, epochs=args.epochs,
         logger_kwargs=logger_kwargs)
