@@ -6,6 +6,7 @@ import torch
 import torch.nn as nn
 from torch.distributions.normal import Normal
 from torch.distributions.categorical import Categorical
+from torch.distributions.bernoulli import Bernoulli
 
 
 def combined_shape(length, shape=None):
@@ -94,6 +95,16 @@ class MLPGaussianActor(Actor):
         return pi.log_prob(act).sum(axis=-1)    # Last axis sum needed for Torch Normal distribution
 
 
+class MLPMultiBinaryActor(MLPCategoricalActor):
+
+    def _distribution(self, obs):
+        logits = self.logits_net(obs)
+        return Bernoulli(logits=logits)
+
+    def _log_prob_from_distribution(self, pi, act):
+        return pi.log_prob(act).sum(axis=-1)    # Last axis sum needed for Torch Normal distribution
+
+
 class MLPCritic(nn.Module):
 
     def __init__(self, obs_dim, hidden_sizes, activation):
@@ -119,6 +130,8 @@ class MLPActorCritic(nn.Module):
             self.pi = MLPGaussianActor(obs_dim, action_space.shape[0], hidden_sizes, activation)
         elif isinstance(action_space, Discrete):
             self.pi = MLPCategoricalActor(obs_dim, action_space.n, hidden_sizes, activation)
+        elif isinstance(action_space, MultiBinary):
+            self.pi = MLPMultiBinaryActor(obs_dim, action_space.shape[0], hidden_sizes, activation)
 
         # build value function
         self.v  = MLPCritic(obs_dim, hidden_sizes, activation)
