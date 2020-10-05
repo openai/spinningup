@@ -169,7 +169,7 @@ def dqn(env_fn, actor_critic=core.MLPActorCritic, ac_kwargs=dict(), seed=0,
     q_optimizer = Adam(qfunc.parameters(), lr=q_lr)
 
     # Set up model saving
-    logger.setup_pytorch_saver(qfunc)
+    logger.setup_pytorch_saver(ac)
 
     def update(data,reset_target):
         # Gradient descent step for Q.
