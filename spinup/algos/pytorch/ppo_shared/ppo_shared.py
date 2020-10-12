@@ -9,6 +9,7 @@ from spinup.utils.logx import EpochLogger
 from spinup.utils.mpi_pytorch import setup_pytorch_for_mpi, sync_params, mpi_avg_grads
 from spinup.utils.mpi_tools import mpi_fork, mpi_avg, proc_id, mpi_statistics_scalar, num_procs
 from tqdm.auto import tqdm
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 class PPOBuffer:
     """
@@ -89,7 +90,7 @@ class PPOBuffer:
         idxs = np.random.randint(0, self.ptr, size=batch_size)
         batch = dict(obs=self.obs_buf[idxs], act=self.act_buf[idxs], ret=self.ret_buf[idxs],
                           adv=self.adv_buf[idxs], logp=self.logp_buf[idxs])
-        return {k: torch.as_tensor(v, dtype=torch.float32) for k,v in batch.items()}
+        return {k: torch.as_tensor(v, dtype=torch.float32, device=device) for k,v in batch.items()}
 
     def reset(self):
         self.ptr, self.path_start_idx = 0, 0
@@ -321,7 +322,7 @@ def ppo(env_fn, actor_critic=ImpalaCNNActorCritic, ac_kwargs=dict(), seed=0,
                     print('Warning: trajectory cut off by epoch at %d steps.'%ep_len, flush=True)
                 # if trajectory didn't reach terminal state, bootstrap value target
                 if timeout or epoch_ended:
-                    _, v, _ = ac.step(torch.as_tensor(o, dtype=torch.float32))
+                    _, v, _ = ac.step(torch.as_tensor(o, dtype=torch.float32, device=device))
                 else:
                     v = 0
                 buf.finish_path(v)

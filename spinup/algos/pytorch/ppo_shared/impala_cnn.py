@@ -1,14 +1,8 @@
 from torch.distributions.categorical import Categorical
 from torch import nn
 import torch
-# from ray.rllib.models.torch.torch_modelv2 import TorchModelV2
-# from ray.rllib.models import ModelCatalog
-# from ray.rllib.utils.annotations import override
-# from ray.rllib.utils import try_import_torch
-#
-# torch, nn = try_import_torch()
 from spinup.algos.pytorch.ppo.core import Actor
-
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 class ResidualBlock(nn.Module):
     def __init__(self, channels):
@@ -94,7 +88,7 @@ class ImpalaCNN(nn.Module):
 class ImpalaCategoricalActor(Actor):
     def __init__(self, observation_space, act_dim):
         super().__init__()
-        self.logits_net = ImpalaCNN(observation_space, act_dim, act_dim, {}, 'ImpalaCNN')
+        self.logits_net = ImpalaCNN(observation_space, act_dim, act_dim, {}, 'ImpalaCNN').to(device)
 
     def _distribution(self, obs):
         logits = self.logits_net(obs)[0]
