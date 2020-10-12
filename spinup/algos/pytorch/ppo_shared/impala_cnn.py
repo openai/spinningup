@@ -65,8 +65,6 @@ class ImpalaCNN(nn.Module):
         self.value_fc = nn.Linear(in_features=256, out_features=1)
 
     def forward(self, x):
-        if len(x.shape) == 3:
-            x = x[None]
         x = x / 255.0  # scale to 0-1
         x = x.permute(0, 3, 1, 2)  # NHWC => NCHW
         for conv_seq in self.conv_seqs:

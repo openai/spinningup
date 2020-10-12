@@ -300,7 +300,7 @@ def ppo(env_fn, actor_critic=ImpalaCNNActorCritic, ac_kwargs=dict(), seed=0,
     # Main loop: collect experience in env and update/log each epoch
     for epoch in range(epochs):
         for t in tqdm(range(local_steps_per_epoch)):
-            a, v, logp = ac.step(torch.as_tensor(o, dtype=torch.float32))
+            a, v, logp = ac.step(torch.as_tensor(o[None], dtype=torch.float32, device=device))
 
             next_o, r, d, _ = env.step(a)
             ep_ret += r
