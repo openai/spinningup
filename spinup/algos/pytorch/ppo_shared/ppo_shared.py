@@ -84,11 +84,19 @@ class PPOBuffer:
                     adv=self.adv_buf, logp=self.logp_buf)
         return {k: torch.as_tensor(v, dtype=torch.float32) for k,v in data.items()}
 
+    def sample_batch(self, batch_size=32):
+        assert self.ptr == self.max_size    # buffer has to be full before you can get
+        idxs = np.random.randint(0, self.ptr, size=batch_size)
+        batch = dict(obs=self.obs_buf[idxs], act=self.act_buf[idxs], ret=self.ret_buf[idxs],
+                          adv=self.adv_buf[idxs], logp=self.logp_buf[idxs])
+        return {k: torch.as_tensor(v, dtype=torch.float32) for k,v in batch.items()}
 
+    def reset(self):
+        self.ptr, self.path_start_idx = 0, 0
 
 def ppo(env_fn, actor_critic=ImpalaCNNActorCritic, ac_kwargs=dict(), seed=0,
         steps_per_epoch=4000, epochs=50, gamma=0.99, clip_ratio=0.2, pi_lr=3e-4,
-        vf_lr=1e-3, train_pi_iters=80, train_v_iters=80, lam=0.97, max_ep_len=1000,
+        vf_lr=1e-3, train_iters=80, batch_size= 512, lam=0.97, max_ep_len=1000,
         target_kl=0.01, logger_kwargs=dict(), save_freq=10):
     """
     Proximal Policy Optimization (by clipping),
@@ -169,6 +177,8 @@ def ppo(env_fn, actor_critic=ImpalaCNNActorCritic, ac_kwargs=dict(), seed=0,
         pi_lr (float): Learning rate for policy optimizer.
 
         vf_lr (float): Learning rate for value function optimizer.
+
+        batch_size (int): 32 - Sampling batch size from buffer
 
         train_pi_iters (int): Maximum number of gradient descent steps to take
             on policy loss per epoch. (Early stopping may cause optimizer
@@ -254,50 +264,25 @@ def ppo(env_fn, actor_critic=ImpalaCNNActorCritic, ac_kwargs=dict(), seed=0,
     # Set up model saving
     logger.setup_pytorch_saver(ac)
 
-    def update():
-        data = buf.get()
-
+    def update(data):
         pi_l_old, pi_info_old = compute_loss_pi(data)
         pi_l_old = pi_l_old.item()
         v_l_old = compute_loss_v(data).item()
 
         # Train policy + value function with multiple steps of gradient descent
-        for i in tqdm(range(train_pi_iters)):
-            pi_optimizer.zero_grad()
-            loss_pi, pi_info = compute_loss_pi(data)
-            kl = mpi_avg(pi_info['kl'])
-            if kl > 1.5 * target_kl:
-                logger.log('Early stopping at step %d due to reaching max kl.'%i)
-                break
-            loss_v = compute_loss_v(data)
-            (loss_v + loss_pi).backward()
-            mpi_avg_grads(ac.pi)    # average grads across MPI processes
-            mpi_avg_grads(ac.v)    # average grads across MPI processes
-            pi_optimizer.step()
+        pi_optimizer.zero_grad()
+        loss_pi, pi_info = compute_loss_pi(data)
+        kl = mpi_avg(pi_info['kl'])
+        if kl > 1.5 * target_kl:
+            logger.log('Early stopping at step %d due to reaching max kl.'%i)
+            return 0
+        loss_v = compute_loss_v(data)
+        (loss_v + loss_pi).backward()
+        mpi_avg_grads(ac.pi)    # average grads across MPI processes
+        mpi_avg_grads(ac.v)    # average grads across MPI processes
+        pi_optimizer.step()
 
         logger.store(StopIter=i)
-
-        # # Train policy with multiple steps of gradient descent
-        # for i in range(train_pi_iters):
-        #     pi_optimizer.zero_grad()
-        #     loss_pi, pi_info = compute_loss_pi(data)
-        #     kl = mpi_avg(pi_info['kl'])
-        #     if kl > 1.5 * target_kl:
-        #         logger.log('Early stopping at step %d due to reaching max kl.'%i)
-        #         break
-        #     loss_pi.backward()
-        #     mpi_avg_grads(ac.pi)    # average grads across MPI processes
-        #     pi_optimizer.step()
-        #
-        # logger.store(StopIter=i)
-        #
-        # # Value function learning
-        # for i in range(train_v_iters):
-        #     vf_optimizer.zero_grad()
-        #     loss_v = compute_loss_v(data)
-        #     loss_v.backward()
-        #     mpi_avg_grads(ac.v)    # average grads across MPI processes
-        #     vf_optimizer.step()
 
         # Log changes from update
         kl, ent, cf = pi_info['kl'], pi_info_old['ent'], pi_info['cf']
@@ -305,6 +290,7 @@ def ppo(env_fn, actor_critic=ImpalaCNNActorCritic, ac_kwargs=dict(), seed=0,
                      KL=kl, Entropy=ent, ClipFrac=cf,
                      DeltaLossPi=(loss_pi.item() - pi_l_old),
                      DeltaLossV=(loss_v.item() - v_l_old))
+        return 1
 
     # Prepare for interaction with environment
     start_time = time.time()
@@ -348,7 +334,10 @@ def ppo(env_fn, actor_critic=ImpalaCNNActorCritic, ac_kwargs=dict(), seed=0,
             logger.save_state({'env': env}, None)
 
         # Perform PPO update!
-        update()
+        for i in tqdm(range(buf.ptr * train_iters // batch_size)):
+            if update(buf.sample_batch(batch_size)) == 0:
+                break
+        buf.reset()
 
         # Log info about epoch
         logger.log_tabular('Epoch', epoch)
