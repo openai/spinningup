@@ -265,7 +265,7 @@ def ppo(env_fn, actor_critic=ImpalaCNNActorCritic, ac_kwargs=dict(), seed=0,
     # Set up model saving
     logger.setup_pytorch_saver(ac)
 
-    def update(data):
+    def update(data, i):
         pi_l_old, pi_info_old = compute_loss_pi(data)
         pi_l_old = pi_l_old.item()
         v_l_old = compute_loss_v(data).item()
@@ -274,7 +274,7 @@ def ppo(env_fn, actor_critic=ImpalaCNNActorCritic, ac_kwargs=dict(), seed=0,
         pi_optimizer.zero_grad()
         loss_pi, pi_info = compute_loss_pi(data)
         kl = mpi_avg(pi_info['kl'])
-        if kl > 1.5 * target_kl:
+        if kl > 1.5 * target_kl and i>0:
             logger.log('Early stopping at step %d due to reaching max kl.'%i)
             return 0
         loss_v = compute_loss_v(data)
@@ -336,7 +336,7 @@ def ppo(env_fn, actor_critic=ImpalaCNNActorCritic, ac_kwargs=dict(), seed=0,
 
         # Perform PPO update!
         for i in tqdm(range(buf.ptr * train_iters // batch_size)):
-            if update(buf.sample_batch(batch_size)) == 0:
+            if update(buf.sample_batch(batch_size), i) == 0:
                 break
         buf.reset()
 
