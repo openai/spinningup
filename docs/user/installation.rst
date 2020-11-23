@@ -137,3 +137,29 @@ And then check that things are working by running PPO in the Walker2d-v2 environ
 
 .. _`mujoco-py`: https://github.com/openai/mujoco-py
 .. _`MuJoCo license`: https://www.roboti.us/license.html
+
+
+Installing PyBullet (Optional, Alternative to MuJoCo)
+=====================================================
+
+Install `pybullet`_ using pip, after activating your python environment
+
+.. parsed-literal::
+
+    pip install pybullet
+
+.. admonition:: You Should Know
+
+    PyBullet is an open source physics engine that includes implementations of robotics tasks commonly used in RL. PyBullet is licensed under a permissive `zlib`_ license and is free to use. 
+
+You'll also need to add a line, ``import pybullet_envs``, to ``./spinup/__init__.py``. This ensures that the PyBullet RL environments are registered with gym. To check if your efforts were successful try running PPO in the Walker2DBulletEnv-v0 environment with
+
+.. parsed-literal::
+
+    python -m spinup.run ppo --hid "[32,32]" --env Walker2DBulletEnv-v0 --exp_name pybullet_test
+
+Note that the PyBullet RL environments are named slightly differently than MuJoCo robotics environments. They all include ``BulletEnv`` in the environment name and as of this writing are version ``v0``. To see all RL environments available in PyBullet check the `PyBullet Quick Start Guide`_.
+
+.. _`pybullet`: https://github.com/bulletphysics/bullet3
+.. _`zlib`: https://en.wikipedia.org/wiki/ZLIB_license
+.. _`PyBullet Quick Start Guide`: https://docs.google.com/document/d/10sXEhzFRSnvFcl3XxNGhnD4N2SedqwdAvK3dsihxVUA/edit#heading=h.wz5to0x8kqmr
