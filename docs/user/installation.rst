@@ -152,23 +152,22 @@ Install `pybullet`_ using pip, after activating your python environment
 
     PyBullet is an open source physics engine that includes implementations of robotics tasks commonly used in RL. PyBullet is licensed under a permissive `zlib`_ license and is free to use. 
 
-You'll also need to add a line, ``import pybullet_envs``, to ``./spinup/__init__.py``. This ensures that the PyBullet RL environments are registered with gym. To check if your efforts were successful try running PPO in the Walker2DBulletEnv-v0 environment with
+You'll also need to add a line, ``import pybullet_envs``, to ``./spinup/__init__.py``. This ensures that the PyBullet RL environments are registered with gym. 
+
+The instructions above are for using PyBullet with the root fork of `Spinning Up`_ by Joshua Achiam. I've made the necessary adjustments for using PyBullet in `this fork`_, so you can easily get started with PyBullet. 
+
+.. parsed-literal::
+    git clone https://github.com/rivesunder/spinningup
+    cd spinningup
+    pip install -e .
+
+Regardless of whether you choose to modify the root `Spinning Up`_ or this fork, you can check if your efforts were successful by running a PPO experiment in the Walker2DBulletEnv-v0 environment with
 
 .. parsed-literal::
 
     python -m spinup.run ppo --hid "[32,32]" --env Walker2DBulletEnv-v0 --exp_name pybullet_test
 
-Note that the PyBullet RL environments are named slightly differently than MuJoCo robotics environments. They all include ``BulletEnv`` in the environment name and as of this writing are version ``v0``. To see all RL environments available in PyBullet check the `PyBullet Quick Start Guide`_.
-
-The instructions above are for using PyBullet with the root fork of `Spinning Up`_ by Joshua Achiam. I've made the necessary adjustments for using PyBullet to `this fork`_, so you can easily get started with PyBullet. 
-
-```
-git clone https://github.com/rivesunder/spinningup
-cd spinningup
-pip install -e .
-```
-
-Then check the install by running the experiment above or some variation thereof. 
+Note that the PyBullet RL environments are named slightly differently than MuJoCo robotics environments. They all include ``BulletEnv`` in the environment name and as of this writing are version ``v0``. To see all RL environments available in PyBullet check the `PyBullet Quick Start Guide`_. 
 
 .. _`pybullet`: https://github.com/bulletphysics/bullet3
 .. _`zlib`: https://en.wikipedia.org/wiki/ZLIB_license
