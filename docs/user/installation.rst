@@ -160,6 +160,18 @@ You'll also need to add a line, ``import pybullet_envs``, to ``./spinup/__init__
 
 Note that the PyBullet RL environments are named slightly differently than MuJoCo robotics environments. They all include ``BulletEnv`` in the environment name and as of this writing are version ``v0``. To see all RL environments available in PyBullet check the `PyBullet Quick Start Guide`_.
 
+The instructions above are for using PyBullet with the root fork of `Spinning Up`_ by Joshua Achiam. I've made the necessary adjustments for using PyBullet to `this fork`_, so you can easily get started with PyBullet. 
+
+```
+git clone https://github.com/rivesunder/spinningup
+cd spinningup
+pip install -e .
+```
+
+Then check the install by running the experiment above or some variation thereof. 
+
 .. _`pybullet`: https://github.com/bulletphysics/bullet3
 .. _`zlib`: https://en.wikipedia.org/wiki/ZLIB_license
 .. _`PyBullet Quick Start Guide`: https://docs.google.com/document/d/10sXEhzFRSnvFcl3XxNGhnD4N2SedqwdAvK3dsihxVUA/edit#heading=h.wz5to0x8kqmr
+.. _`Spinning Up`: https://github.com/openai/spinningup
+.. _`this fork`: https://github.com/rivesunder/spinningup
