@@ -4,6 +4,7 @@ import os
 import os.path as osp
 import tensorflow as tf
 import torch
+import gym
 from spinup import EpochLogger
 from spinup.utils.logx import restore_tf_graph
 
@@ -115,6 +116,13 @@ def run_policy(env, get_action, max_ep_len=None, num_episodes=100, render=True):
         "page on Experiment Outputs for how to handle this situation."
 
     logger = EpochLogger()
+
+    if "BulletEnv" in env.spec.id:
+        env = gym.make(env.spec.id)
+        if render:
+            # pybullet envs have to initialize rendering before calling env.reset
+            env.render()
+
     o, r, d, ep_ret, ep_len, n = env.reset(), 0, False, 0, 0, 0
     while n < num_episodes:
         if render:
