@@ -47,7 +47,7 @@ We'll begin by laying out a few facts which are useful for deriving the analytic
     P(\tau|\theta) = \rho_0 (s_0) \prod_{t=0}^{T} P(s_{t+1}|s_t, a_t) \pi_{\theta}(a_t |s_t).
 
 
-**2. The Log-Derivative Trick.** The log-derivative trick is based on a simple rule from calculus: the derivative of :math:`\log x` with respect to :math:`x` is :math:`1/x`. When rearranged and combined with chain rule, we get:
+**2. The Log-Derivative Trick.** The log-derivative trick is based on a simple rule from calculus: the derivative of :math:`\log f(x)` with respect to :math:`x` is :math:`f'(x)/f(x)`. When rearranged and combined with chain rule, we get:
 
 .. math::
 
