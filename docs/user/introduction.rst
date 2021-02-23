@@ -88,7 +88,7 @@ Support history so far:
 
 - **April, 2019:** Approximately six months after release, we conducted an internal review of Spinning Up based on feedback from the community. The review surfaced interest in a few key features:
 
-    * **Implementations in Other Neural Network Libraries.** Several people expressed interest in seeing Spinning Up use alternatives to Tensorflow v1 for the RL implementations. A few members of the community even developed their own PyTorch versions of Spinning Up algorithms, such as Kashif Rasul's `Fired Up`_,  Kai Arulkumaran's `Spinning Up Basic`_, and Misha Laskin's `Torching Up`_. As a result, making this kind of "Rosetta Stone" for deep RL became a high priority for future work.
+    * **Implementations in Other Neural Network Libraries.** Several people expressed interest in seeing Spinning Up use alternatives to Tensorflow v1 for the RL implementations. A few members of the community even developed their own PyTorch versions of Spinning Up algorithms, such as Kashif Rasul's `Fired Up`_,  Kai Arulkumaran's `Spinning Up Basic`_, and Misha Laskin's `Torching Up`_. A Tensorflow v2 version was released in 2020, `spinningup_tf2`_. As a result, making this kind of "Rosetta Stone" for deep RL became a high priority for future work.
 
     * **Open Source RL Environments.** Many people expressed an interest in seeing Spinning Up use more open source RL environments (eg `PyBullet`_) for benchmarks, examples, and exercises.
 
@@ -118,6 +118,7 @@ Additionally, as discussed in the blog post, Spinning Up has been integrated int
 .. _`Fired Up`: https://github.com/kashif/firedup
 .. _`Spinning Up Basic`: https://github.com/Kaixhin/spinning-up-basic
 .. _`Torching Up`: https://github.com/MishaLaskin/torchingup
+.. _`spinningup_tf2`: https://github.com/piojanu/spinningup_tf2
 .. _`PyBullet`: https://pybullet.org/wordpress/
 .. _`MuJoCo`: http://mujoco.org/
 .. _Scholars : https://openai.com/blog/openai-scholars-spring-2020/
