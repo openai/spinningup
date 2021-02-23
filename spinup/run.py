@@ -1,5 +1,6 @@
 import spinup
 from spinup.user_config import DEFAULT_BACKEND
+from spinup.utils.gym_utils import import_gym_env_pkg
 from spinup.utils.run_utils import ExperimentGrid
 from spinup.utils.serialization_utils import convert_json
 import argparse
@@ -151,6 +152,23 @@ def parse_and_execute_grid_search(cmd, args):
         assert cmd in add_with_backends(MPI_COMPATIBLE_ALGOS), \
             friendly_err("This algorithm can't be run with num_cpu > 1.")
 
+    # Try to import custom environments
+    try:
+        import spinup.env_config  # noqa: F401 - Import custom environments
+    except Exception as e:
+        raise Exception(
+            "Something went wrong when trying to import the 'env_config' file."
+        ) from e
+    env_pkg_err_msg = ""
+    if "env_pkg" in arg_dict.keys():
+        try:
+            import_gym_env_pkg(arg_dict["env_pkg"], frail=False)
+        except ImportError:
+            env_pkg_err_msg = (
+                "\n\t\t* Make sure the package you supplied in the 'env_pkg' contains a "
+                "a valid gym environment.\n"
+            )
+
     # Special handling for environment: make sure that env_name is a real,
     # registered gym environment.
     valid_envs = [e.id for e in list(gym.envs.registry.all())]
@@ -168,10 +186,10 @@ def parse_and_execute_grid_search(cmd, args):
                 * View the complete list of valid Gym environments at
 
                     https://gym.openai.com/envs/
-
-            """%env_name)
+                %s
+            """ % (env_name, env_pkg_err_msg)
+        )
         assert env_name in valid_envs, err_msg
-
 
     # Construct and execute the experiment grid.
     eg = ExperimentGrid(name=exp_name)
