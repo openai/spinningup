@@ -1,4 +1,4 @@
-"""Module used for adding custom environments.
+"""Module used for adding custom Gym environments.
 
 Example:
     This module allows you to add your own custom gym environments to the
