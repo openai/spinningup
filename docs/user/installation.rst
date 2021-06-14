@@ -31,7 +31,7 @@ Follow `the installation instructions`_ for Anaconda here. Download and install 
 
 .. parsed-literal::
 
-    conda create -n spinningup python=3.6
+    conda create -n spinningup tensorflow=1.15 python=3.6
 
 To use Python from the environment you just created, activate the environment with:
 
