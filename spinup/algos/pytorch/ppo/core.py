@@ -98,10 +98,13 @@ class MLPCritic(nn.Module):
 
     def __init__(self, obs_dim, hidden_sizes, activation):
         super().__init__()
-        self.v_net = mlp([obs_dim] + list(hidden_sizes) + [1], activation)
+        # add 1 extra to the input dimension to include the selected action in the value net.
+        # In other words, we are estimating Q(s,a) rather than V(s)
+        self.v_net = mlp([obs_dim + 1] + list(hidden_sizes) + [1], activation)
 
-    def forward(self, obs):
-        return torch.squeeze(self.v_net(obs), -1) # Critical to ensure v has right shape.
+    def forward(self, obs, act):
+        state_action = torch.hstack((obs, act.unsqueeze(-1)))
+        return torch.squeeze(self.v_net(state_action), -1)  # Critical to ensure v has right shape.
 
 
 
@@ -121,15 +124,35 @@ class MLPActorCritic(nn.Module):
             self.pi = MLPCategoricalActor(obs_dim, action_space.n, hidden_sizes, activation)
 
         # build value function
-        self.v  = MLPCritic(obs_dim, hidden_sizes, activation)
+        self.v = MLPCritic(obs_dim, hidden_sizes, activation)
 
-    def step(self, obs):
+    def step(self, obs, as_numpy=True):
         with torch.no_grad():
             pi = self.pi._distribution(obs)
             a = pi.sample()
             logp_a = self.pi._log_prob_from_distribution(pi, a)
-            v = self.v(obs)
-        return a.numpy(), v.numpy(), logp_a.numpy()
+            v = self.v(obs, a)
+        if as_numpy:
+            return a.numpy(), v.numpy(), logp_a.numpy()
+        else:
+            return a, v, logp_a.numpy()
 
-    def act(self, obs):
-        return self.step(obs)[0]
+    def act(self, obs, as_numpy=True):
+        if as_numpy:
+            return self.step(obs)[0]
+        else:
+            return self.step(obs, as_numpy=False)[0]
+
+    def select_action(self, obs, test=False):
+        return self.act(obs)
+
+    def get_value_estimate(self, obs, action):
+        return self.v(obs, action)
+
+    def get_max_value_estimate(self, obs):
+        # What we need to do in high-dimensional action-space is:
+        #   1) Select an optimal action given the state using the policy
+        #   2) Determine the optimal value using the state-optimal_action pair
+        action = self.act(obs, as_numpy=False)
+        value = self.v(obs, action)
+        return value

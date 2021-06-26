@@ -325,10 +325,20 @@ def vpg(env_fn, actor_critic=core.MLPActorCritic, ac_kwargs=dict(),  seed=0,
         logger.log_tabular('Time', time.time()-start_time)
         logger.dump_tabular()
 
+MINI_GRID_16 = 'MiniGrid-Deceptive-16x16-v0'
+MINI_GRID_49 = 'MiniGrid-Deceptive-49x49-v0'
+SEED = 1234
+from gym_minigrid.wrappers import SimpleObsWrapper
+
+def make_simple_env(env_key, seed):
+    env = SimpleObsWrapper(gym.make(env_key))
+    env.seed(seed)
+    return env
+
 if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser()
-    parser.add_argument('--env', type=str, default='HalfCheetah-v2')
+    parser.add_argument('--env', type=str, default=MINI_GRID_16)
     parser.add_argument('--hid', type=int, default=64)
     parser.add_argument('--l', type=int, default=2)
     parser.add_argument('--gamma', type=float, default=0.99)
@@ -344,7 +354,7 @@ if __name__ == '__main__':
     from spinup.utils.run_utils import setup_logger_kwargs
     logger_kwargs = setup_logger_kwargs(args.exp_name, args.seed)
 
-    vpg(lambda : gym.make(args.env), actor_critic=core.MLPActorCritic,
+    vpg(lambda : make_simple_env(MINI_GRID_16, SEED), actor_critic=core.MLPActorCritic,
         ac_kwargs=dict(hidden_sizes=[args.hid]*args.l), gamma=args.gamma, 
         seed=args.seed, steps_per_epoch=args.steps, epochs=args.epochs,
         logger_kwargs=logger_kwargs)
