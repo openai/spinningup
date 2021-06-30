@@ -36,10 +36,14 @@ class MLPQFunction(nn.Module):
 
     def __init__(self, obs_dim, act_dim, hidden_sizes, activation):
         super().__init__()
+        self.obs_dim = obs_dim
+        self.act_dim = act_dim
         self.q = mlp([obs_dim + act_dim] + list(hidden_sizes) + [1], activation)
 
     def forward(self, obs, act):
-        q = self.q(torch.cat([obs, act], dim=-1))
+        sa = torch.hstack((obs, act))
+        q = self.q(sa)
+        # q = self.q(torch.cat([obs, act], dim=-1))
         return torch.squeeze(q, -1) # Critical to ensure q has right shape.
 
 class MLPActorCritic(nn.Module):
@@ -49,8 +53,8 @@ class MLPActorCritic(nn.Module):
         super().__init__()
 
         obs_dim = observation_space.shape[0]
-        act_dim = action_space.shape[0]
-        act_limit = action_space.high[0]
+        act_dim = 1
+        act_limit = action_space.n
 
         # build policy and value functions
         self.pi = MLPActor(obs_dim, act_dim, hidden_sizes, activation, act_limit)
