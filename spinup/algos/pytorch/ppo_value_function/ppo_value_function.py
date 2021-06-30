@@ -215,7 +215,7 @@ def ppo(env_fn, actor_critic=core.MLPActorCritic, ac_kwargs=dict(), seed=0,
     sync_params(ac)
 
     # Count variables
-    var_counts = tuple(core.count_vars(module) for module in [ac.pi, ac.v])
+    var_counts = tuple(core.count_vars(module) for module in [ac.pi, ac.critic])
     logger.log('\nNumber of parameters: \t pi: %d, \t v: %d\n' % var_counts)
 
     # Set up experience buffer
@@ -244,11 +244,11 @@ def ppo(env_fn, actor_critic=core.MLPActorCritic, ac_kwargs=dict(), seed=0,
     # Set up function for computing value loss
     def compute_loss_v(data):
         obs, act, ret = data['obs'], data['act'], data['ret']
-        return ((ac.v(obs) - ret)**2).mean()
+        return ((ac.critic(obs) - ret) ** 2).mean()
 
     # Set up optimizers for policy and value function
     pi_optimizer = Adam(ac.pi.parameters(), lr=pi_lr)
-    vf_optimizer = Adam(ac.v.parameters(), lr=vf_lr)
+    vf_optimizer = Adam(ac.critic.parameters(), lr=vf_lr)
 
     # Set up model saving
     logger.setup_pytorch_saver(ac)
@@ -279,7 +279,7 @@ def ppo(env_fn, actor_critic=core.MLPActorCritic, ac_kwargs=dict(), seed=0,
             vf_optimizer.zero_grad()
             loss_v = compute_loss_v(data)
             loss_v.backward()
-            mpi_avg_grads(ac.v)  # average grads across MPI processes
+            mpi_avg_grads(ac.critic)  # average grads across MPI processes
             vf_optimizer.step()
 
         # Log changes from update

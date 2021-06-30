@@ -94,6 +94,20 @@ class MLPGaussianActor(Actor):
         return pi.log_prob(act).sum(axis=-1)  # Last axis sum needed for Torch Normal distribution
 
 
+class MLPQFunction(nn.Module):
+
+    def __init__(self, obs_dim, act_dim, hidden_sizes, activation):
+        super().__init__()
+        self.obs_dim = obs_dim
+        self.act_dim = act_dim
+        self.q = mlp([obs_dim + act_dim] + list(hidden_sizes) + [1], activation)
+
+    def forward(self, obs, act):
+        state_action = torch.hstack((obs, act.unsqueeze(-1)))
+        q = self.q(state_action)
+        return torch.squeeze(q, -1)  # Critical to ensure q has right shape.
+
+
 class MLPCritic(nn.Module):
 
     def __init__(self, obs_dim, hidden_sizes, activation):
@@ -104,10 +118,42 @@ class MLPCritic(nn.Module):
         return torch.squeeze(self.v_net(obs), -1)  # Critical to ensure v has right shape.
 
 
+class MLPQActorCritic(nn.Module):
+
+    def __init__(self, observation_space, action_space, hidden_sizes=(64, 64), activation=nn.Tanh):
+        super().__init__()
+        obs_dim = observation_space.shape[0]
+        self.obs_dim = obs_dim
+        self.act_dim = action_space.n
+
+        # build policy
+        # policy builder depends on action space
+        if isinstance(action_space, Box):
+            self.pi = MLPGaussianActor(obs_dim, action_space.shape[0], hidden_sizes, activation)
+        elif isinstance(action_space, Discrete):
+            self.pi = MLPCategoricalActor(obs_dim, action_space.n, hidden_sizes, activation)
+
+        # build q-learning based critic
+        # FIXME: right now we just have one action value rather than a series of continuous values
+        self.q1 = MLPQFunction(obs_dim, 1, hidden_sizes, activation)
+
+    def step(self, obs, numpy=True):
+        with torch.no_grad():
+            pi = self.pi._distribution(obs)
+            a = pi.sample()
+            logp_a = self.pi._log_prob_from_distribution(pi, a)
+            q1 = self.q1(obs, a)
+        if numpy:
+            return a.numpy(), q1, logp_a.numpy()
+        else:
+            return a, q1, logp_a.numpy()
+
+    def act(self, obs, numpy=True):
+        return self.step(obs, numpy)[0]
+
 class MLPActorCritic(nn.Module):
 
-    def __init__(self, observation_space, action_space,
-                 hidden_sizes=(64, 64), activation=nn.Tanh):
+    def __init__(self, observation_space, action_space, hidden_sizes=(64, 64), activation=nn.Tanh):
         super().__init__()
         obs_dim = observation_space.shape[0]
         self.obs_dim = obs_dim
@@ -119,14 +165,14 @@ class MLPActorCritic(nn.Module):
             self.pi = MLPCategoricalActor(obs_dim, action_space.n, hidden_sizes, activation)
 
         # build value function
-        self.v = MLPCritic(obs_dim, hidden_sizes, activation)
+        self.critic = MLPCritic(obs_dim, hidden_sizes, activation)
 
     def step(self, obs):
         with torch.no_grad():
             pi = self.pi._distribution(obs)
             a = pi.sample()
             logp_a = self.pi._log_prob_from_distribution(pi, a)
-            v = self.v(obs)
+            v = self.critic(obs)
         return a.numpy(), v.numpy(), logp_a.numpy()
 
     def act(self, obs):
@@ -143,7 +189,7 @@ class MLPActorCritic(nn.Module):
         #   2) Estimate the value of the next state
         next_obs = self.get_transition(obs.detach().numpy(), action)
         next_obs_tensor = torch.as_tensor(next_obs, dtype=torch.float32)
-        value = self.v(next_obs_tensor)
+        value = self.critic(next_obs_tensor)
         return value
 
     def get_max_value_estimate(self, obs):
