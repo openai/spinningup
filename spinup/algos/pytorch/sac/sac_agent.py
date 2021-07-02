@@ -357,19 +357,26 @@ class DiscreteSacAgent(ContinuousSacAgent):
 
     def compute_loss_pi(self, data):
         states = data['obs']
-        actions, logp = self.actor_critic.pi(states)
+        actions, action_probs, log_action_probs = self.actor_critic.pi(states)
 
         # for discrete action space we need to unsqueeze the action action selection to get them into individual tensors
         # This is already done in the continuous action space environment
         actions = actions.unsqueeze(-1)
-        q1 = self.actor_critic.q1(states, actions)
-        q2 = self.actor_critic.q2(states, actions)
+        with torch.no_grad():
+            q1 = self.actor_critic.q1(states)
+            q2 = self.actor_critic.q2(states)
         q = torch.min(q1, q2)
 
-        # calculate entropy regularised policy loss
-        loss_pi = (self.alpha * logp - q).mean()
+        # calculate expectations of entropy
+        entropies = -torch.sum(action_probs * log_action_probs, dim=1, keepdim=True)
 
-        pi_info = dict(LogPi=logp.detach().numpy())
+        # calculate expectations of Q
+        q = torch.sum(torch.min(q1, q2) * action_probs, dim=1, keepdim=True)
+
+        # calculate entropy regularised policy loss
+        loss_pi = (-self.alpha * entropies - q).mean()
+
+        pi_info = dict(LogPi=entropies.detach().numpy())
 
         return loss_pi, pi_info
 
@@ -377,27 +384,29 @@ class DiscreteSacAgent(ContinuousSacAgent):
         states, actions, rewards, next_states, dones = data['obs'], data['act'], data['rew'], data['next_obs'], data[
             'done']
 
-        q1 = self.actor_critic.q1(states, actions)
-        q2 = self.actor_critic.q2(states, actions)
+        q1 = self.actor_critic.q1(states)
+        q2 = self.actor_critic.q2(states)
+
+        q1 = q1.gather(1, actions.long())
+        q2 = q2.gather(1, actions.long())
 
         # do Bellman backup for Q functions
         with torch.no_grad():
             # use the target network to get the actions given the next state
-            next_actions, next_logps = self.target_actor_critic.pi(next_states)
-
-            # for discrete action space we need to unsqueeze the action action selection to get them into individual tensors
-            # This is already done in the continuous action space environment
-            next_actions = next_actions.unsqueeze(-1)
+            next_actions, next_action_probs, next_log_action_probs = self.target_actor_critic.pi(next_states)
 
             # target q-values use the next states and next actions
-            target_q1 = self.target_actor_critic.q1(next_states, next_actions)
-            target_q2 = self.target_actor_critic.q2(next_states, next_actions)
+            target_q1 = self.target_actor_critic.q1(next_states)
+            target_q2 = self.target_actor_critic.q2(next_states)
 
-            # use the minimum of the two as the actual target to avoid over-estimation problems
-            target_q = torch.min(target_q1, target_q2)
+            target_q = (next_action_probs * (torch.min(target_q1, target_q2) - self.alpha * next_log_action_probs))\
+                .sum(dim=1, keepdim=True)
+
+            rewards = rewards.unsqueeze(-1)
+            assert rewards.shape == target_q.shape, "Rewards and q values do not have the same dimension"
 
             # determine backup (see SAC paper for more details on this derivation)
-            backup = rewards + self.discount_rate * (1 - dones) * (target_q - self.alpha * next_logps)
+            backup = rewards + self.discount_rate * (1 - dones) * target_q
 
         # compute losses using MSE
         loss_q1 = ((q1 - backup) ** 2).mean()
@@ -409,6 +418,10 @@ class DiscreteSacAgent(ContinuousSacAgent):
                       Q2Vals=q2.detach().numpy())
 
         return loss_q, q_info
+
+    def get_action(self, state, deterministic=False):
+        action = self.actor_critic.act(torch.as_tensor(state, dtype=torch.float32), deterministic=deterministic)
+        return int(action)
 
 
 if __name__ == '__main__':

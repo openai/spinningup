@@ -28,6 +28,59 @@ def count_vars(module):
 LOG_STD_MAX = 2
 LOG_STD_MIN = -20
 
+class CategoricalActor(nn.Module):
+    def __init__(self, obs_dim, act_dim, hidden_sizes, activation):
+        super().__init__()
+        self.logits_net = mlp([obs_dim] + list(hidden_sizes) + [act_dim], activation)
+
+
+    def forward(self, obs, deterministic=False, with_logprob=True):
+        action_logits = self.logits_net(obs)
+        action_probs = F.softmax(action_logits, dim=-1)
+        action_dist = Categorical(probs=action_probs)
+        actions = action_dist.sample().view(-1, 1)
+
+        # avoid numerical instability
+        z = (action_probs == 0).float() * 1e-8
+        log_action_probs = torch.log(action_probs + z)
+
+        return actions, action_probs, log_action_probs
+
+    def act(self, obs):
+        action_logits = self.logits_net(obs)
+        greed_actions = torch.argmax(action_logits, dim=1, keepdim=True)
+        return greed_actions
+
+
+class DiscreteMLPQFunction(nn.Module):
+
+    def __init__(self, obs_dim, act_dim, hidden_sizes, activation):
+        super().__init__()
+        self.q = mlp([obs_dim] + list(hidden_sizes) + [act_dim], activation)
+
+    def forward(self, obs):
+        q_vals = self.q(obs)
+        return q_vals
+
+class DiscreteMLPActorCritic(nn.Module):
+
+    def __init__(self, observation_space, action_space, hidden_sizes=(256,256),
+                 activation=nn.ReLU):
+        super().__init__()
+
+        obs_dim = observation_space.shape[0]
+        act_dim = action_space.n
+
+        # build policy and value functions
+        self.pi = CategoricalActor(obs_dim, act_dim, hidden_sizes, activation)
+        self.q1 = DiscreteMLPQFunction(obs_dim, act_dim, hidden_sizes, activation)
+        self.q2 = DiscreteMLPQFunction(obs_dim, act_dim, hidden_sizes, activation)
+
+    def act(self, obs, deterministic=False):
+        with torch.no_grad():
+            a, _ , _= self.pi(obs, deterministic, False)
+            return a.numpy()
+
 class SquashedGaussianMLPActor(nn.Module):
 
     def __init__(self, obs_dim, act_dim, hidden_sizes, activation, act_limit):
@@ -54,8 +107,8 @@ class SquashedGaussianMLPActor(nn.Module):
 
         if with_logprob:
             # Compute logprob from Gaussian, and then apply correction for Tanh squashing.
-            # NOTE: The correction formula is a little bit magic. To get an understanding 
-            # of where it comes from, check out the original SAC paper (arXiv 1801.01290) 
+            # NOTE: The correction formula is a little bit magic. To get an understanding
+            # of where it comes from, check out the original SAC paper (arXiv 1801.01290)
             # and look in appendix C. This is a more numerically-stable equivalent to Eq 21.
             # Try deriving it yourself as a (very difficult) exercise. :)
             logp_pi = pi_distribution.log_prob(pi_action).sum(axis=-1)
@@ -66,21 +119,6 @@ class SquashedGaussianMLPActor(nn.Module):
         pi_action = torch.tanh(pi_action)
         pi_action = self.act_limit * pi_action
 
-        return pi_action, logp_pi
-
-class CategoricalMLPActor(nn.Module):
-    def __init__(self, obs_dim, act_dim, hidden_sizes, activation):
-        super().__init__()
-        self.logits_net = mlp([obs_dim] + list(hidden_sizes) + [act_dim], activation)
-
-    def forward(self, obs, deterministic=False, with_logprob=True):
-        action_logits = self.logits_net(obs)
-        pi_distribution = Categorical(logits=action_logits)
-        pi_action = pi_distribution.sample()
-        if with_logprob:
-            logp_pi = pi_distribution.log_prob(pi_action)
-        else:
-            logp_pi = None
         return pi_action, logp_pi
 
 
@@ -113,35 +151,3 @@ class MLPActorCritic(nn.Module):
         with torch.no_grad():
             a, _ = self.pi(obs, deterministic, False)
             return a.numpy()
-
-class DiscreteMLPActorCritic(nn.Module):
-
-    def __init__(self, observation_space, action_space, hidden_sizes=(256,256),
-                 activation=nn.ReLU):
-        super().__init__()
-
-        obs_dim = observation_space.shape[0]
-        act_dim = action_space.n
-
-        # build policy and value functions
-        self.pi = CategoricalMLPActor(obs_dim, act_dim, hidden_sizes, activation)
-        self.q1 = MLPQFunction(obs_dim, 1, hidden_sizes, activation)
-        self.q2 = MLPQFunction(obs_dim, 1, hidden_sizes, activation)
-
-    def act(self, obs, deterministic=False):
-        with torch.no_grad():
-            a, _ = self.pi(obs, deterministic, False)
-            return a.numpy()
-
-class GumbelSoftmax(torch.distributions.RelaxedOneHotCategorical):
-
-    def sample(self, sample_shape):
-        u = torch.empty(self.logits.size(), device=self.logits.device, dtype=self.logits.dtype).uniform_(0,1)
-        noisy_logits = self.logits - torch.log(-torch.log(u))
-        return torch.argmax(noisy_logits, dim=-1)
-
-    def log_prob(self, value):
-        if value.shape != self.logits.shape:
-            value = F.one_hot(value.long(), self.logits.shape[-1]).float()
-            assert value.shape == self.logits.shape
-        return - torch.sum(- value * F.log_softmax(self.logits, -1), -1)
