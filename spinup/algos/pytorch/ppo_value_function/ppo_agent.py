@@ -1,25 +1,23 @@
 # Generic imports
-import numpy as np
 import time
 import copy
 import itertools
 
 # Gym stuff
-import gym_minigrid
 import gym
 from gym_minigrid.wrappers import SimpleObsWrapper
 
 # torch imports
-import torch
 from torch.optim import Adam
 
 # local imports
 from spinup.utils.logx import EpochLogger
 from spinup.utils.mpi_pytorch import setup_pytorch_for_mpi, sync_params, mpi_avg_grads
-from spinup.utils.mpi_tools import mpi_fork, mpi_avg, proc_id, mpi_statistics_scalar, num_procs
+from spinup.utils.mpi_tools import mpi_fork, mpi_avg, proc_id, num_procs
 from spinup.utils.run_utils import setup_logger_kwargs
-import spinup.algos.pytorch.ppo_value_function.core as core
 from spinup.algos.pytorch.ppo_value_function.core import MLPActorCritic, MLPQActorCritic, count_vars
+
+from spinup.utils.buffers import *
 
 # Define constant
 MINI_GRID_16 = 'MiniGrid-Deceptive-16x16-v0'
@@ -32,100 +30,6 @@ def make_simple_env(env_key, seed):
     env = SimpleObsWrapper(gym.make(env_key))
     env.seed(seed)
     return env
-
-
-# TODO: Separate this stuff out into a buffer file
-class PPOBuffer:
-    """
-    A buffer for storing trajectories experienced by a PPO agent interacting
-    with the environment, and using Generalized Advantage Estimation (GAE-Lambda)
-    for calculating the advantages of state-action pairs.
-    """
-
-    def __init__(self, obs_dim, act_dim, size, gamma=0.99, lam=0.95):
-        self.obs_buf = np.zeros(core.combined_shape(size, obs_dim), dtype=np.float32)
-        self.act_buf = np.zeros(core.combined_shape(size, act_dim), dtype=np.float32)
-        self.next_obs_buff = np.zeros(core.combined_shape(size, obs_dim), dtype=np.float32)
-        self.adv_buf = np.zeros(size, dtype=np.float32)
-        self.rew_buf = np.zeros(size, dtype=np.float32)
-        self.ret_buf = np.zeros(size, dtype=np.float32)
-        self.val_buf = np.zeros(size, dtype=np.float32)
-        self.logp_buf = np.zeros(size, dtype=np.float32)
-        self.done_buf = np.zeros(size, dtype=np.float32)
-        self.gamma, self.lam = gamma, lam
-        self.ptr, self.path_start_idx, self.max_size = 0, 0, size
-
-    def store(self, obs, act, next_obs, rew, done, val, logp):
-        """
-        Append one timestep of agent-environment interaction to the buffer.
-        """
-        assert self.ptr < self.max_size  # buffer has to have room so you can store
-        self.obs_buf[self.ptr] = obs
-        self.act_buf[self.ptr] = act
-        self.next_obs_buff[self.ptr] = next_obs
-        self.rew_buf[self.ptr] = rew
-        self.done_buf[self.ptr] = done
-        self.val_buf[self.ptr] = val
-        self.logp_buf[self.ptr] = logp
-        self.ptr += 1
-
-    def finish_path(self, last_val=0):
-        """
-        Call this at the end of a trajectory, or when one gets cut off
-        by an epoch ending. This looks back in the buffer to where the
-        trajectory started, and uses rewards and value estimates from
-        the whole trajectory to compute advantage estimates with GAE-Lambda,
-        as well as compute the rewards-to-go for each state, to use as
-        the targets for the value function.
-
-        The "last_val" argument should be 0 if the trajectory ended
-        because the agent reached a terminal state (died), and otherwise
-        should be V(s_T), the value function estimated for the last state.
-        This allows us to bootstrap the reward-to-go calculation to account
-        for timesteps beyond the arbitrary episode horizon (or epoch cutoff).
-        """
-
-        path_slice = slice(self.path_start_idx, self.ptr)
-        rews = np.append(self.rew_buf[path_slice], last_val)
-        vals = np.append(self.val_buf[path_slice], last_val)
-
-        # the next two lines implement GAE-Lambda advantage calculation
-        deltas = rews[:-1] + self.gamma * vals[1:] - vals[:-1]
-        self.adv_buf[path_slice] = core.discount_cumsum(deltas, self.gamma * self.lam)
-
-        # the next line computes rewards-to-go, to be targets for the value function
-        self.ret_buf[path_slice] = core.discount_cumsum(rews, self.gamma)[:-1]
-
-        self.path_start_idx = self.ptr
-
-    def get(self):
-        """
-        Call this at the end of an epoch to get all of the data from
-        the buffer, with advantages appropriately normalized (shifted to have
-        mean zero and std one). Also, resets some pointers in the buffer.
-        """
-        assert self.ptr == self.max_size  # buffer has to be full before you can get
-        self.ptr, self.path_start_idx = 0, 0
-        # the next two lines implement the advantage normalization trick
-        adv_mean, adv_std = mpi_statistics_scalar(self.adv_buf)
-        self.adv_buf = (self.adv_buf - adv_mean) / adv_std
-        data = dict(obs=self.obs_buf, act=self.act_buf, next_obs=self.obs_buf, ret=self.ret_buf, rew=self.rew_buf,
-                    done=self.done_buf, adv=self.adv_buf, logp=self.logp_buf)
-        return {k: torch.as_tensor(v, dtype=torch.float32) for k, v in data.items()}
-
-    def sample_batch(self, batch_size=32):
-        assert self.ptr == self.max_size  # buffer has to be full before you can get
-        idxs = np.random.randint(0, self.ptr, size=batch_size)
-        batch = dict(obs=self.obs_buf[idxs],
-                     act=self.act_buf[idxs],
-                     next_obs=self.next_obs_buff[idxs],
-                     ret=self.ret_buf[idxs],
-                     rew=self.rew_buf[idxs],
-                     done=self.done_buf[idxs],
-                     adv=self.adv_buf[idxs],
-                     logp=self.logp_buf[idxs])
-        self.ptr, self.path_start_idx = 0, 0
-        return {k: torch.as_tensor(v, dtype=torch.float32) for k,v in batch.items()}
 
 
 class PPOAgent:
@@ -245,7 +149,7 @@ class PPOAgent:
 
     def update(self):
         # get and separate out data
-        data = self.replay_buffer.sample_batch(1024)
+        data = self.replay_buffer.get()
 
         # compute losses from the data
         policy_loss_old, policy_info_old = self.compute_policy_loss(data)
@@ -343,7 +247,6 @@ class PPOAgent:
             terminal = done or timeout
             epoch_ended = time_step == self.local_steps_per_epoch - 1
 
-            # FIXME: I think we need to customise this for the actual task tbh
             # we are finished with the epoch
             if terminal or epoch_ended:
 
@@ -467,15 +370,16 @@ class PPOQAgent(PPOAgent):
             q_loss.backward()
             self.critic_optimiser.step()
 
+            if i % 2 == 0:
+                # update target networks
+                with torch.no_grad():
+                    for p, p_targ in zip(self.actor_critic.parameters(), self.actor_critic_target.parameters()):
+                        # do addition and multiplication in place for p_targs but not for ps
+                        p_targ.data.mul_(self.polyak)
+                        p_targ.data.add_((1 - self.polyak) * p.data)
+
         # Record things
         self.logger.store(LossQ=q_loss.item(), **loss_info)
-
-        # update target networks
-        with torch.no_grad():
-            for p, p_targ in zip(self.actor_critic.parameters(), self.actor_critic_target.parameters()):
-                # do addition and multiplication in place for p_targs but not for ps
-                p_targ.data.mul_(self.polyak)
-                p_targ.data.add_((1-self.polyak) * p.data)
 
         return q_loss, loss_info
 
@@ -504,7 +408,6 @@ class PPOQAgent(PPOAgent):
             terminal = done or timeout
             epoch_ended = time_step == self.local_steps_per_epoch - 1
 
-            # FIXME: I think we need to customise this for the actual task tbh
             # we are finished with the epoch
             if terminal or epoch_ended:
 
@@ -525,8 +428,7 @@ class PPOQAgent(PPOAgent):
                 self.replay_buffer.finish_path(last_q_value)
 
                 # If the episode finished, save the epsiode return/episode length in the logger
-                if terminal:
-                    self.logger.store(EpRet=episode_return, EpLen=episode_length)
+                self.logger.store(EpRet=episode_return, EpLen=episode_length)
                 state, episode_return, episode_length = env.reset(), 0, 0
 
     def train(self, env):
@@ -539,10 +441,6 @@ class PPOQAgent(PPOAgent):
                 self.logger.save_state({'env': env}, None)
 
             self.update()
-
-            if epoch % 10 == 0:
-                # update the target network
-                self.actor_critic_target.load_state_dict(self.actor_critic.state_dict())
 
             # Log info about epoch
             self.logger.log_tabular('Epoch', epoch)
@@ -565,20 +463,20 @@ if __name__ == '__main__':
     import argparse
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--env', type=str, default=MINI_GRID_16)
+    parser.add_argument('--env', type=str, default=MINI_GRID_49)
     parser.add_argument('--hid', type=int, default=64)
     parser.add_argument('--l', type=int, default=2)
     parser.add_argument('--gamma', type=float, default=0.99)
     parser.add_argument('--seed', '-s', type=int, default=0)
-    parser.add_argument('--cpu', type=int, default=1)
+    parser.add_argument('--cpu', type=int, default=4)
     parser.add_argument('--steps', type=int, default=4000)
     parser.add_argument('--epochs', type=int, default=100)
-    parser.add_argument('--exp_name', type=str, default='ppo-value-function-fg1')
+    parser.add_argument('--exp_name', type=str, default='ppo-class-fg1-49')
     args = parser.parse_args()
 
     env = make_simple_env(args.env, SEED)
 
-    agent = PPOQAgent(
+    agent = PPOAgent(
         state_space=env.observation_space,
         action_space=env.action_space,
         hidden_dimension=args.hid,
@@ -587,7 +485,8 @@ if __name__ == '__main__':
         seed=args.seed,
         steps_per_epoch=args.steps,
         num_epochs=args.epochs,
-        num_cpus=args.cpu
+        num_cpus=args.cpu,
+        experiment_name=args.exp_name
     )
 
     agent.train(env)

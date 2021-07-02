@@ -143,7 +143,6 @@ def sac(env_fn, actor_critic=core.MLPActorCritic, ac_kwargs=dict(), seed=0,
             the current policy and value function.
 
     """
-    is_discrete = True
 
     logger = EpochLogger(**logger_kwargs)
     logger.save_config(locals())

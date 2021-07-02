@@ -1,10 +1,12 @@
 import numpy as np
 import scipy.signal
+from gym.spaces import Box, Discrete
 
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.distributions.normal import Normal
+from torch.distributions.categorical import Categorical
 
 
 def combined_shape(length, shape=None):
@@ -66,6 +68,21 @@ class SquashedGaussianMLPActor(nn.Module):
 
         return pi_action, logp_pi
 
+class CategoricalMLPActor(nn.Module):
+    def __init__(self, obs_dim, act_dim, hidden_sizes, activation):
+        super().__init__()
+        self.logits_net = mlp([obs_dim] + list(hidden_sizes) + [act_dim], activation)
+
+    def forward(self, obs, deterministic=False, with_logprob=True):
+        action_logits = self.logits_net(obs)
+        pi_distribution = Categorical(logits=action_logits)
+        pi_action = pi_distribution.sample()
+        if with_logprob:
+            logp_pi = pi_distribution.log_prob(pi_action)
+        else:
+            logp_pi = None
+        return pi_action, logp_pi
+
 
 class MLPQFunction(nn.Module):
 
@@ -96,3 +113,35 @@ class MLPActorCritic(nn.Module):
         with torch.no_grad():
             a, _ = self.pi(obs, deterministic, False)
             return a.numpy()
+
+class DiscreteMLPActorCritic(nn.Module):
+
+    def __init__(self, observation_space, action_space, hidden_sizes=(256,256),
+                 activation=nn.ReLU):
+        super().__init__()
+
+        obs_dim = observation_space.shape[0]
+        act_dim = action_space.n
+
+        # build policy and value functions
+        self.pi = CategoricalMLPActor(obs_dim, act_dim, hidden_sizes, activation)
+        self.q1 = MLPQFunction(obs_dim, 1, hidden_sizes, activation)
+        self.q2 = MLPQFunction(obs_dim, 1, hidden_sizes, activation)
+
+    def act(self, obs, deterministic=False):
+        with torch.no_grad():
+            a, _ = self.pi(obs, deterministic, False)
+            return a.numpy()
+
+class GumbelSoftmax(torch.distributions.RelaxedOneHotCategorical):
+
+    def sample(self, sample_shape):
+        u = torch.empty(self.logits.size(), device=self.logits.device, dtype=self.logits.dtype).uniform_(0,1)
+        noisy_logits = self.logits - torch.log(-torch.log(u))
+        return torch.argmax(noisy_logits, dim=-1)
+
+    def log_prob(self, value):
+        if value.shape != self.logits.shape:
+            value = F.one_hot(value.long(), self.logits.shape[-1]).float()
+            assert value.shape == self.logits.shape
+        return - torch.sum(- value * F.log_softmax(self.logits, -1), -1)

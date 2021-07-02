@@ -107,7 +107,6 @@ class MLPCritic(nn.Module):
         return torch.squeeze(self.v_net(state_action), -1)  # Critical to ensure v has right shape.
 
 
-
 class MLPActorCritic(nn.Module):
 
 
