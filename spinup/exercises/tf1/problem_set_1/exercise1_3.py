@@ -1,5 +1,9 @@
 import numpy as np
-import tensorflow as tf
+try:
+    import tensorflow.compat.v1 as tf
+    tf.disable_v2_behavior()
+except ImportError:
+    import tensorflow as tf
 import gym
 import time
 from spinup.algos.tf1.td3 import core

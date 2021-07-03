@@ -2,7 +2,10 @@ import time
 import joblib
 import os
 import os.path as osp
-import tensorflow as tf
+try:
+    import tensorflow.compat.v1 as tf
+except ImportError:
+    import tensorflow as tf
 import torch
 from spinup import EpochLogger
 from spinup.utils.logx import restore_tf_graph

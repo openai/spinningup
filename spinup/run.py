@@ -8,7 +8,11 @@ import json
 import os, subprocess, sys
 import os.path as osp
 import string
-import tensorflow as tf
+try:
+    import tensorflow.compat.v1 as tf
+    tf.disable_v2_behavior()
+except ImportError:
+    import tensorflow as tf
 import torch
 from copy import deepcopy
 from textwrap import dedent
