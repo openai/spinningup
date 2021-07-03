@@ -1,5 +1,8 @@
 import numpy as np
-import tensorflow as tf
+try:
+    import tensorflow.compat.v1 as tf
+except ImportError:
+    import tensorflow as tf
 from mpi4py import MPI
 from spinup.utils.mpi_tools import broadcast
 

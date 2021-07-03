@@ -1,7 +1,10 @@
 # Disable TF deprecation warnings.
 # Syntax from tf1 is not expected to be compatible with tf2.
-import tensorflow as tf
-tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
+try:
+    import tensorflow.compat.v1 as tf
+except ImportError:
+    import tensorflow as tf
+tf.logging.set_verbosity(tf.logging.ERROR)
 
 # Algorithms
 from spinup.algos.tf1.ddpg.ddpg import ddpg as ddpg_tf1

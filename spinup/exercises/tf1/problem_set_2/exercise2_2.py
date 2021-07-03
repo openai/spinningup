@@ -2,7 +2,11 @@ from spinup.algos.tf1.ddpg.core import mlp, mlp_actor_critic
 from spinup.utils.run_utils import ExperimentGrid
 from spinup import ddpg_tf1 as ddpg
 import numpy as np
-import tensorflow as tf
+try:
+    import tensorflow.compat.v1 as tf
+    tf.disable_v2_behavior()
+except ImportError:
+    import tensorflow as tf
 
 """
 
