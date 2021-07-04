@@ -146,12 +146,12 @@ class MLPActorCritic(nn.Module):
         return self.act(obs)
 
     def get_value_estimate(self, obs, action):
-        return self.v(obs, action)
+        return self.v(obs, action).detach().numpy()
 
     def get_max_value_estimate(self, obs):
         # What we need to do in high-dimensional action-space is:
         #   1) Select an optimal action given the state using the policy
         #   2) Determine the optimal value using the state-optimal_action pair
         action = self.act(obs, as_numpy=False)
-        value = self.v(obs, action)
+        value = self.v(obs, action).detach().numpy()
         return value

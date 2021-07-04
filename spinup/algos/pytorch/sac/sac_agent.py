@@ -292,7 +292,7 @@ class DiscreteSacAgent(ContinuousSacAgent):
                  pi_lr=1e-3, critic_lr=1e-3, update_every=50, update_after=1000, max_ep_len=1000, seed=42,
                  steps_per_epoch=4000, start_steps=10000, num_test_episodes=10, num_epochs=100, replay_size=int(1e6),
                  save_freq=1, batch_size=100, polyak=0.995, alpha=0.2,
-                 experiment_name='discrete-sac-class-test') -> None:
+                 experiment_name='discrete-sac-fg2') -> None:
         # set up logger
         logger_kwargs = setup_logger_kwargs(experiment_name, seed)
         self.logger = EpochLogger(**logger_kwargs)
@@ -359,9 +359,6 @@ class DiscreteSacAgent(ContinuousSacAgent):
         states = data['obs']
         actions, action_probs, log_action_probs = self.actor_critic.pi(states)
 
-        # for discrete action space we need to unsqueeze the action action selection to get them into individual tensors
-        # This is already done in the continuous action space environment
-        actions = actions.unsqueeze(-1)
         with torch.no_grad():
             q1 = self.actor_critic.q1(states)
             q2 = self.actor_critic.q2(states)

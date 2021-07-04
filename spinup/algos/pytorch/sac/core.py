@@ -14,12 +14,14 @@ def combined_shape(length, shape=None):
         return (length,)
     return (length, shape) if np.isscalar(shape) else (length, *shape)
 
+
 def mlp(sizes, activation, output_activation=nn.Identity):
     layers = []
-    for j in range(len(sizes)-1):
-        act = activation if j < len(sizes)-2 else output_activation
-        layers += [nn.Linear(sizes[j], sizes[j+1]), act()]
+    for j in range(len(sizes) - 1):
+        act = activation if j < len(sizes) - 2 else output_activation
+        layers += [nn.Linear(sizes[j], sizes[j + 1]), act()]
     return nn.Sequential(*layers)
+
 
 def count_vars(module):
     return sum([np.prod(p.shape) for p in module.parameters()])
@@ -28,11 +30,13 @@ def count_vars(module):
 LOG_STD_MAX = 2
 LOG_STD_MIN = -20
 
+
+# ---------------------------------------- DISCRETE ACTOR CRITIC -----------------------------------#
+
 class CategoricalActor(nn.Module):
     def __init__(self, obs_dim, act_dim, hidden_sizes, activation):
         super().__init__()
         self.logits_net = mlp([obs_dim] + list(hidden_sizes) + [act_dim], activation)
-
 
     def forward(self, obs, deterministic=False, with_logprob=True):
         action_logits = self.logits_net(obs)
@@ -62,9 +66,10 @@ class DiscreteMLPQFunction(nn.Module):
         q_vals = self.q(obs)
         return q_vals
 
+
 class DiscreteMLPActorCritic(nn.Module):
 
-    def __init__(self, observation_space, action_space, hidden_sizes=(256,256),
+    def __init__(self, observation_space, action_space, hidden_sizes=(256, 256),
                  activation=nn.ReLU):
         super().__init__()
 
@@ -78,8 +83,39 @@ class DiscreteMLPActorCritic(nn.Module):
 
     def act(self, obs, deterministic=False):
         with torch.no_grad():
-            a, _ , _= self.pi(obs, deterministic, False)
+            a, _, _ = self.pi(obs, deterministic, False)
             return a.numpy()
+
+    def select_action(self, obs, test=True):
+        action = self.act(obs, test)
+        return int(action)
+
+    def get_value_estimate(self, obs, action):
+        action = int(action.detach().numpy())
+
+        # gets the q values for all the actions
+        q1_vals = self.q1(obs).detach().numpy()
+        q2_vals = self.q2(obs).detach().numpy()
+
+        # get the q_val for the specific actions
+        q1_val = q1_vals[action]
+        q2_val = q2_vals[action]
+
+        return (q1_val + q2_val) / 2.0
+
+    def get_max_value_estimate(self, obs):
+        # gets the q values for all the actions
+        q1_vals = self.q1(obs).detach().numpy()
+        q2_vals = self.q2(obs).detach().numpy()
+
+        # get the max q_vals
+        q1_max = q1_vals.max()
+        q2_max = q2_vals.max()
+
+        return (q2_max + q2_max) / 2
+
+
+# ---------------------------------------- CONTINUOUS ACTOR CRITIC -----------------------------------#
 
 class SquashedGaussianMLPActor(nn.Module):
 
@@ -112,7 +148,7 @@ class SquashedGaussianMLPActor(nn.Module):
             # and look in appendix C. This is a more numerically-stable equivalent to Eq 21.
             # Try deriving it yourself as a (very difficult) exercise. :)
             logp_pi = pi_distribution.log_prob(pi_action).sum(axis=-1)
-            logp_pi -= (2*(np.log(2) - pi_action - F.softplus(-2*pi_action))).sum(axis=1)
+            logp_pi -= (2 * (np.log(2) - pi_action - F.softplus(-2 * pi_action))).sum(axis=1)
         else:
             logp_pi = None
 
@@ -130,11 +166,12 @@ class MLPQFunction(nn.Module):
 
     def forward(self, obs, act):
         q = self.q(torch.cat([obs, act], dim=-1))
-        return torch.squeeze(q, -1) # Critical to ensure q has right shape.
+        return torch.squeeze(q, -1)  # Critical to ensure q has right shape.
+
 
 class MLPActorCritic(nn.Module):
 
-    def __init__(self, observation_space, action_space, hidden_sizes=(256,256),
+    def __init__(self, observation_space, action_space, hidden_sizes=(256, 256),
                  activation=nn.ReLU):
         super().__init__()
 
