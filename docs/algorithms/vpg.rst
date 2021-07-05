@@ -162,4 +162,4 @@ Other Public Implementations
 - `rllib (Ray)`_
 
 .. _rllab: https://github.com/rll/rllab/blob/master/rllab/algos/vpg.py
-.. _`rllib (Ray)`: https://github.com/ray-project/ray/blob/master/python/ray/rllib/agents/pg
+.. _`rllib (Ray)`: https://github.com/ray-project/ray/blob/master/rllib/agents/pg/pg.py
