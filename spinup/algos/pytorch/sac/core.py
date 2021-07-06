@@ -63,6 +63,8 @@ class DiscreteMLPQFunction(nn.Module):
         self.q = mlp([obs_dim] + list(hidden_sizes) + [act_dim], activation)
 
     def forward(self, obs):
+        if not torch.is_tensor(obs):
+            obs = torch.as_tensor(obs, dtype=torch.float32)
         q_vals = self.q(obs)
         return q_vals
 
@@ -91,11 +93,13 @@ class DiscreteMLPActorCritic(nn.Module):
         return int(action)
 
     def get_value_estimate(self, obs, action):
-        action = int(action.detach().numpy())
+        if torch.is_tensor(action):
+            action = int(action.detach().numpy())
 
-        # gets the q values for all the actions
-        q1_vals = self.q1(obs).detach().numpy()
-        q2_vals = self.q2(obs).detach().numpy()
+        with torch.no_grad():
+            # gets the q values for all the actions
+            q1_vals = self.q1(obs).detach().numpy()
+            q2_vals = self.q2(obs).detach().numpy()
 
         # get the q_val for the specific actions
         q1_val = q1_vals[action]
@@ -104,9 +108,10 @@ class DiscreteMLPActorCritic(nn.Module):
         return (q1_val + q2_val) / 2.0
 
     def get_max_value_estimate(self, obs):
-        # gets the q values for all the actions
-        q1_vals = self.q1(obs).detach().numpy()
-        q2_vals = self.q2(obs).detach().numpy()
+        with torch.no_grad():
+            # gets the q values for all the actions
+            q1_vals = self.q1(obs).detach().numpy()
+            q2_vals = self.q2(obs).detach().numpy()
 
         # get the max q_vals
         q1_max = q1_vals.max()
