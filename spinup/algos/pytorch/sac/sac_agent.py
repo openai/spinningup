@@ -12,7 +12,8 @@ import numpy as np
 # gym stuff
 import gym
 import gym_minigrid
-from spinup.utils.minigrid_utils import MINI_GRID_16, make_simple_env, SEED
+from spinup.utils.minigrid_utils import MINI_GRID_SIMPLE_16, MINI_GRID_MEDIUM_16, MINI_GRID_SIMPLE_49, make_simple_env, \
+    SEED
 from python.display_utils import VideoViewer
 
 # local stuff
@@ -156,7 +157,7 @@ class SacBaseAgent(ABC):
         self.episode_reward = 0
         self.episode_length = 1
 
-    def learn(self, time_step, test_env=None, test_env_key=None):
+    def learn(self, time_step):
         # We only want to update the model after a certain number of experiences have been collected.
         # Then we want to update it periodically. This ensure that replay buffers are sufficiently uncorrelated
         if time_step >= self.update_after and time_step % self.update_every == 0:
@@ -165,34 +166,38 @@ class SacBaseAgent(ABC):
                 data = self.replay_buffer.sample_batch(self.batch_size)
                 self.update(data)
 
+    def handle_end_of_epoch(self, time_step, test_env=None, test_env_key=None):
         # Handle the end of epoch: (1) Save the model. (2) test the agent. (3) log the results
         if (time_step + 1) % self.steps_per_epoch == 0:
             self.epoch_number = (time_step + 1) // self.steps_per_epoch
 
-            # # save the model at each save frequency or at the end
-            # if (self.epoch_number % self.save_freq == 0) or self.epoch_number == self.num_epochs:
-            #     self.logger.save_state({'env': train_env}, None)
+            # save the model at each save frequency or at the end
+            if (self.epoch_number % self.save_freq == 0) or self.epoch_number == self.num_epochs:
+                self.logger.save_state({'env': test_env}, None)
 
             self.test(test_env, test_env_key)
 
-            # Log info about epoch
-            self.logger.log_tabular("AGENT", self.name)
-            self.logger.log_tabular('Epoch', self.epoch_number)
-            self.logger.log_tabular('EpRet', with_min_and_max=True)
-            self.logger.log_tabular('TestEpRet', with_min_and_max=True)
-            self.logger.log_tabular('EpLen', average_only=True)
-            self.logger.log_tabular('TestEpLen', average_only=True)
-            self.logger.log_tabular('TotalEnvInteracts', time_step)
-            self.logger.log_tabular('Q1Vals', with_min_and_max=True)
-            self.logger.log_tabular('Q2Vals', with_min_and_max=True)
-            self.logger.log_tabular('LogPi', with_min_and_max=True)
-            self.logger.log_tabular('LossPi', average_only=True)
-            self.logger.log_tabular('LossQ', average_only=True)
-            self.logger.dump_tabular()
+            self.log_stats(time_step)
+
+    def log_stats(self, time_step):
+        # Log info about epoch
+        self.logger.log_tabular("AGENT", self.name)
+        self.logger.log_tabular('Epoch', self.epoch_number)
+        self.logger.log_tabular('EpRet', with_min_and_max=True)
+        self.logger.log_tabular('TestEpRet', with_min_and_max=True)
+        self.logger.log_tabular('EpLen', average_only=True)
+        self.logger.log_tabular('TestEpLen', average_only=True)
+        self.logger.log_tabular('TotalEnvInteracts', time_step)
+        self.logger.log_tabular('Q1Vals', with_min_and_max=True)
+        self.logger.log_tabular('Q2Vals', with_min_and_max=True)
+        self.logger.log_tabular('LogPi', with_min_and_max=True)
+        self.logger.log_tabular('LossPi', average_only=True)
+        self.logger.log_tabular('LossQ', average_only=True)
+        self.logger.dump_tabular()
 
     def test(self, env, env_key):
         if env is None and env_key is not None:
-            env = make_simple_env(env_key, SEED)
+            env = make_simple_env(env_key, SEED, random_start=False)  # test the agent with the actual start position
         for j in range(self.num_test_episodes):
             state = env.reset()
             done = False
@@ -232,7 +237,10 @@ class SacBaseAgent(ABC):
                 state = train_env.reset()
 
             # Update the model
-            self.learn(time_step=t, test_env=test_env, test_env_key=test_env_key)
+            self.learn(time_step=t)
+
+            # handle the end of each epoch
+            self.handle_end_of_epoch(time_step=t, test_env=test_env, test_env_key=test_env_key)
 
     @abstractmethod
     def compute_loss_q(self, data):
@@ -245,6 +253,11 @@ class SacBaseAgent(ABC):
     @abstractmethod
     def get_action(self, state, deterministic=False):
         pass
+
+    def save_state(self, epoch_number, train_env):
+        # TODO: you should probably draw this out such that is only needs to know to save, not when to save
+        if (epoch_number % self.save_freq == 0) or epoch_number == self.num_epochs:
+            self.logger.save_state({'env': train_env}, None)
 
 
 class ContinuousSacAgent(SacBaseAgent):
@@ -346,7 +359,8 @@ class DiscreteSacAgent(SacBaseAgent):
     def __init__(self, state_space, action_space, hidden_dimension=64, num_hidden_layers=2, discount_rate=0.99,
                  pi_lr=1e-3, critic_lr=1e-3, update_every=50, update_after=1000, max_ep_len=1000, seed=42,
                  steps_per_epoch=4000, start_steps=10000, num_test_episodes=10, num_epochs=100, replay_size=int(1e6),
-                 save_freq=1, batch_size=100, polyak=0.995, alpha=0.2, experiment_name='ignore', agent_name='rg') -> None:
+                 save_freq=1, batch_size=100, polyak=0.995, alpha=0.2, experiment_name='ignore',
+                 agent_name='rg') -> None:
         super().__init__(state_space, action_space, discount_rate, pi_lr, critic_lr, update_every, update_after,
                          max_ep_len, seed, steps_per_epoch, start_steps, num_test_episodes, num_epochs, replay_size,
                          save_freq, batch_size, polyak, alpha, experiment_name, agent_name)
@@ -453,6 +467,8 @@ class DiscreteSacAgent(SacBaseAgent):
         return self.actor_critic.get_max_value_estimate(state)
 
 
+from multiprocessing import Pool
+
 if __name__ == '__main__':
     # LUNAR_LANDING_CONTINUOUS = "LunarLanderContinuous-v2"
     # train_env_continuous = gym.make(LUNAR_LANDING_CONTINUOUS)
@@ -460,7 +476,7 @@ if __name__ == '__main__':
     # continuous_agent = ContinuousSacAgent(train_env_continuous.observation_space, train_env_continuous.action_space)
     # continuous_agent.train(train_env_continuous, test_env_continuous)
 
-    train_env = make_simple_env(MINI_GRID_16, SEED)
-    test_env = make_simple_env(MINI_GRID_16, SEED)
+    train_env = make_simple_env(MINI_GRID_SIMPLE_16, SEED)
+    test_env = make_simple_env(MINI_GRID_SIMPLE_16, SEED)
     agent = DiscreteSacAgent(train_env.observation_space, train_env.action_space, agent_name='rg')
     agent.train(train_env, test_env)
