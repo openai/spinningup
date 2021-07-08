@@ -232,4 +232,4 @@ Other Public Implementations
 .. _Baselines: https://github.com/openai/baselines/tree/master/baselines/ppo2
 .. _ModularRL: https://github.com/joschu/modular_rl/blob/master/modular_rl/ppo.py
 .. _rllab: https://github.com/rll/rllab/blob/master/rllab/algos/ppo.py
-.. _`rllib (Ray)`: https://github.com/ray-project/ray/tree/master/python/ray/rllib/agents/ppo
+.. _`rllib (Ray)`: https://github.com/ray-project/ray/blob/master/rllib/agents/ppo/ppo.py
