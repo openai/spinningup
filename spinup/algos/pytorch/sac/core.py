@@ -105,19 +105,19 @@ class DiscreteMLPActorCritic(nn.Module):
         q1_val = q1_vals[action]
         q2_val = q2_vals[action]
 
-        return (q1_val + q2_val) / 2.0
+        # use the min q-vals as is done in the double q-learning technique for more accurate q-estimates
+        return min(q1_val, q2_val)
 
     def get_max_value_estimate(self, obs):
         with torch.no_grad():
             # gets the q values for all the actions
-            q1_vals = self.q1(obs).detach().numpy()
-            q2_vals = self.q2(obs).detach().numpy()
+            q1_vals = self.q1(obs).detach()
+            q2_vals = self.q2(obs).detach()
+            # use the min q-vals as is done in the double q-learning technique for more accurate q-estimates
+            q_vals = torch.min(q1_vals, q2_vals)
+            max_q_val = q_vals.max().numpy()
 
-        # get the max q_vals
-        q1_max = q1_vals.max()
-        q2_max = q2_vals.max()
-
-        return (q2_max + q2_max) / 2
+        return max_q_val
 
 
 # ---------------------------------------- CONTINUOUS ACTOR CRITIC -----------------------------------#

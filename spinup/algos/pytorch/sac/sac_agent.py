@@ -179,10 +179,11 @@ class SacBaseAgent(ABC):
 
             self.log_stats(time_step)
 
-    def log_stats(self, time_step):
+    def log_stats(self, time_step, epoch_number=None):
+        epoch_number = self.epoch_number if epoch_number is None else epoch_number
         # Log info about epoch
         self.logger.log_tabular("AGENT", self.name)
-        self.logger.log_tabular('Epoch', self.epoch_number)
+        self.logger.log_tabular('Epoch', epoch_number)
         self.logger.log_tabular('EpRet', with_min_and_max=True)
         self.logger.log_tabular('TestEpRet', with_min_and_max=True)
         self.logger.log_tabular('EpLen', average_only=True)
@@ -441,7 +442,6 @@ class DiscreteSacAgent(SacBaseAgent):
         with torch.no_grad():
             q1 = self.actor_critic.q1(states)
             q2 = self.actor_critic.q2(states)
-        q = torch.min(q1, q2)
 
         # calculate expectations of entropy
         entropies = -torch.sum(action_probs * log_action_probs, dim=1, keepdim=True)
@@ -466,8 +466,6 @@ class DiscreteSacAgent(SacBaseAgent):
     def get_max_value_estimate(self, state):
         return self.actor_critic.get_max_value_estimate(state)
 
-
-from multiprocessing import Pool
 
 if __name__ == '__main__':
     # LUNAR_LANDING_CONTINUOUS = "LunarLanderContinuous-v2"
