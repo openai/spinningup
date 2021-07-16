@@ -243,22 +243,22 @@ class SacBaseAgent(ABC):
             # handle the end of each epoch
             self.handle_end_of_epoch(time_step=t, test_env=test_env, test_env_key=test_env_key)
 
-    @abstractmethod
-    def compute_loss_q(self, data):
-        pass
-
-    @abstractmethod
-    def compute_loss_pi(self, data):
-        pass
-
-    @abstractmethod
-    def get_action(self, state, deterministic=False):
-        pass
-
     def save_state(self, epoch_number, train_env):
         # TODO: you should probably draw this out such that is only needs to know to save, not when to save
         if (epoch_number % self.save_freq == 0) or epoch_number == self.num_epochs:
             self.logger.save_state({'env': train_env}, None)
+
+    @abstractmethod
+    def compute_loss_q(self, data):
+        raise NotImplementedError
+
+    @abstractmethod
+    def compute_loss_pi(self, data):
+        raise NotImplementedError
+
+    @abstractmethod
+    def get_action(self, state, deterministic=False):
+        raise NotImplementedError
 
 
 class ContinuousSacAgent(SacBaseAgent):

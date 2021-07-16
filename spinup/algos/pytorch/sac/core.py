@@ -8,6 +8,8 @@ import torch.nn.functional as F
 from torch.distributions.normal import Normal
 from torch.distributions.categorical import Categorical
 
+from python.intention_recognition import IntentionRecognition
+
 
 def combined_shape(length, shape=None):
     if shape is None:
@@ -120,7 +122,7 @@ class DiscreteMLPActorCritic(nn.Module):
         return max_q_val
 
 
-# ---------------------------------------- CONTINUOUS ACTOR CRITIC -----------------------------------#
+# ---------------------------------------- CONTINUOUS ACTOR CRITIC ----------------------------------- #
 
 class SquashedGaussianMLPActor(nn.Module):
 
