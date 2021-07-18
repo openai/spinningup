@@ -3,6 +3,7 @@ import numpy as np
 import spinup.algos.pytorch.ppo_value_function.core as core
 from spinup.utils.mpi_tools import mpi_statistics_scalar
 
+
 class RandomisedSacBuffer:
     """
         A simple FIFO experience replay buffer for SAC agents.
@@ -16,7 +17,7 @@ class RandomisedSacBuffer:
         self.done_buf = np.zeros(size, dtype=np.float32)
         self.ptr, self.size, self.max_size = 0, 0, size
 
-    def store(self, obs, act, rew, next_obs, done):
+    def store(self, obs, act, rew, next_obs, done, rg_prob=None):
         self.obs_buf[self.ptr] = obs
         self.next_obs_buf[self.ptr] = next_obs
         self.act_buf[self.ptr] = act
@@ -32,6 +33,27 @@ class RandomisedSacBuffer:
                      act=self.act_buf[idxs],
                      rew=self.rew_buf[idxs],
                      done=self.done_buf[idxs])
+        return {k: torch.as_tensor(v, dtype=torch.float32) for k, v in batch.items()}
+
+
+class RandomisedAGACBuffer(RandomisedSacBuffer):
+
+    def __init__(self, obs_dim, act_dim, size):
+        super().__init__(obs_dim, act_dim, size)
+        self.rg_probs = np.zeros(size, dtype=np.float32)
+
+    def store(self, obs, act, rew, next_obs, done, rg_prob=None):
+        super().store(obs, act, rew, next_obs, done, rg_prob)
+        self.rg_probs[self.ptr] = rg_prob
+
+    def sample_batch(self, batch_size=32):
+        idxs = np.random.randint(0, self.size, size=batch_size)
+        batch = dict(obs=self.obs_buf[idxs],
+                     next_obs=self.next_obs_buf[idxs],
+                     act=self.act_buf[idxs],
+                     rew=self.rew_buf[idxs],
+                     done=self.done_buf[idxs],
+                     rg_prob=self.rg_probs[idxs])
         return {k: torch.as_tensor(v, dtype=torch.float32) for k, v in batch.items()}
 
 
@@ -62,8 +84,8 @@ class RandomisedPPOBuffer:
         self.val_buf[self.ptr] = val
         self.logp_buf[self.ptr] = logp
 
-        self.ptr = (self.ptr+1) % self.max_size
-        self.size = min(self.size+1, self.max_size)
+        self.ptr = (self.ptr + 1) % self.max_size
+        self.size = min(self.size + 1, self.max_size)
 
     def sample_batch(self, batch_size=32):
         path_slice = slice(0, self.ptr)
@@ -89,9 +111,9 @@ class RandomisedPPOBuffer:
                      adv=self.adv_buf[idxs],
                      logp=self.logp_buf[idxs])
         self.ptr, self.path_start_idx = 0, 0
-        return {k: torch.as_tensor(v, dtype=torch.float32) for k,v in batch.items()}
+        return {k: torch.as_tensor(v, dtype=torch.float32) for k, v in batch.items()}
 
-# TODO: Separate this stuff out into a buffer file
+
 class PPOBuffer:
     """
     A buffer for storing trajectories experienced by a PPO agent interacting

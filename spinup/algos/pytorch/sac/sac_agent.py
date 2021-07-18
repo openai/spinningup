@@ -12,8 +12,7 @@ import numpy as np
 # gym stuff
 import gym
 import gym_minigrid
-from spinup.utils.minigrid_utils import MINI_GRID_SIMPLE_16, MINI_GRID_MEDIUM_16, MINI_GRID_SIMPLE_49, make_simple_env, \
-    SEED
+from spinup.utils.minigrid_utils import make_simple_env
 from python.display_utils import VideoViewer
 
 # local stuff
@@ -21,6 +20,9 @@ import spinup.algos.pytorch.sac.core as core
 from spinup.utils.logx import EpochLogger
 from spinup.utils.run_utils import setup_logger_kwargs
 from spinup.utils.buffers import RandomisedSacBuffer
+import python.constants as constants
+
+SEED = constants.Random.SEED
 
 
 class SacBaseAgent(ABC):
@@ -446,7 +448,7 @@ class DiscreteSacAgent(SacBaseAgent):
         # calculate expectations of entropy
         entropies = -torch.sum(action_probs * log_action_probs, dim=1, keepdim=True)
 
-        # calculate expectations of Q
+        # calculate expectations of Q (the q-value for each action, weighted by the probability of it occurring).
         q = torch.sum(torch.min(q1, q2) * action_probs, dim=1, keepdim=True)
 
         # calculate entropy regularised policy loss
@@ -474,7 +476,7 @@ if __name__ == '__main__':
     # continuous_agent = ContinuousSacAgent(train_env_continuous.observation_space, train_env_continuous.action_space)
     # continuous_agent.train(train_env_continuous, test_env_continuous)
 
-    train_env = make_simple_env(MINI_GRID_SIMPLE_16, SEED)
-    test_env = make_simple_env(MINI_GRID_SIMPLE_16, SEED)
+    train_env = make_simple_env(constants.EnvKeys.MINI_GRID_SIMPLE_16, SEED)
+    test_env = make_simple_env(constants.EnvKeys.MINI_GRID_SIMPLE_16, SEED)
     agent = DiscreteSacAgent(train_env.observation_space, train_env.action_space, agent_name='rg')
     agent.train(train_env, test_env)

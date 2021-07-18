@@ -1,27 +1,23 @@
 # Generic imports
-from copy import deepcopy
 import itertools
-import time
 from abc import ABC, abstractmethod
+from copy import deepcopy
+import time
 
-# torch and numpy
-import torch
-from torch.optim import Adam
 import numpy as np
-
-# gym stuff
-import gym
-import gym_minigrid
-from spinup.utils.minigrid_utils import MINI_GRID_SIMPLE_16, MINI_GRID_MEDIUM_16, MINI_GRID_SIMPLE_49, make_simple_env, \
-    SEED
-from python.display_utils import VideoViewer
-
 # local stuff
 import spinup.algos.pytorch.sac.core as core
+# torch and numpy
+import torch
+from intention_recognition import Adversary
+from python.display_utils import VideoViewer
+from spinup.utils.buffers import RandomisedAGACBuffer
 from spinup.utils.logx import EpochLogger
+# gym stuff
+from spinup.utils.minigrid_utils import make_simple_env
 from spinup.utils.run_utils import setup_logger_kwargs
-from spinup.utils.buffers import RandomisedSacBuffer
-from intention_recognition import IntentionRecognition
+from torch.optim import Adam
+import python.constants as constants
 
 
 class AGACBaseAgent(ABC):
@@ -44,7 +40,8 @@ class AGACBaseAgent(ABC):
             save_freq=1,
             batch_size=100,
             polyak=0.995,
-            alpha=0.2,
+            alpha=0.2,  # entropy coefficient
+            beta=1,  # deceptiveness coefficient
             experiment_name='agac-base-class',
             agent_name='rg'
     ) -> None:
@@ -63,6 +60,7 @@ class AGACBaseAgent(ABC):
         # store agent hyper-parameters
         self.discount_rate = discount_rate
         self.alpha = alpha  # This is the entropy regularisation coefficient
+        self.beta = beta  # This is the deceptiveness coefficient
         self.pi_lr = pi_lr
         self.vf_lr = critic_lr
         self.polyak = polyak  # for updating the target model
@@ -160,40 +158,164 @@ class AGACBaseAgent(ABC):
         self.video_viewer = VideoViewer()
 
     def update(self, data):
-        # TODO: complete
-        pass
+        # do a gradient descent step for critic
+        self.q_optimiser.zero_grad()
+        loss_q, q_info = self.compute_loss_q(data)
+        loss_q.backward()
+        self.q_optimiser.step()
+
+        # record the losses
+        self.logger.store(LossQ=loss_q.item(), **q_info)
+
+        # freeze the Q-networks so that we don't waste computational effort computing the gradients for them during the
+        # policy update
+        for p in self.q_params:
+            p.requires_grad = False
+
+        # run a gradient descent step for the policy function
+        self.pi_optimiser.zero_grad()
+        loss_pi, pi_info = self.compute_loss_pi(data)
+        loss_pi.backward()
+        self.pi_optimiser.step()
+
+        # unfreeze the Q-networks
+        for p in self.q_params:
+            p.requires_grad = True
+
+        # Record things
+        self.logger.store(LossPi=loss_pi.item(), **pi_info)
+
+        # update the target networks using polyak averaging
+        with torch.no_grad():
+            for p, p_targ in zip(self.actor_critic.parameters(), self.target_actor_critic.parameters()):
+                p_targ.data.mul_(self.polyak)
+                p_targ.data.add_((1 - self.polyak) * p.data)
 
     def select_action(self, state, deterministic=False):
-        # TODO: complete
-        pass
+        self.get_action(state, deterministic)
 
     def add_experience(self, state, action, reward, next_state, done):
-        # TODO: complete
-        pass
+        # if the reward gets passed in as a dict, then extract the reward using the agent name
+        if type(reward) == dict:
+            reward = reward[self.name]
+        self.episode_reward += reward
+        self.episode_length += 1
+
+        # use the adversary model to generate probabilities and give the relevant deceptiveness measure
+        self.adversary.update(state, action)
+        rg_prob = self.adversary.probability_of_real_goal()
+
+        self.replay_buffer.store(state, action, reward, next_state, done, rg_prob)
 
     def end_trajectory(self, test=False):
-        # TODO: complete
-        pass
+        if test:
+            self.logger.store(TestEpRet=self.episode_reward, TestEpLen=self.episode_length)
+        else:
+            self.logger.store(EpRet=self.episode_reward, EpLen=self.episode_length)
+        self.episode_reward = 0
+        self.episode_length = 1
+
+        # we also need to reset the adversary since the trajectory is over
+        self.adversary.reset()
 
     def learn(self, time_step):
-        # TODO: complete
-        pass
+        # We only want to update the model after a certain number of experiences have been collected.
+        # Then we want to update it periodically. This ensure that replay buffers are sufficiently uncorrelated
+        if time_step >= self.update_after and time_step % self.update_every == 0:
+            # We still want to keep a 1-1 ratio between number of actions and number of updates
+            for j in range(self.update_every):
+                data = self.replay_buffer.sample_batch(self.batch_size)
+                self.update(data)
 
     def handle_end_of_epoch(self, time_step, test_env=None, test_env_key=None):
-        # TODO: complete
-        pass
+        # Handle the end of epoch: (1) Save the model. (2) test the agent. (3) log the results
+        if (time_step + 1) % self.steps_per_epoch == 0:
+            self.epoch_number = (time_step + 1) // self.steps_per_epoch
+
+            # save the model at each save frequency or at the end
+            if (self.epoch_number % self.save_freq == 0) or self.epoch_number == self.num_epochs:
+                self.logger.save_state({'env': test_env}, None)
+
+            self.test(test_env, test_env_key)
+
+            self.log_stats(time_step)
 
     def log_stats(self, time_step, epoch_number=None):
-        # TODO: complete
-        pass
+        epoch_number = self.epoch_number if epoch_number is None else epoch_number
+        # Log info about epoch
+        self.logger.log_tabular("AGENT", self.name)
+        self.logger.log_tabular('Epoch', epoch_number)
+        self.logger.log_tabular('EpRet', with_min_and_max=True)
+        self.logger.log_tabular('TestEpRet', with_min_and_max=True)
+        self.logger.log_tabular('EpLen', average_only=True)
+        self.logger.log_tabular('TestEpLen', average_only=True)
+        self.logger.log_tabular('TotalEnvInteracts', time_step)
+        self.logger.log_tabular('Q1Vals', with_min_and_max=True)
+        self.logger.log_tabular('Q2Vals', with_min_and_max=True)
+        self.logger.log_tabular('LogPi', with_min_and_max=True)
+        self.logger.log_tabular('LossPi', average_only=True)
+        self.logger.log_tabular('LossQ', average_only=True)
+        self.logger.log_tabular('Deceptiveness', average_only=True)
+        self.logger.dump_tabular()
 
     def test(self, env, env_key):
-        # TODO: complete
-        pass
+        if env is not None and env_key is not None:
+            env = make_simple_env(env_key, constants.Random.SEED, random_start=False)
+        for j in range(self.num_test_episodes):
+            state = env.reset()
+            done = False
+            while not done:
+                # act deterministically because this is a test
+                action = self.get_action(state, deterministic=True)
+
+                # get your real goal probabilities since we have our state-action pair
+                self.adversary.update()
+                rg_prob = self.adversary.probability_of_real_goal()
+
+                # step through the environment
+                next_state, reward, done, _ = env.step(action)
+
+                # extract the reward
+                if type(reward) == dict:
+                    reward = reward[self.name]
+
+                # update the state
+                self.episode_reward += reward
+                self.episode_length += 1
+                state = next_state
+
+            self.end_trajectory(test=True)  # this handles reseeting the adversary
 
     def train(self, train_env, test_env=None, test_env_key=None):
-        # TODO: complete
-        pass
+        total_steps = self.steps_per_epoch * self.num_epochs
+        start_time = time.time()
+        state = train_env.reset()
+
+        # collect experiences and update every epoch
+        for t in range(total_steps):
+            if t > self.start_steps:
+                action = self.get_action(state)
+            else:
+                action = train_env.action_space.sample()
+
+            next_state, reward, done, _ = train_env.step(action)
+            self.add_experience(state, action, reward, next_state, done)  # this also handles getting the adversary prob
+            state = next_state
+
+            if done or self.episode_length == self.max_ep_len:
+                self.end_trajectory()  # this handles resetting the adversary
+                state = train_env.reset()
+
+            # update the model
+            self.learn(time_step=t)
+
+            # handle the end of the epoch
+            self.handle_end_of_epoch(time_step=t, test_env=test_env, test_env_key=test_env_key)
+
+    def save_state(self, epoch_number, train_env):
+        # TODO: you should probably draw this out such that is only needs to know to save, not when to save
+        if (epoch_number % self.save_freq == 0) or epoch_number == self.num_epochs:
+            self.logger.save_state({'env': train_env}, None)
 
     @abstractmethod
     def compute_loss_q(self, data):
@@ -206,11 +328,6 @@ class AGACBaseAgent(ABC):
     @abstractmethod
     def get_action(self, state, deterministic=False):
         raise NotImplementedError
-
-    def save_state(self, epoch_number, train_env):
-        # TODO: you should probably draw this out such that is only needs to know to save, not when to save
-        if (epoch_number % self.save_freq == 0) or epoch_number == self.num_epochs:
-            self.logger.save_state({'env': train_env}, None)
 
 
 class DiscreteAGACAgent(AGACBaseAgent):
@@ -239,11 +356,11 @@ class DiscreteAGACAgent(AGACBaseAgent):
 
         # create the intention recognition model to be used as the adversary. This is pretrained for now, but should
         # learn online in the future
-        self.adversary = IntentionRecognition(state_space=state_space, action_space=action_space, all_models=all_models,
-                                              all_model_names=all_model_names)
+        self.adversary = Adversary(state_space=state_space, action_space=action_space, all_models=all_models,
+                                   all_model_names=all_model_names)
 
         # make a replay buffer (for the discrete case, there is only one action attribute)
-        self.replay_buffer = RandomisedSacBuffer(obs_dim=self.state_dim, act_dim=1, size=self.replay_size)
+        self.replay_buffer = RandomisedAGACBuffer(obs_dim=self.state_dim, act_dim=1, size=self.replay_size)
 
         # count and log the number of variables in each model for informative purposes
         self.var_counts = tuple(
@@ -258,21 +375,79 @@ class DiscreteAGACAgent(AGACBaseAgent):
         self.logger.setup_pytorch_saver(self.actor_critic)
 
     def compute_loss_q(self, data):
-        # TODO: complete
-        pass
+        states, actions, rewards, next_states, dones, rg_probs = data['obs'], data['act'], data['rew'], \
+                                                                 data['next_obs'], data['done'], data['rg_prob']
+
+        q1 = self.actor_critic.q1(states)
+        q2 = self.actor_critic.q2(states)
+
+        q1 = q1.gather(1, actions.long())
+        q2 = q2.gather(1, actions.long())
+
+        # do Bellman backup for Q functions
+        with torch.no_grad():
+            # use the target network to get the actions given the next state
+            next_actions, next_action_probs, next_log_action_probs = self.target_actor_critic.pi(next_states)
+
+            # target q-values use the next states and next actions
+            target_q1 = self.target_actor_critic.q1(next_states)
+            target_q2 = self.target_actor_critic.q2(next_states)
+
+            target_q = (next_action_probs * (torch.min(target_q1, target_q2) - self.alpha * next_log_action_probs)) \
+                .sum(dim=1, keepdim=True)
+
+            rewards = rewards.unsqueeze(-1)
+            assert rewards.shape == target_q.shape, "Rewards and q values do not have the same dimension"
+
+            # determine backup (see SAC paper for more details on this derivation)
+            # TODO: We might need to add the deceptiveness measures to the backup...
+            #  Have a think about this. I am not sure.
+            backup = rewards + self.discount_rate * (1 - dones) * target_q
+
+        # compute losses using MSE
+        loss_q1 = ((q1 - backup) ** 2).mean()
+        loss_q2 = ((q2 - backup) ** 2).mean()
+        loss_q = loss_q1 + loss_q2
+
+        # store useful logging info
+        q_info = dict(Q1Vals=q1.detach().numpy(),
+                      Q2Vals=q2.detach().numpy())
+
+        return loss_q, q_info
 
     def compute_loss_pi(self, data):
-        # TODO: complete
-        pass
+        states, rg_probs = data['obs'], data['rg_prob']
+        actions, action_probs, log_action_probs = self.actor_critic.pi(states)
+
+        with torch.no_grad():
+            q1 = self.actor_critic.q1(states)
+            q2 = self.actor_critic.q2(states)
+
+        # calculate expectations of entropy
+        entropies = -torch.sum(action_probs * log_action_probs, dim=1, keepdim=True)
+
+        # TODO: give a real goal probability for every action and then calculate a weighted real goal probability which
+        #  is weighted by the action distribution... This is similar to the idea of the weighted q-values that you use.
+        #  But for right now KISS
+        # 1 - rg_prob to give a higher score for a more deceptive action
+        deceptiveness_scores = torch.sum((1 - rg_probs))
+
+        # calculate expectations of Q (the q-value for each action, weighted by the probability of it occurring).
+        q = torch.sum(torch.min(q1, q2) * action_probs, dim=1, keepdim=True)
+
+        # Policy objective is to maximise (Q + beta * deceptiveness + alpha * entropy)
+        loss_pi = (-q - self.alpha * entropies - self.beta * deceptiveness_scores)
+
+        pi_info = dict(LogPi=entropies.detach().numpy(), Deceptiveness=deceptiveness_scores.detach().numpy())
+
+        return loss_pi, pi_info
 
     def get_action(self, state, deterministic=False):
-        # TODO: complete
-        pass
+        action = self.actor_critic.act(torch.as_tensor(state, dtype=torch.float32), deterministic=deterministic)
+        return int(action)
 
     def get_value_estimate(self, state, action):
-        # TODO: complete
-        pass
+        return self.actor_critic.get_value_estimate(state, action)
 
     def get_max_value_estimate(self, state):
-        # TODO: complete
-        pass
+        return self.actor_critic.get_max_value_estimate(state)
