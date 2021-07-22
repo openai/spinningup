@@ -3,6 +3,7 @@ from copy import deepcopy
 import itertools
 import time
 from abc import ABC, abstractmethod
+from collections import defaultdict
 
 # torch and numpy
 import torch
@@ -81,6 +82,8 @@ class SacBaseAgent(ABC):
         self.episode_reward = 0
         self.episode_length = 1
         self.epoch_number = 0
+        # a count dict to track how much the agent has visited a state during training
+        self.state_visitation_dict = defaultdict(int)
 
         # store replay buffer store
         self.replay_size = replay_size
@@ -151,6 +154,10 @@ class SacBaseAgent(ABC):
         # ending rather than being a result of the agent's state
         self.replay_buffer.store(state, action, reward, next_state, done)
 
+    @abstractmethod
+    def get_value_estimate(self, state, action):
+        raise NotImplementedError
+
     def end_trajectory(self, test=False):
         if test:
             self.logger.store(TestEpRet=self.episode_reward, TestEpLen=self.episode_length)
@@ -176,6 +183,7 @@ class SacBaseAgent(ABC):
             # save the model at each save frequency or at the end
             if (self.epoch_number % self.save_freq == 0) or self.epoch_number == self.num_epochs:
                 self.logger.save_state({'env': test_env}, None)
+                self.logger.save_state_visitation_dict(self.state_visitation_dict)
 
             self.test(test_env, test_env_key)
 
@@ -201,18 +209,24 @@ class SacBaseAgent(ABC):
     def test(self, env, env_key):
         if env is None and env_key is not None:
             env = make_simple_env(env_key, SEED, random_start=False)  # test the agent with the actual start position
+        else:
+            env = deepcopy(env)
         for j in range(self.num_test_episodes):
             state = env.reset()
+            self.state_visitation_dict[str(state)] += 1
             done = False
             while not done:
-                # Act deterministically become we are being tested
+                # Act deterministically because we are being tested
                 action = self.get_action(state, deterministic=True)
                 next_state, reward, done, _ = env.step(action)
+                # add to the state visitation dict for the map
+                self.state_visitation_dict[str(state)] += 1
                 if type(reward) == dict:
                     reward = reward[self.name]
                 self.episode_reward += reward
                 self.episode_length += 1
                 state = next_state
+            self.state_visitation_dict[str(state)] += 1
             self.end_trajectory(test=True)
 
     def train(self, train_env, test_env=None, test_env_key=None):
@@ -249,6 +263,7 @@ class SacBaseAgent(ABC):
         # TODO: you should probably draw this out such that is only needs to know to save, not when to save
         if (epoch_number % self.save_freq == 0) or epoch_number == self.num_epochs:
             self.logger.save_state({'env': train_env}, None)
+            self.logger.save_state_visitation_dict(self.state_visitation_dict)
 
     @abstractmethod
     def compute_loss_q(self, data):
