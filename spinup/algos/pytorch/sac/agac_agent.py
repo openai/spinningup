@@ -133,6 +133,7 @@ class AGACBaseAgent(ABC):
         self.episode_reward = 0
         self.episode_length = 1
         self.epoch_number = 0
+        self.accumulated_deceptiveness = 0
 
         # store replay buffer store
         self.replay_size = replay_size
@@ -158,11 +159,15 @@ class AGACBaseAgent(ABC):
         self.video_viewer = VideoViewer()
 
     def update(self, data):
-        # do a gradient descent step for critic
+        # do a gradient descent step for q function
         self.q_optimiser.zero_grad()
         loss_q, q_info = self.compute_loss_q(data)
         loss_q.backward()
         self.q_optimiser.step()
+        #
+        #
+        # # do a gradient descent step for value function
+        # self.v_optimiser.zero_grad()
 
         # record the losses
         self.logger.store(LossQ=loss_q.item(), **q_info)
@@ -204,16 +209,22 @@ class AGACBaseAgent(ABC):
         # use the adversary model to generate probabilities and give the relevant deceptiveness measure
         self.adversary.update(state, action)
         rg_prob = self.adversary.probability_of_real_goal()
+        deceptiveness = 1 - rg_prob
 
-        self.replay_buffer.store(state, action, reward, next_state, done, rg_prob)
+        self.accumulated_deceptiveness += deceptiveness
+
+        self.replay_buffer.store(state, action, reward, next_state, done, deceptiveness)
 
     def end_trajectory(self, test=False):
         if test:
-            self.logger.store(TestEpRet=self.episode_reward, TestEpLen=self.episode_length)
+            self.logger.store(TestEpRet=self.episode_reward, TestEpLen=self.episode_length,
+                              TestAccumulatedDeceptiveness=self.accumulated_deceptiveness)
         else:
-            self.logger.store(EpRet=self.episode_reward, EpLen=self.episode_length)
+            self.logger.store(EpRet=self.episode_reward, EpLen=self.episode_length,
+                              EpAccumulatedDeceptiveness=self.accumulated_deceptiveness)
         self.episode_reward = 0
         self.episode_length = 1
+        self.accumulated_deceptiveness = 0  # reset this for the next run
 
         # we also need to reset the adversary since the trajectory is over
         self.adversary.reset()
@@ -236,6 +247,9 @@ class AGACBaseAgent(ABC):
             if (self.epoch_number % self.save_freq == 0) or self.epoch_number == self.num_epochs:
                 self.logger.save_state({'env': test_env}, None)
 
+            # end the previous trajectory to reset stuff like accumulated deceptiveness and adversary
+            self.end_trajectory()
+
             self.test(test_env, test_env_key)
 
             self.log_stats(time_step)
@@ -255,12 +269,15 @@ class AGACBaseAgent(ABC):
         self.logger.log_tabular('LogPi', with_min_and_max=True)
         self.logger.log_tabular('LossPi', average_only=True)
         self.logger.log_tabular('LossQ', average_only=True)
-        self.logger.log_tabular('Deceptiveness', average_only=True)
+        self.logger.log_tabular('EpAccumulatedDeceptiveness', with_min_and_max=True)
+        self.logger.log_tabular('TestAccumulatedDeceptiveness', with_min_and_max=True)
         self.logger.dump_tabular()
 
     def test(self, env, env_key):
-        if env is not None and env_key is not None:
+        if env is None and env_key is not None:
             env = make_simple_env(env_key, constants.Random.SEED, random_start=False)
+        else:
+            env = deepcopy(env)
         for j in range(self.num_test_episodes):
             state = env.reset()
             done = False
@@ -269,8 +286,9 @@ class AGACBaseAgent(ABC):
                 action = self.get_action(state, deterministic=True)
 
                 # get your real goal probabilities since we have our state-action pair
-                self.adversary.update()
+                self.adversary.update(state=state, action=action)
                 rg_prob = self.adversary.probability_of_real_goal()
+                deceptiveness = 1 - rg_prob
 
                 # step through the environment
                 next_state, reward, done, _ = env.step(action)
@@ -282,6 +300,8 @@ class AGACBaseAgent(ABC):
                 # update the state
                 self.episode_reward += reward
                 self.episode_length += 1
+                # track the deceptivness. We use 1 - rg_prob since low prob is good
+                self.accumulated_deceptiveness += deceptiveness
                 state = next_state
 
             self.end_trajectory(test=True)  # this handles reseeting the adversary
@@ -326,7 +346,19 @@ class AGACBaseAgent(ABC):
         raise NotImplementedError
 
     @abstractmethod
+    def compute_loss_v(self, data):
+        raise NotImplementedError
+
+    @abstractmethod
     def get_action(self, state, deterministic=False):
+        raise NotImplementedError
+
+    @abstractmethod
+    def get_value_estimate(self, state, action):
+        raise NotImplementedError
+
+    @abstractmethod
+    def get_max_value_estimate(self, state):
         raise NotImplementedError
 
 
@@ -334,11 +366,11 @@ class DiscreteAGACAgent(AGACBaseAgent):
     def __init__(self, state_space, action_space, all_models, all_model_names, hidden_dimension=64, num_hidden_layers=2,
                  discount_rate=0.99, pi_lr=1e-3, critic_lr=1e-3, update_every=50, update_after=1000, max_ep_len=1000,
                  seed=42, steps_per_epoch=4000, start_steps=10000, num_test_episodes=10, num_epochs=100,
-                 replay_size=int(1e6), save_freq=1, batch_size=100, polyak=0.995, alpha=0.2,
+                 replay_size=int(1e6), save_freq=1, batch_size=100, polyak=0.995, alpha=0.2, beta=1,
                  experiment_name='discrete-agac-agent', agent_name='rg') -> None:
         super().__init__(state_space, action_space, discount_rate, pi_lr, critic_lr, update_every, update_after,
                          max_ep_len, seed, steps_per_epoch, start_steps, num_test_episodes, num_epochs, replay_size,
-                         save_freq, batch_size, polyak, alpha, experiment_name, agent_name)
+                         save_freq, batch_size, polyak, alpha, beta, experiment_name, agent_name)
         self.action_dim = action_space.n  # this is different to the continuous version
 
         # create the standard actor-critic network
@@ -375,8 +407,8 @@ class DiscreteAGACAgent(AGACBaseAgent):
         self.logger.setup_pytorch_saver(self.actor_critic)
 
     def compute_loss_q(self, data):
-        states, actions, rewards, next_states, dones, rg_probs = data['obs'], data['act'], data['rew'], \
-                                                                 data['next_obs'], data['done'], data['rg_prob']
+        states, actions, rewards, next_states, dones, deceptiveness = data['obs'], data['act'], data['rew'], data[
+            'next_obs'], data['done'], data['deceptiveness']
 
         q1 = self.actor_critic.q1(states)
         q2 = self.actor_critic.q2(states)
@@ -402,7 +434,8 @@ class DiscreteAGACAgent(AGACBaseAgent):
             # determine backup (see SAC paper for more details on this derivation)
             # TODO: We might need to add the deceptiveness measures to the backup...
             #  Have a think about this. I am not sure.
-            backup = rewards + self.discount_rate * (1 - dones) * target_q
+            deceptiveness_scores = deceptiveness.unsqueeze(dim=-1)
+            backup = rewards + self.beta * deceptiveness_scores + self.discount_rate * (1 - dones) * target_q
 
         # compute losses using MSE
         loss_q1 = ((q1 - backup) ** 2).mean()
@@ -416,7 +449,7 @@ class DiscreteAGACAgent(AGACBaseAgent):
         return loss_q, q_info
 
     def compute_loss_pi(self, data):
-        states, rg_probs = data['obs'], data['rg_prob']
+        states, deceptiveness = data['obs'], data['deceptiveness']
         actions, action_probs, log_action_probs = self.actor_critic.pi(states)
 
         with torch.no_grad():
@@ -430,13 +463,13 @@ class DiscreteAGACAgent(AGACBaseAgent):
         #  is weighted by the action distribution... This is similar to the idea of the weighted q-values that you use.
         #  But for right now KISS
         # 1 - rg_prob to give a higher score for a more deceptive action
-        deceptiveness_scores = torch.sum((1 - rg_probs))
+        deceptiveness_scores = deceptiveness.unsqueeze(dim=-1)
 
         # calculate expectations of Q (the q-value for each action, weighted by the probability of it occurring).
         q = torch.sum(torch.min(q1, q2) * action_probs, dim=1, keepdim=True)
 
         # Policy objective is to maximise (Q + beta * deceptiveness + alpha * entropy)
-        loss_pi = (-q - self.alpha * entropies - self.beta * deceptiveness_scores)
+        loss_pi = (-q - self.alpha * entropies - self.beta * deceptiveness_scores).mean()
 
         pi_info = dict(LogPi=entropies.detach().numpy(), Deceptiveness=deceptiveness_scores.detach().numpy())
 
@@ -445,9 +478,36 @@ class DiscreteAGACAgent(AGACBaseAgent):
     def get_action(self, state, deterministic=False):
         action = self.actor_critic.act(torch.as_tensor(state, dtype=torch.float32), deterministic=deterministic)
         return int(action)
+        # return self.eps_greedy(state, deterministic)
+
+    def eps_greedy(self, state, deterministic=False):
+        if np.random.rand() < constants.HyperParams.EPSILON:
+            return self.action_space.sample()
+        else:
+            action = self.actor_critic.act(torch.as_tensor(state, dtype=torch.float32), deterministic=deterministic)
+            return int(action)
 
     def get_value_estimate(self, state, action):
         return self.actor_critic.get_value_estimate(state, action)
 
     def get_max_value_estimate(self, state):
         return self.actor_critic.get_max_value_estimate(state)
+
+    def single_environment_run(self, env_key: str, video_viewer: VideoViewer = None):
+        """
+        This should be a single environment run to be used after training for analysis of the results
+        :return:
+        """
+        env = make_simple_env(env_key, constants.Random.SEED, random_start=False)
+        if video_viewer is not None:
+            env = video_viewer.wrap_env(env=env, agent_name=self.name,
+                                        folder=f'{constants.Saving.VIDEO_ROOT}/AmbiguityAgent/{env_key}')
+        state = env.reset()
+        done = False
+
+        while not done:
+            state = torch.as_tensor(state, dtype=torch.float32)
+            action = self.get_action(state)
+            next_state, reward, done, info = env.step(action)
+            # no need to update the agent
+            state = next_state
