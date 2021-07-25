@@ -78,61 +78,6 @@ class AGACBaseAgent(ABC):
         self.episode_reward = 0
         self.episode_length = 1
         self.epoch_number = 0
-
-        # store replay buffer store
-        self.replay_size = replay_size
-        self.save_freq = save_freq
-        self.batch_size = batch_size
-
-        # Store important environment details
-        self.state_space = state_space
-        self.action_space = action_space
-        self.state_dim = state_space.shape
-
-        # define stuff that should be over-ridden as None. I don't really like the abstract property way of doing it
-        # right now
-        self.action_dim = None
-        self.actor_critic = None
-        self.target_actor_critic = None
-        self.replay_buffer = None
-        self.pi_optimiser = None
-        self.q_optimiser = None
-
-        # video viewer to look at agent performance
-        self.video_viewer = VideoViewer()
-
-        # set up logger
-        logger_kwargs = setup_logger_kwargs(experiment_name + '-' + agent_name, seed)
-        self.logger = EpochLogger(**logger_kwargs)
-        self.logger.save_config(locals())
-
-        # seed the random stuff
-        torch.manual_seed(seed)
-        np.random.seed(seed)
-
-        # agent name
-        self.name = agent_name
-
-        # store agent hyper-parameters
-        self.discount_rate = discount_rate
-        self.alpha = alpha  # This is the entropy regularisation coefficient
-        self.pi_lr = pi_lr
-        self.vf_lr = critic_lr
-        self.polyak = polyak  # for updating the target model
-
-        # store episodes and epoch related details
-        self.max_ep_len = max_ep_len
-        self.num_epochs = num_epochs
-        self.update_every = update_every
-        self.update_after = update_after
-        self.steps_per_epoch = steps_per_epoch
-        self.start_steps = start_steps
-        self.num_test_episodes = num_test_episodes
-
-        # store details to track performance
-        self.episode_reward = 0
-        self.episode_length = 1
-        self.epoch_number = 0
         self.accumulated_deceptiveness = 0
 
         # store replay buffer store
@@ -158,16 +103,17 @@ class AGACBaseAgent(ABC):
         # video viewer to look at agent performance
         self.video_viewer = VideoViewer()
 
+        # set up logger
+        logger_kwargs = setup_logger_kwargs(experiment_name + '-' + agent_name, seed)
+        self.logger = EpochLogger(**logger_kwargs)
+        self.logger.save_config(locals())
+
     def update(self, data):
         # do a gradient descent step for q function
         self.q_optimiser.zero_grad()
         loss_q, q_info = self.compute_loss_q(data)
         loss_q.backward()
         self.q_optimiser.step()
-        #
-        #
-        # # do a gradient descent step for value function
-        # self.v_optimiser.zero_grad()
 
         # record the losses
         self.logger.store(LossQ=loss_q.item(), **q_info)
@@ -478,7 +424,6 @@ class DiscreteAGACAgent(AGACBaseAgent):
     def get_action(self, state, deterministic=False):
         action = self.actor_critic.act(torch.as_tensor(state, dtype=torch.float32), deterministic=deterministic)
         return int(action)
-        # return self.eps_greedy(state, deterministic)
 
     def eps_greedy(self, state, deterministic=False):
         if np.random.rand() < constants.HyperParams.EPSILON:
@@ -511,3 +456,8 @@ class DiscreteAGACAgent(AGACBaseAgent):
             next_state, reward, done, info = env.step(action)
             # no need to update the agent
             state = next_state
+
+    def compute_loss_v(self, data):
+        pass
+
+

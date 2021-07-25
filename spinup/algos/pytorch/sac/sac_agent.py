@@ -8,6 +8,7 @@ from collections import defaultdict
 # torch and numpy
 import torch
 from torch.optim import Adam
+from torch.optim.lr_scheduler import ExponentialLR
 import numpy as np
 
 # gym stuff
@@ -103,6 +104,8 @@ class SacBaseAgent(ABC):
         self.replay_buffer = None
         self.pi_optimiser = None
         self.q_optimiser = None
+        self.q_lr_schedule = None
+        self.pi_lr_schedule = None
 
         # video viewer to look at agent performance
         self.video_viewer = VideoViewer()
@@ -188,6 +191,10 @@ class SacBaseAgent(ABC):
             self.test(test_env, test_env_key)
 
             self.log_stats(time_step)
+
+            # adjust the learning rate at each epoch
+            self.q_lr_schedule.step()
+            self.pi_lr_schedule.step()
 
     def log_stats(self, time_step, epoch_number=None):
         epoch_number = self.epoch_number if epoch_number is None else epoch_number
@@ -275,6 +282,10 @@ class SacBaseAgent(ABC):
 
     @abstractmethod
     def get_action(self, state, deterministic=False):
+        raise NotImplementedError
+
+    @abstractmethod
+    def get_max_value_estimate(self, state):
         raise NotImplementedError
 
 
@@ -409,6 +420,8 @@ class DiscreteSacAgent(SacBaseAgent):
         # make optimisers for the actor and the critic
         self.pi_optimiser = Adam(self.actor_critic.pi.parameters(), lr=self.pi_lr)
         self.q_optimiser = Adam(self.q_params, lr=self.vf_lr)
+        self.pi_lr_schedule = ExponentialLR(optimizer=self.pi_optimiser, gamma=0.95)
+        self.q_lr_schedule = ExponentialLR(optimizer=self.q_optimiser, gamma=0.95)
 
         # set up model saving
         self.logger.setup_pytorch_saver(self.actor_critic)

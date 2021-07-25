@@ -40,11 +40,11 @@ class RandomisedAGACBuffer(RandomisedSacBuffer):
 
     def __init__(self, obs_dim, act_dim, size):
         super().__init__(obs_dim, act_dim, size)
-        self.rg_probs = np.zeros(size, dtype=np.float32)
+        self.deceptiveness = np.zeros(size, dtype=np.float32)
 
-    def store(self, obs, act, rew, next_obs, done, rg_prob=None):
-        super().store(obs, act, rew, next_obs, done, rg_prob)
-        self.rg_probs[self.ptr] = rg_prob
+    def store(self, obs, act, rew, next_obs, done, deceptiveness=None):
+        super().store(obs, act, rew, next_obs, done, deceptiveness)
+        self.deceptiveness[self.ptr] = deceptiveness
 
     def sample_batch(self, batch_size=32):
         idxs = np.random.randint(0, self.size, size=batch_size)
@@ -53,7 +53,7 @@ class RandomisedAGACBuffer(RandomisedSacBuffer):
                      act=self.act_buf[idxs],
                      rew=self.rew_buf[idxs],
                      done=self.done_buf[idxs],
-                     rg_prob=self.rg_probs[idxs])
+                     deceptiveness=self.deceptiveness[idxs])
         return {k: torch.as_tensor(v, dtype=torch.float32) for k, v in batch.items()}
 
 

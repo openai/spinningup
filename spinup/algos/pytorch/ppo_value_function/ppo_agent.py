@@ -19,11 +19,6 @@ from spinup.algos.pytorch.ppo_value_function.core import MLPActorCritic, MLPQAct
 
 from spinup.utils.buffers import *
 
-# Define constant
-MINI_GRID_16 = 'MiniGrid-Deceptive-16x16-v0'
-MINI_GRID_49 = 'MiniGrid-Deceptive-49x49-v0'
-SEED = 1234
-
 
 # Util function to instantiate environment
 def make_simple_env(env_key, seed):
@@ -230,6 +225,7 @@ class PPOAgent:
 
             # use the action to step through the environment
             next_state, reward, done, info = env.step(action)
+            reward = reward['rg']
             episode_return += reward
             episode_length += 1
 
@@ -391,6 +387,7 @@ class PPOQAgent(PPOAgent):
 
             # use the action to step through the environment
             next_state, reward, done, info = env.step(action)
+            reward = reward['rg']
             episode_return += reward
             episode_length += 1
 
@@ -461,20 +458,22 @@ class PPOQAgent(PPOAgent):
 
 if __name__ == '__main__':
     import argparse
+    import python.constants as constants
+    from python.runners.env_reader import read_map
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--env', type=str, default=MINI_GRID_49)
+    parser.add_argument('--env', type=str, default=constants.EnvKeys.MINI_GRID_EMPTY_PATH)
     parser.add_argument('--hid', type=int, default=64)
     parser.add_argument('--l', type=int, default=2)
     parser.add_argument('--gamma', type=float, default=0.99)
-    parser.add_argument('--seed', '-s', type=int, default=0)
+    parser.add_argument('--seed', '-s', type=int, default=1)
     parser.add_argument('--cpu', type=int, default=4)
     parser.add_argument('--steps', type=int, default=4000)
     parser.add_argument('--epochs', type=int, default=100)
     parser.add_argument('--exp_name', type=str, default='ppo-class-fg1-49')
     args = parser.parse_args()
 
-    env = make_simple_env(args.env, SEED)
+    env, env_name = read_map(1, random_start=False, terminate_at_any_goal=False)
 
     agent = PPOAgent(
         state_space=env.observation_space,

@@ -2,43 +2,55 @@ from minigrid_env_utils import make_simple_env
 from spinningup.spinup.algos.pytorch.sac.sac_agent import DiscreteSacAgent
 import multiprocessing as mp
 import python.constants as constants
+from python.runners.config import config
+from gym_minigrid.envs.deceptive import DeceptiveEnv
+from python.minigrid_env_utils import SimpleObsWrapper
+from python.runners.env_reader import read_map
 
 SEED = constants.Random.SEED
 
-config = {
-    # optimal simple 16= (94.34168696318805, 94.34168696318805)
-    'minigrid-simple-16': (constants.EnvKeys.MINI_GRID_SIMPLE_16, ['rg', 'fg1']),
-    # optimal medium 16 = (95.37952065439602, 98.275697827198, 94.89411413599005, 97.23786413599005)
-    'minigrid-medium-16': (constants.EnvKeys.MINI_GRID_MEDIUM_16, ['rg', 'fg1', 'fg2', 'fg3']),
-    # optimal obstacle 16 = (94.89411413599005, 95.37952065439602)
-    'minigrid-obstacle-16': (constants.EnvKeys.MINI_GRID_OBSTACLE_16, ['rg', 'fg1']),
-    # 'minigrid-obstacle-16-2': (constants.EnvKeys.MINI_GRID_OBSTACLE_16, ['rg', 'rg', 'rg', 'rg', 'rg', 'rg'])
-}
+# ENV = config['simple_16']['env']
+# SUBAGENTS = config['simple_16']['all_models']['value_iteration']
+# AGENT_NAMES = config['simple_16']['all_model_names']
 
-ENV = config['minigrid-obstacle-16'][0]
-SUBAGENTS = config['minigrid-obstacle-16'][1]
-ALPHA = [0.1, 0.2, 0.4, 0.6, 0.8, 1]
+ENV = constants.EnvKeys.MINI_GRID_EMPTY_PATH
+AGENT_NAMES1 = ['rg', 'fg1', 'fg2']
+AGENT_NAMES2 = ['rg', 'fg1', 'fg2', 'fg3', 'fg4']
+#
+# ARGS = [(1, AGENT_NAMES1), (4, AGENT_NAMES1), (5, AGENT_NAMES2),
+#         (6, AGENT_NAMES2), (7, AGENT_NAMES2), (8, AGENT_NAMES2)]
+
+ARGS = [(9, AGENT_NAMES1)]
 
 
-def run_subagent(agent_key, alpha=0.2, env_key=ENV):
-    train_env = make_simple_env(env_key, SEED)
-    test_env = make_simple_env(env_key, SEED, random_start=False)
+def run_subagent(num_env, agent_key):
+    train_env, map_name = read_map(num_env, random_start=False, terminate_at_any_goal=False, goal_name=agent_key)
+    test_env, map_name = read_map(num_env, random_start=False, terminate_at_any_goal=False, goal_name=agent_key)
     agent = DiscreteSacAgent(train_env.observation_space,
                              train_env.action_space,
                              agent_name=agent_key,
-                             experiment_name=env_key,
-                             start_steps=10000,
-                             num_epochs=500,
-                             seed=43,
-                             alpha=alpha,
+                             experiment_name=f'from_file_{map_name}{num_env}',
+                             start_steps=40000,
+                             max_ep_len=49**2,
+                             steps_per_epoch=16000,
+                             # batch_size=200,
+                             # update_every=100,
+                             # update_after=2000,
+                             num_epochs=100,
+                             seed=42,
+                             alpha=0.2,
                              hidden_dimension=64,
-                             critic_lr=1e-4,
-                             pi_lr=1e-4)
+                             critic_lr=1e-3,
+                             pi_lr=1e-3)
     agent.train(train_env, test_env=test_env)
 
+
 def run_subagents_parallel():
-    pool = mp.Pool(len(SUBAGENTS))
-    pool.starmap(run_subagent, zip(SUBAGENTS))
+    for arg in ARGS:
+        map_number = arg[0]
+        agent_names = arg[1]
+        pool = mp.Pool(len(agent_names))
+        pool.starmap(run_subagent, [(map_number, name) for name in agent_names])
 
 
 if __name__ == '__main__':

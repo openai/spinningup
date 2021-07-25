@@ -66,6 +66,15 @@ class DiscreteMLPQFunction(nn.Module):
         return q_vals
 
 
+class DiscreteMLPValueFunction(nn.Module):
+    def __init__(self, obs_dim, hidden_sizes, activation):
+        super().__init__()
+        self.v_net = mlp([obs_dim] + list(hidden_sizes) + [1], activation)
+
+    def forward(self, obs):
+        return torch.squeeze(self.v_net(obs), -1)  # Critical to ensure v has right shape.
+
+
 class DiscreteMLPActorCritic(nn.Module):
 
     def __init__(self, observation_space, action_space, hidden_sizes=(256, 256),
@@ -79,6 +88,7 @@ class DiscreteMLPActorCritic(nn.Module):
         self.pi = CategoricalActor(obs_dim, act_dim, hidden_sizes, activation)
         self.q1 = DiscreteMLPQFunction(obs_dim, act_dim, hidden_sizes, activation)
         self.q2 = DiscreteMLPQFunction(obs_dim, act_dim, hidden_sizes, activation)
+        # self.v = DiscreteMLPValueFunction(obs_dim, hidden_sizes, activation)
 
     def act(self, obs, deterministic=False):
         with torch.no_grad():
