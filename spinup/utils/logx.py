@@ -191,8 +191,8 @@ class Logger:
             if hasattr(self, 'pytorch_saver_elements'):
                 self._pytorch_simple_save(itr)
 
-    def save_state_visitation_dict(self, state_dict):
-        with open(osp.join(self.output_dir, 'state_visitation_dict.json'), 'w') as f:
+    def save_state_visitation_dict(self, state_dict, fn):
+        with open(osp.join(self.output_dir, fn), 'w') as f:
             json.dump(state_dict, f)
 
 

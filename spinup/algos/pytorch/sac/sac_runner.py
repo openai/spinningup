@@ -13,14 +13,13 @@ SEED = constants.Random.SEED
 # SUBAGENTS = config['simple_16']['all_models']['value_iteration']
 # AGENT_NAMES = config['simple_16']['all_model_names']
 
-ENV = constants.EnvKeys.MINI_GRID_EMPTY_PATH
 AGENT_NAMES1 = ['rg', 'fg1', 'fg2']
 AGENT_NAMES2 = ['rg', 'fg1', 'fg2', 'fg3', 'fg4']
 #
 # ARGS = [(1, AGENT_NAMES1), (4, AGENT_NAMES1), (5, AGENT_NAMES2),
 #         (6, AGENT_NAMES2), (7, AGENT_NAMES2), (8, AGENT_NAMES2)]
 
-ARGS = [(9, AGENT_NAMES1)]
+ARGS = [(2, AGENT_NAMES1)]
 
 
 def run_subagent(num_env, agent_key):
@@ -30,13 +29,14 @@ def run_subagent(num_env, agent_key):
                              train_env.action_space,
                              agent_name=agent_key,
                              experiment_name=f'from_file_{map_name}{num_env}',
-                             start_steps=40000,
+                             start_steps=50000,
                              max_ep_len=49**2,
                              steps_per_epoch=16000,
                              # batch_size=200,
                              # update_every=100,
                              # update_after=2000,
-                             num_epochs=100,
+                             num_epochs=50,
+                             policy_update_delay=1,
                              seed=42,
                              alpha=0.2,
                              hidden_dimension=64,

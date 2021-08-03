@@ -10,6 +10,7 @@ import torch
 from torch.optim import Adam
 from torch.optim.lr_scheduler import ExponentialLR
 import numpy as np
+import torch.nn.functional as F
 
 # gym stuff
 import gym
@@ -47,6 +48,7 @@ class SacBaseAgent(ABC):
             save_freq=1,
             batch_size=100,
             polyak=0.995,
+            policy_update_delay=2,
             alpha=0.2,
             experiment_name='continuous-sac-class-test',
             agent_name='rg'
@@ -69,6 +71,7 @@ class SacBaseAgent(ABC):
         self.pi_lr = pi_lr
         self.vf_lr = critic_lr
         self.polyak = polyak  # for updating the target model
+        self.policy_update_delay = policy_update_delay  # delay policy and target critic updates to stabilise q-values
 
         # store episodes and epoch related details
         self.max_ep_len = max_ep_len
@@ -84,7 +87,8 @@ class SacBaseAgent(ABC):
         self.episode_length = 1
         self.epoch_number = 0
         # a count dict to track how much the agent has visited a state during training
-        self.state_visitation_dict = defaultdict(int)
+        self.test_state_visitation_dict = defaultdict(int)
+        self.train_state_visitation_dict = defaultdict(int)
 
         # store replay buffer store
         self.replay_size = replay_size
@@ -110,7 +114,7 @@ class SacBaseAgent(ABC):
         # video viewer to look at agent performance
         self.video_viewer = VideoViewer()
 
-    def update(self, data):
+    def update(self, data, time_step):
         # run a gradient descent step for q functions
         self.q_optimiser.zero_grad()
         loss_q, q_info = self.compute_loss_q(data)
@@ -120,29 +124,30 @@ class SacBaseAgent(ABC):
         # record the losses
         self.logger.store(LossQ=loss_q.item(), **q_info)
 
-        # freeze the Q-networks so that we don't waste computational effort computing the gradients for them during the
-        # policy update
-        for p in self.q_params:
-            p.requires_grad = False
+        if time_step % self.policy_update_delay == 0:
+            # freeze the Q-networks so that we don't waste computational effort computing the gradients for them during the
+            # policy update
+            for p in self.q_params:
+                p.requires_grad = False
 
-        # run a gradient descent step for the policy function
-        self.pi_optimiser.zero_grad()
-        loss_pi, pi_info = self.compute_loss_pi(data)
-        loss_pi.backward()
-        self.pi_optimiser.step()
+            # run a gradient descent step for the policy function
+            self.pi_optimiser.zero_grad()
+            loss_pi, pi_info = self.compute_loss_pi(data)
+            loss_pi.backward()
+            self.pi_optimiser.step()
 
-        # unfreeze the Q-networks
-        for p in self.q_params:
-            p.requires_grad = True
+            # unfreeze the Q-networks
+            for p in self.q_params:
+                p.requires_grad = True
 
-        # Record things
-        self.logger.store(LossPi=loss_pi.item(), **pi_info)
+            # Record things
+            self.logger.store(LossPi=loss_pi.item(), **pi_info)
 
-        # update the target networks using polyak averaging
-        with torch.no_grad():
-            for p, p_targ in zip(self.actor_critic.parameters(), self.target_actor_critic.parameters()):
-                p_targ.data.mul_(self.polyak)
-                p_targ.data.add_((1 - self.polyak) * p.data)
+            # update the target networks using polyak averaging
+            with torch.no_grad():
+                for p, p_targ in zip(self.actor_critic.parameters(), self.target_actor_critic.parameters()):
+                    p_targ.data.mul_(self.polyak)
+                    p_targ.data.add_((1 - self.polyak) * p.data)
 
     def select_action(self, state, deterministic=False):
         return self.get_action(state, deterministic)
@@ -176,7 +181,7 @@ class SacBaseAgent(ABC):
             # We still want to keep a 1-1 ratio between number of actions and number of updates
             for j in range(self.update_every):
                 data = self.replay_buffer.sample_batch(self.batch_size)
-                self.update(data)
+                self.update(data, j)
 
     def handle_end_of_epoch(self, time_step, test_env=None, test_env_key=None):
         # Handle the end of epoch: (1) Save the model. (2) test the agent. (3) log the results
@@ -186,7 +191,10 @@ class SacBaseAgent(ABC):
             # save the model at each save frequency or at the end
             if (self.epoch_number % self.save_freq == 0) or self.epoch_number == self.num_epochs:
                 self.logger.save_state({'env': test_env}, None)
-                self.logger.save_state_visitation_dict(self.state_visitation_dict)
+                self.logger.save_state_visitation_dict(self.test_state_visitation_dict,
+                                                       'test_state_visitation_dict.json')
+                self.logger.save_state_visitation_dict(self.train_state_visitation_dict,
+                                                       'train_state_visitation_dict.json')
 
             self.test(test_env, test_env_key)
 
@@ -220,26 +228,27 @@ class SacBaseAgent(ABC):
             env = deepcopy(env)
         for j in range(self.num_test_episodes):
             state = env.reset()
-            self.state_visitation_dict[str(state)] += 1
+            self.test_state_visitation_dict[str(state)] += 1
             done = False
             while not done:
                 # Act deterministically because we are being tested
                 action = self.get_action(state, deterministic=True)
                 next_state, reward, done, _ = env.step(action)
                 # add to the state visitation dict for the map
-                self.state_visitation_dict[str(state)] += 1
+                self.test_state_visitation_dict[str(state)] += 1
                 if type(reward) == dict:
                     reward = reward[self.name]
                 self.episode_reward += reward
                 self.episode_length += 1
                 state = next_state
-            self.state_visitation_dict[str(state)] += 1
+            self.test_state_visitation_dict[str(state)] += 1
             self.end_trajectory(test=True)
 
     def train(self, train_env, test_env=None, test_env_key=None):
         total_steps = self.steps_per_epoch * self.num_epochs
         start_time = time.time()
         state = train_env.reset()
+        self.train_state_visitation_dict[str(state)] += 1
 
         # collect experiences and update every epoch
         for t in range(total_steps):
@@ -252,12 +261,14 @@ class SacBaseAgent(ABC):
                 action = train_env.action_space.sample()
 
             next_state, reward, done, _ = train_env.step(action)
+            self.train_state_visitation_dict[str(state)] += 1
             self.add_experience(state, action, reward, next_state, done)
             state = next_state
 
             # end of trajectory
             if done or self.episode_length == self.max_ep_len:
                 self.end_trajectory()
+                self.train_state_visitation_dict[str(state)] += 1
                 state = train_env.reset()
 
             # Update the model
@@ -270,7 +281,10 @@ class SacBaseAgent(ABC):
         # TODO: you should probably draw this out such that is only needs to know to save, not when to save
         if (epoch_number % self.save_freq == 0) or epoch_number == self.num_epochs:
             self.logger.save_state({'env': train_env}, None)
-            self.logger.save_state_visitation_dict(self.state_visitation_dict)
+            self.logger.save_state_visitation_dict(self.test_state_visitation_dict,
+                                                   'test_state_visitation_dict.json')
+            self.logger.save_state_visitation_dict(self.train_state_visitation_dict,
+                                                   'train_state_visitation_dict.json')
 
     @abstractmethod
     def compute_loss_q(self, data):
@@ -388,11 +402,11 @@ class DiscreteSacAgent(SacBaseAgent):
     def __init__(self, state_space, action_space, hidden_dimension=64, num_hidden_layers=2, discount_rate=0.99,
                  pi_lr=1e-3, critic_lr=1e-3, update_every=50, update_after=1000, max_ep_len=1000, seed=42,
                  steps_per_epoch=4000, start_steps=10000, num_test_episodes=10, num_epochs=100, replay_size=int(1e6),
-                 save_freq=1, batch_size=100, polyak=0.995, alpha=0.2, experiment_name='ignore',
+                 save_freq=1, batch_size=100, polyak=0.995, policy_update_delay=2, alpha=0.2, experiment_name='ignore',
                  agent_name='rg') -> None:
         super().__init__(state_space, action_space, discount_rate, pi_lr, critic_lr, update_every, update_after,
                          max_ep_len, seed, steps_per_epoch, start_steps, num_test_episodes, num_epochs, replay_size,
-                         save_freq, batch_size, polyak, alpha, experiment_name, agent_name)
+                         save_freq, batch_size, polyak, policy_update_delay, alpha, experiment_name, agent_name)
         self.action_dim = action_space.n  # this is different to the continuous version
 
         # create the standard actor-critic network
@@ -449,14 +463,16 @@ class DiscreteSacAgent(SacBaseAgent):
                 .sum(dim=1, keepdim=True)
 
             rewards = rewards.unsqueeze(-1)
-            assert rewards.shape == target_q.shape, "Rewards and q values do not have the same dimension"
+            dones = dones.unsqueeze(-1)
+            assert rewards.shape == target_q.shape == dones.shape, "Rewards, dones and q values do not have the same dimension"
 
             # determine backup (see SAC paper for more details on this derivation)
             backup = rewards + self.discount_rate * (1 - dones) * target_q
 
         # compute losses using MSE
-        loss_q1 = ((q1 - backup) ** 2).mean()
-        loss_q2 = ((q2 - backup) ** 2).mean()
+        # F.mse_loss(current_Q1, target_Q)
+        loss_q1 = F.mse_loss(q1, backup).mean()
+        loss_q2 = F.mse_loss(q2, backup).mean()
         loss_q = loss_q1 + loss_q2
 
         # store useful logging info
@@ -470,17 +486,17 @@ class DiscreteSacAgent(SacBaseAgent):
         actions, action_probs, log_action_probs = self.actor_critic.pi(states)
 
         with torch.no_grad():
-            q1 = self.actor_critic.q1(states)
-            q2 = self.actor_critic.q2(states)
+            q1_pi = self.actor_critic.q1(states)
+            # q2 = self.actor_critic.q2(states)
 
         # calculate expectations of entropy
         entropies = -torch.sum(action_probs * log_action_probs, dim=1, keepdim=True)
 
         # calculate expectations of Q (the q-value for each action, weighted by the probability of it occurring).
-        q = torch.sum(torch.min(q1, q2) * action_probs, dim=1, keepdim=True)
+        q1_pi = torch.sum(q1_pi * action_probs, dim=1, keepdim=True)
 
         # calculate entropy regularised policy loss
-        loss_pi = (-self.alpha * entropies - q).mean()
+        loss_pi = (-self.alpha * entropies - q1_pi).mean()
 
         pi_info = dict(LogPi=entropies.detach().numpy())
 
