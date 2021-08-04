@@ -50,7 +50,7 @@ class SacBaseAgent(ABC):
             polyak=0.995,
             policy_update_delay=2,
             alpha=0.2,
-            experiment_name='continuous-sac-class-test',
+            experiment_name='sac-base-class',
             agent_name='rg'
     ) -> None:
         # set up logger
@@ -457,9 +457,9 @@ class DiscreteSacAgent(SacBaseAgent):
 
             # target q-values use the next states and next actions
             target_q1 = self.target_actor_critic.q1(next_states)
-            target_q2 = self.target_actor_critic.q2(next_states)
+            # target_q2 = self.target_actor_critic.q2(next_states)
 
-            target_q = (next_action_probs * (torch.min(target_q1, target_q2) - self.alpha * next_log_action_probs)) \
+            target_q = (next_action_probs * (target_q1 - self.alpha * next_log_action_probs)) \
                 .sum(dim=1, keepdim=True)
 
             rewards = rewards.unsqueeze(-1)
@@ -471,9 +471,9 @@ class DiscreteSacAgent(SacBaseAgent):
 
         # compute losses using MSE
         # F.mse_loss(current_Q1, target_Q)
-        loss_q1 = F.mse_loss(q1, backup).mean()
-        loss_q2 = F.mse_loss(q2, backup).mean()
-        loss_q = loss_q1 + loss_q2
+        loss_q1 = F.mse_loss(q1, backup)
+        # loss_q2 = F.mse_loss(q2, backup)
+        loss_q = loss_q1
 
         # store useful logging info
         q_info = dict(Q1Vals=q1.detach().numpy(),

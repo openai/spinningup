@@ -3,21 +3,25 @@ import itertools
 from abc import ABC, abstractmethod
 from copy import deepcopy
 import time
+from collections import defaultdict
 
-import numpy as np
-# local stuff
-import spinup.algos.pytorch.sac.core as core
 # torch and numpy
+import numpy as np
 import torch
-from intention_recognition import Adversary
-from python.display_utils import VideoViewer
-from spinup.utils.buffers import RandomisedAGACBuffer
-from spinup.utils.logx import EpochLogger
+
 # gym stuff
 from spinup.utils.minigrid_utils import make_simple_env
 from spinup.utils.run_utils import setup_logger_kwargs
 from torch.optim import Adam
 import python.constants as constants
+
+# local stuff
+import spinup.algos.pytorch.sac.core as core
+from intention_recognition import Adversary
+from python.display_utils import VideoViewer
+from spinup.utils.buffers import RandomisedAGACBuffer
+from spinup.utils.logx import EpochLogger
+from torch.optim.lr_scheduler import ExponentialLR
 
 
 class AGACBaseAgent(ABC):
@@ -46,7 +50,8 @@ class AGACBaseAgent(ABC):
             agent_name='rg'
     ) -> None:
         # set up logger
-        logger_kwargs = setup_logger_kwargs(experiment_name + '-' + agent_name, seed)
+        self.experiment_name = experiment_name
+        logger_kwargs = setup_logger_kwargs(experiment_name, seed)
         self.logger = EpochLogger(**logger_kwargs)
         self.logger.save_config(locals())
 
@@ -79,6 +84,8 @@ class AGACBaseAgent(ABC):
         self.episode_length = 1
         self.epoch_number = 0
         self.accumulated_deceptiveness = 0
+        # a count dict to track how much the agent has visited a state during training
+        self.state_visitation_dict = defaultdict(int)
 
         # store replay buffer store
         self.replay_size = replay_size
@@ -99,14 +106,11 @@ class AGACBaseAgent(ABC):
         self.replay_buffer = None
         self.pi_optimiser = None
         self.q_optimiser = None
+        self.q_lr_schedule = None
+        self.pi_lr_schedule = None
 
         # video viewer to look at agent performance
         self.video_viewer = VideoViewer()
-
-        # set up logger
-        logger_kwargs = setup_logger_kwargs(experiment_name + '-' + agent_name, seed)
-        self.logger = EpochLogger(**logger_kwargs)
-        self.logger.save_config(locals())
 
     def update(self, data):
         # do a gradient descent step for q function
@@ -192,6 +196,7 @@ class AGACBaseAgent(ABC):
             # save the model at each save frequency or at the end
             if (self.epoch_number % self.save_freq == 0) or self.epoch_number == self.num_epochs:
                 self.logger.save_state({'env': test_env}, None)
+                self.logger.save_state_visitation_dict(self.state_visitation_dict)
 
             # end the previous trajectory to reset stuff like accumulated deceptiveness and adversary
             self.end_trajectory()
@@ -199,6 +204,10 @@ class AGACBaseAgent(ABC):
             self.test(test_env, test_env_key)
 
             self.log_stats(time_step)
+
+            # adjust the learning rate at each epoch
+            self.q_lr_schedule.step()
+            self.pi_lr_schedule.step()
 
     def log_stats(self, time_step, epoch_number=None):
         epoch_number = self.epoch_number if epoch_number is None else epoch_number
@@ -226,6 +235,7 @@ class AGACBaseAgent(ABC):
             env = deepcopy(env)
         for j in range(self.num_test_episodes):
             state = env.reset()
+            self.state_visitation_dict[str(state)] += 1
             done = False
             while not done:
                 # act deterministically because this is a test
@@ -239,6 +249,7 @@ class AGACBaseAgent(ABC):
                 # step through the environment
                 next_state, reward, done, _ = env.step(action)
 
+                self.state_visitation_dict[str(state)] += 1
                 # extract the reward
                 if type(reward) == dict:
                     reward = reward[self.name]
@@ -250,6 +261,7 @@ class AGACBaseAgent(ABC):
                 self.accumulated_deceptiveness += deceptiveness
                 state = next_state
 
+            self.state_visitation_dict[str(state)] += 1
             self.end_trajectory(test=True)  # this handles reseeting the adversary
 
     def train(self, train_env, test_env=None, test_env_key=None):
@@ -282,6 +294,7 @@ class AGACBaseAgent(ABC):
         # TODO: you should probably draw this out such that is only needs to know to save, not when to save
         if (epoch_number % self.save_freq == 0) or epoch_number == self.num_epochs:
             self.logger.save_state({'env': train_env}, None)
+            self.logger.save_state_visitation_dict(self.state_visitation_dict)
 
     @abstractmethod
     def compute_loss_q(self, data):
@@ -348,6 +361,8 @@ class DiscreteAGACAgent(AGACBaseAgent):
         # make optimisers for the actor and the critic
         self.pi_optimiser = Adam(self.actor_critic.pi.parameters(), lr=self.pi_lr)
         self.q_optimiser = Adam(self.q_params, lr=self.vf_lr)
+        self.pi_lr_schedule = ExponentialLR(optimizer=self.pi_optimiser, gamma=0.95)
+        self.q_lr_schedule = ExponentialLR(optimizer=self.q_optimiser, gamma=0.95)
 
         # set up model saving
         self.logger.setup_pytorch_saver(self.actor_critic)

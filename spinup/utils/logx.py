@@ -195,7 +195,6 @@ class Logger:
         with open(osp.join(self.output_dir, fn), 'w') as f:
             json.dump(state_dict, f)
 
-
     def setup_tf_saver(self, sess, inputs, outputs):
         """
         Set up easy model saving for tensorflow.
