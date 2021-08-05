@@ -8,6 +8,7 @@ from collections import defaultdict
 # torch and numpy
 import numpy as np
 import torch
+import torch.nn.functional as F
 
 # gym stuff
 from spinup.utils.minigrid_utils import make_simple_env
@@ -85,7 +86,8 @@ class AGACBaseAgent(ABC):
         self.epoch_number = 0
         self.accumulated_deceptiveness = 0
         # a count dict to track how much the agent has visited a state during training
-        self.state_visitation_dict = defaultdict(int)
+        self.test_state_visitation_dict = defaultdict(int)
+        self.train_state_visitation_dict = defaultdict(int)
 
         # store replay buffer store
         self.replay_size = replay_size
@@ -196,7 +198,10 @@ class AGACBaseAgent(ABC):
             # save the model at each save frequency or at the end
             if (self.epoch_number % self.save_freq == 0) or self.epoch_number == self.num_epochs:
                 self.logger.save_state({'env': test_env}, None)
-                self.logger.save_state_visitation_dict(self.state_visitation_dict)
+                self.logger.save_state_visitation_dict(self.test_state_visitation_dict,
+                                                       'test_state_visitation_dict.json')
+                self.logger.save_state_visitation_dict(self.train_state_visitation_dict,
+                                                       'train_state_visitation_dict.json')
 
             # end the previous trajectory to reset stuff like accumulated deceptiveness and adversary
             self.end_trajectory()
@@ -220,7 +225,6 @@ class AGACBaseAgent(ABC):
         self.logger.log_tabular('TestEpLen', average_only=True)
         self.logger.log_tabular('TotalEnvInteracts', time_step)
         self.logger.log_tabular('Q1Vals', with_min_and_max=True)
-        self.logger.log_tabular('Q2Vals', with_min_and_max=True)
         self.logger.log_tabular('LogPi', with_min_and_max=True)
         self.logger.log_tabular('LossPi', average_only=True)
         self.logger.log_tabular('LossQ', average_only=True)
@@ -235,7 +239,7 @@ class AGACBaseAgent(ABC):
             env = deepcopy(env)
         for j in range(self.num_test_episodes):
             state = env.reset()
-            self.state_visitation_dict[str(state)] += 1
+            self.test_state_visitation_dict[str(state)] += 1
             done = False
             while not done:
                 # act deterministically because this is a test
@@ -249,7 +253,7 @@ class AGACBaseAgent(ABC):
                 # step through the environment
                 next_state, reward, done, _ = env.step(action)
 
-                self.state_visitation_dict[str(state)] += 1
+                self.test_state_visitation_dict[str(state)] += 1
                 # extract the reward
                 if type(reward) == dict:
                     reward = reward[self.name]
@@ -261,7 +265,7 @@ class AGACBaseAgent(ABC):
                 self.accumulated_deceptiveness += deceptiveness
                 state = next_state
 
-            self.state_visitation_dict[str(state)] += 1
+            self.test_state_visitation_dict[str(state)] += 1
             self.end_trajectory(test=True)  # this handles reseeting the adversary
 
     def train(self, train_env, test_env=None, test_env_key=None):
@@ -277,11 +281,13 @@ class AGACBaseAgent(ABC):
                 action = train_env.action_space.sample()
 
             next_state, reward, done, _ = train_env.step(action)
+            self.train_state_visitation_dict[str(state)] += 1
             self.add_experience(state, action, reward, next_state, done)  # this also handles getting the adversary prob
             state = next_state
 
             if done or self.episode_length == self.max_ep_len:
                 self.end_trajectory()  # this handles resetting the adversary
+                self.train_state_visitation_dict[str(state)] += 1
                 state = train_env.reset()
 
             # update the model
@@ -294,7 +300,10 @@ class AGACBaseAgent(ABC):
         # TODO: you should probably draw this out such that is only needs to know to save, not when to save
         if (epoch_number % self.save_freq == 0) or epoch_number == self.num_epochs:
             self.logger.save_state({'env': train_env}, None)
-            self.logger.save_state_visitation_dict(self.state_visitation_dict)
+            self.logger.save_state_visitation_dict(self.test_state_visitation_dict,
+                                                   'test_state_visitation_dict.json')
+            self.logger.save_state_visitation_dict(self.train_state_visitation_dict,
+                                                   'train_state_visitation_dict.json')
 
     @abstractmethod
     def compute_loss_q(self, data):
@@ -372,10 +381,7 @@ class DiscreteAGACAgent(AGACBaseAgent):
             'next_obs'], data['done'], data['deceptiveness']
 
         q1 = self.actor_critic.q1(states)
-        q2 = self.actor_critic.q2(states)
-
         q1 = q1.gather(1, actions.long())
-        q2 = q2.gather(1, actions.long())
 
         # do Bellman backup for Q functions
         with torch.no_grad():
@@ -384,28 +390,24 @@ class DiscreteAGACAgent(AGACBaseAgent):
 
             # target q-values use the next states and next actions
             target_q1 = self.target_actor_critic.q1(next_states)
-            target_q2 = self.target_actor_critic.q2(next_states)
 
-            target_q = (next_action_probs * (torch.min(target_q1, target_q2) - self.alpha * next_log_action_probs)) \
+            target_q = (next_action_probs * (target_q1 - self.alpha * next_log_action_probs)) \
                 .sum(dim=1, keepdim=True)
 
             rewards = rewards.unsqueeze(-1)
-            assert rewards.shape == target_q.shape, "Rewards and q values do not have the same dimension"
-
-            # determine backup (see SAC paper for more details on this derivation)
-            # TODO: We might need to add the deceptiveness measures to the backup...
-            #  Have a think about this. I am not sure.
+            dones = dones.unsqueeze(-1)
             deceptiveness_scores = deceptiveness.unsqueeze(dim=-1)
+            assert rewards.shape == target_q.shape == dones.shape == deceptiveness_scores.shape, \
+                "Rewards, dones, deceptiveness-scores and q-values do not have the same dimension"
+
             backup = rewards + self.beta * deceptiveness_scores + self.discount_rate * (1 - dones) * target_q
 
         # compute losses using MSE
-        loss_q1 = ((q1 - backup) ** 2).mean()
-        loss_q2 = ((q2 - backup) ** 2).mean()
-        loss_q = loss_q1 + loss_q2
+        loss_q1 = F.mse_loss(q1, backup)
+        loss_q = loss_q1
 
         # store useful logging info
-        q_info = dict(Q1Vals=q1.detach().numpy(),
-                      Q2Vals=q2.detach().numpy())
+        q_info = dict(Q1Vals=q1.detach().numpy())
 
         return loss_q, q_info
 
@@ -415,7 +417,6 @@ class DiscreteAGACAgent(AGACBaseAgent):
 
         with torch.no_grad():
             q1 = self.actor_critic.q1(states)
-            q2 = self.actor_critic.q2(states)
 
         # calculate expectations of entropy
         entropies = -torch.sum(action_probs * log_action_probs, dim=1, keepdim=True)
@@ -427,7 +428,7 @@ class DiscreteAGACAgent(AGACBaseAgent):
         deceptiveness_scores = deceptiveness.unsqueeze(dim=-1)
 
         # calculate expectations of Q (the q-value for each action, weighted by the probability of it occurring).
-        q = torch.sum(torch.min(q1, q2) * action_probs, dim=1, keepdim=True)
+        q = torch.sum(q1 * action_probs, dim=1, keepdim=True)
 
         # Policy objective is to maximise (Q + beta * deceptiveness + alpha * entropy)
         loss_pi = (-q - self.alpha * entropies - self.beta * deceptiveness_scores).mean()
@@ -461,7 +462,7 @@ class DiscreteAGACAgent(AGACBaseAgent):
         env = make_simple_env(env_key, constants.Random.SEED, random_start=False)
         if video_viewer is not None:
             env = video_viewer.wrap_env(env=env, agent_name=self.name,
-                                        folder=f'{constants.Saving.VIDEO_ROOT}/AmbiguityAgent/{env_key}')
+                                        folder=f'{constants.Saving.VIDEO_ROOT}/AGACAgent/{env_key}')
         state = env.reset()
         done = False
 
