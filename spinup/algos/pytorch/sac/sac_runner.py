@@ -15,11 +15,10 @@ SEED = constants.Random.SEED
 
 AGENT_NAMES1 = ['rg', 'fg1', 'fg2']
 AGENT_NAMES2 = ['rg', 'fg1', 'fg2', 'fg3', 'fg4']
-#
-# ARGS = [(1, AGENT_NAMES1), (4, AGENT_NAMES1), (5, AGENT_NAMES2),
-#         (6, AGENT_NAMES2), (7, AGENT_NAMES2), (8, AGENT_NAMES2)]
 
-ARGS = [(2, AGENT_NAMES1)]
+ARGS = [(13, AGENT_NAMES2), (14, AGENT_NAMES2), (15, AGENT_NAMES2), (16, AGENT_NAMES2)]
+
+# ARGS = [(2, AGENT_NAMES1)]
 
 
 def run_subagent(num_env, agent_key):

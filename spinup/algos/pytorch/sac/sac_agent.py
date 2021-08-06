@@ -162,10 +162,6 @@ class SacBaseAgent(ABC):
         # ending rather than being a result of the agent's state
         self.replay_buffer.store(state, action, reward, next_state, done)
 
-    @abstractmethod
-    def get_value_estimate(self, state, action):
-        raise NotImplementedError
-
     def end_trajectory(self, test=False):
         if test:
             self.logger.store(TestEpRet=self.episode_reward, TestEpLen=self.episode_length)
@@ -285,6 +281,10 @@ class SacBaseAgent(ABC):
                                                    'test_state_visitation_dict.json')
             self.logger.save_state_visitation_dict(self.train_state_visitation_dict,
                                                    'train_state_visitation_dict.json')
+
+    @abstractmethod
+    def get_value_estimate(self, state, action):
+        raise NotImplementedError
 
     @abstractmethod
     def compute_loss_q(self, data):

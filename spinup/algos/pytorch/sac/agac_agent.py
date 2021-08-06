@@ -89,6 +89,9 @@ class AGACBaseAgent(ABC):
         self.test_state_visitation_dict = defaultdict(int)
         self.train_state_visitation_dict = defaultdict(int)
 
+        # a map to determine the level of deceptiveness for each state
+        self.deceptiveness_dict = defaultdict(float)
+
         # store replay buffer store
         self.replay_size = replay_size
         self.save_freq = save_freq
@@ -162,6 +165,8 @@ class AGACBaseAgent(ABC):
         self.adversary.update(state, action)
         rg_prob = self.adversary.probability_of_real_goal()
         deceptiveness = 1 - rg_prob
+        self.deceptiveness_dict[str(state)] = (self.deceptiveness_dict[str(state)] + deceptiveness) / \
+                                                    self.train_state_visitation_dict[str(state)]
 
         self.accumulated_deceptiveness += deceptiveness
 
@@ -202,6 +207,7 @@ class AGACBaseAgent(ABC):
                                                        'test_state_visitation_dict.json')
                 self.logger.save_state_visitation_dict(self.train_state_visitation_dict,
                                                        'train_state_visitation_dict.json')
+                self.logger.save_deceptiveness_dict(self.deceptiveness_dict, 'deceptiveness_dict.json')
 
             # end the previous trajectory to reset stuff like accumulated deceptiveness and adversary
             self.end_trajectory()
@@ -304,6 +310,8 @@ class AGACBaseAgent(ABC):
                                                    'test_state_visitation_dict.json')
             self.logger.save_state_visitation_dict(self.train_state_visitation_dict,
                                                    'train_state_visitation_dict.json')
+            self.logger.save_deceptiveness_dict(self.deceptiveness_dict,
+                                                'deceptiveness_dict.json')
 
     @abstractmethod
     def compute_loss_q(self, data):
@@ -475,5 +483,3 @@ class DiscreteAGACAgent(AGACBaseAgent):
 
     def compute_loss_v(self, data):
         pass
-
-
