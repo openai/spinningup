@@ -153,6 +153,8 @@ class SacBaseAgent(ABC):
         return self.get_action(state, deterministic)
 
     def add_experience(self, state, action, reward, next_state, done):
+        # add to state visitation map
+        self.train_state_visitation_dict[str(state)] += 1
         # if the reward gets passed in as a dict, then extract the reward using the agent name
         if type(reward) == dict:
             reward = reward[self.name]
@@ -257,7 +259,6 @@ class SacBaseAgent(ABC):
                 action = train_env.action_space.sample()
 
             next_state, reward, done, _ = train_env.step(action)
-            self.train_state_visitation_dict[str(state)] += 1
             self.add_experience(state, action, reward, next_state, done)
             state = next_state
 
