@@ -6,7 +6,7 @@ from python.runners.config import config
 from gym_minigrid.envs.deceptive import DeceptiveEnv
 from python.minigrid_env_utils import SimpleObsWrapper
 from python.runners.env_reader import read_map
-
+from copy import deepcopy
 SEED = constants.Random.SEED
 
 # ENV = config['simple_16']['env']
@@ -16,24 +16,55 @@ SEED = constants.Random.SEED
 AGENT_NAMES1 = ['rg', 'fg1', 'fg2']
 AGENT_NAMES2 = ['rg', 'fg1', 'fg2', 'fg3', 'fg4']
 
-ARGS = [(13, AGENT_NAMES2), (14, AGENT_NAMES2), (15, AGENT_NAMES2), (16, AGENT_NAMES2)]
+# ARGS = [(13, AGENT_NAMES2), (14, AGENT_NAMES2), (15, AGENT_NAMES2), (16, AGENT_NAMES2)]
 
-# ARGS = [(2, AGENT_NAMES1)]
+ARGS = [(1, AGENT_NAMES1)]
+
+def run_simple(agent_key = 'rg'):
+    map = SimpleObsWrapper(DeceptiveEnv.load_from_file(
+        fp=f'/Users/alanlewis/PycharmProjects/DeceptiveReinforcementLearning/maps/drl/empty.map',
+        optcost=1,
+        start_pos=(47, 47),
+        real_goal=(1, 1, 'rg'),
+        fake_goals=[(47, 1, 'fg1')],
+        random_start=False,
+        terminate_at_any_goal=False,
+        goal_name=agent_key))
+
+    train_env = deepcopy(map)
+    test_env = deepcopy(map)
+    train_env.seed(42)
+    test_env.seed(42)
+
+    agent = DiscreteSacAgent(train_env.observation_space,
+                             train_env.action_space,
+                             agent_name=agent_key,
+                             experiment_name=f'ignore_from_file_simple',
+                             start_steps=40000,
+                             max_ep_len=49 ** 2,
+                             steps_per_epoch=16000,
+                             num_epochs=100,
+                             policy_update_delay=1,
+                             seed=42,
+                             alpha=0.2,
+                             polyak=0.995,
+                             hidden_dimension=64,
+                             critic_lr=1e-3,
+                             pi_lr=1e-3)
+    agent.train(train_env, test_env=test_env)
 
 
 def run_subagent(num_env, agent_key):
     train_env, map_name = read_map(num_env, random_start=False, terminate_at_any_goal=False, goal_name=agent_key)
     test_env, map_name = read_map(num_env, random_start=False, terminate_at_any_goal=False, goal_name=agent_key)
+
     agent = DiscreteSacAgent(train_env.observation_space,
                              train_env.action_space,
                              agent_name=agent_key,
-                             experiment_name=f'from_file_{map_name}{num_env}',
+                             experiment_name=f'ignore_from_file_{map_name}{num_env}',
                              start_steps=40000,
                              max_ep_len=49**2,
-                             steps_per_epoch=16000,
-                             # batch_size=200,
-                             # update_every=100,
-                             # update_after=2000,
+                             steps_per_epoch=10000,
                              num_epochs=100,
                              policy_update_delay=1,
                              seed=42,
@@ -46,7 +77,7 @@ def run_subagent(num_env, agent_key):
 
 
 def run_subagents_parallel():
-    for arg in ARGS:
+    for arg in [(1, AGENT_NAMES1)]:
         map_number = arg[0]
         agent_names = arg[1]
         pool = mp.Pool(len(agent_names))

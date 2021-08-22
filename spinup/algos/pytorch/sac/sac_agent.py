@@ -81,6 +81,7 @@ class SacBaseAgent(ABC):
         self.steps_per_epoch = steps_per_epoch
         self.start_steps = start_steps
         self.num_test_episodes = num_test_episodes
+        self.total_steps_taken = 0
 
         # store details to track performance
         self.episode_reward = 0
@@ -158,8 +159,15 @@ class SacBaseAgent(ABC):
         # if the reward gets passed in as a dict, then extract the reward using the agent name
         if type(reward) == dict:
             reward = reward[self.name]
+
         self.episode_reward += reward
         self.episode_length += 1
+
+        # if we complete without reward, then this is a result of early termination. To counter this, we should add the
+        # Q value of that state to the reward function.
+        if done and reward != 100:
+            reward += self.discount_rate * self.actor_critic.get_max_value_estimate(next_state)
+
         # ignore the done signal if it comes from an artificial time horizon --> ie it comes from an artificial
         # ending rather than being a result of the agent's state
         self.replay_buffer.store(state, action, reward, next_state, done)
@@ -273,6 +281,42 @@ class SacBaseAgent(ABC):
 
             # handle the end of each epoch
             self.handle_end_of_epoch(time_step=t, test_env=test_env, test_env_key=test_env_key)
+
+    def interval_train(self, train_env, test_env=None, test_env_key=None, num_steps=100000):
+        start_time = time.time()
+        state = train_env.reset()
+        self.train_state_visitation_dict[str(state)] += 1
+
+        # collect experiences and update every epoch
+        for _ in range(num_steps):
+
+            # at the start, randomly sample actions from a uniform distribution for better exploration
+            # only afterwards use the learned policy...
+            if self.total_steps_taken > self.start_steps:
+                action = self.get_action(state)
+            else:
+                action = train_env.action_space.sample()
+
+            next_state, reward, done, _ = train_env.step(action)
+            self.add_experience(state, action, reward, next_state, done)
+            state = next_state
+
+            # end of trajectory
+            if done or self.episode_length == self.max_ep_len:
+                self.end_trajectory()
+                self.train_state_visitation_dict[str(state)] += 1
+                state = train_env.reset()
+
+            # Update the model
+            self.learn(time_step=self.total_steps_taken)
+
+            # handle the end of each epoch
+            self.handle_end_of_epoch(time_step=self.total_steps_taken, test_env=test_env, test_env_key=test_env_key)
+            self.total_steps_taken += 1
+        end_time = time.time()
+        train_time = end_time - start_time
+
+        return train_time
 
     def save_state(self, epoch_number, train_env):
         # TODO: you should probably draw this out such that is only needs to know to save, not when to save
@@ -458,23 +502,30 @@ class DiscreteSacAgent(SacBaseAgent):
 
             # target q-values use the next states and next actions
             target_q1 = self.target_actor_critic.q1(next_states)
-            # target_q2 = self.target_actor_critic.q2(next_states)
+            # target_q1 = target_q1.gather(1, next_actions.long())
+            target_q1 = (next_action_probs * target_q1).sum(dim=1, keepdim=True)
 
-            target_q = (next_action_probs * (target_q1 - self.alpha * next_log_action_probs)) \
-                .sum(dim=1, keepdim=True)
+            target_q2 = self.target_actor_critic.q2(next_states)
+            # target_q2 = target_q2.gather(1, next_actions.long())
+            target_q2 = (next_action_probs * target_q2).sum(dim=1, keepdim=True)
+
+            target_q = torch.min(target_q1, target_q2)
+            log_pi_next_actions = (next_action_probs * next_log_action_probs).sum(dim=1, keepdim=True)
 
             rewards = rewards.unsqueeze(-1)
             dones = dones.unsqueeze(-1)
-            assert rewards.shape == target_q.shape == dones.shape, "Rewards, dones and q values do not have the same dimension"
+
+            assert rewards.shape == target_q.shape == dones.shape == log_pi_next_actions.shape, \
+                "Rewards, dones and q values do not have the same dimension"
 
             # determine backup (see SAC paper for more details on this derivation)
-            backup = rewards + self.discount_rate * (1 - dones) * target_q
+            backup = rewards + self.discount_rate * (1 - dones) * (target_q)
 
         # compute losses using MSE
         # F.mse_loss(current_Q1, target_Q)
         loss_q1 = F.mse_loss(q1, backup)
-        # loss_q2 = F.mse_loss(q2, backup)
-        loss_q = loss_q1
+        loss_q2 = F.mse_loss(q2, backup)
+        loss_q = loss_q1 + loss_q2
 
         # store useful logging info
         q_info = dict(Q1Vals=q1.detach().numpy(),
@@ -488,16 +539,19 @@ class DiscreteSacAgent(SacBaseAgent):
 
         with torch.no_grad():
             q1_pi = self.actor_critic.q1(states)
-            # q2 = self.actor_critic.q2(states)
+            q2_pi = self.actor_critic.q2(states)
 
         # calculate expectations of entropy
         entropies = -torch.sum(action_probs * log_action_probs, dim=1, keepdim=True)
 
         # calculate expectations of Q (the q-value for each action, weighted by the probability of it occurring).
         q1_pi = torch.sum(q1_pi * action_probs, dim=1, keepdim=True)
+        q2_pi = torch.sum(q2_pi * action_probs, dim=1, keepdim=True)
+
+        q_pi = torch.min(q1_pi, q2_pi)
 
         # calculate entropy regularised policy loss
-        loss_pi = (-self.alpha * entropies - q1_pi).mean()
+        loss_pi = (-self.alpha * entropies - q_pi).mean()
 
         pi_info = dict(LogPi=entropies.detach().numpy())
 
