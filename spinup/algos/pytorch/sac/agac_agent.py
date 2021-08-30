@@ -291,11 +291,11 @@ class AGACBaseAgent(ABC):
 
         # collect experiences and update every epoch
         for t in range(total_steps):
-            # if t > self.start_steps:
-            #     action = self.get_action(state)
-            # else:
-            #     action = train_env.action_space.sample()
-            action = self.get_action(state)
+            if t > self.start_steps:
+                action = self.get_action(state)
+            else:
+                action = train_env.action_space.sample()
+            # action = self.get_action(state)
             next_state, reward, done, _ = train_env.step(action)
             self.train_state_visitation_dict[str(state)] += 1
             self.add_experience(state, action, reward, next_state, done)  # this also handles getting the adversary prob
@@ -474,15 +474,15 @@ class DiscreteAGACAgent(AGACBaseAgent):
         return loss_pi, pi_info
 
     def get_action(self, state, deterministic=False):
-        # action = self.actor_critic.act(torch.as_tensor(state, dtype=torch.float32), deterministic=deterministic)
-        # return int(action)
+        action = self.actor_critic.act(torch.as_tensor(state, dtype=torch.float32), deterministic=deterministic)
+        return int(action)
 
-        action = 'DONE'
-        if not self.bottom_right:
-            action = self.go_to_bottom_right(state)
-        if not action == 'DONE':
-            return action
-        return self.snake(state)
+        # action = 'DONE'
+        # if not self.bottom_right:
+        #     action = self.go_to_bottom_right(state)
+        # if not action == 'DONE':
+        #     return action
+        # return self.snake(state)
 
     def snake(self, state):
         x, y, _ = state
@@ -686,4 +686,4 @@ class DiscreteOnlineAGACAgent(DiscreteAGACAgent):
     def save_state(self, epoch_number, train_env):
         super().save_state(epoch_number=epoch_number, train_env=train_env)
         self.adversary.save_state(epoch_number=epoch_number,
-                                  train_env=train_env)  # allow the adversary to save its own state
+                                  a_train_env=train_env)  # allow the adversary to save its own state

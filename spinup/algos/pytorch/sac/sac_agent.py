@@ -163,13 +163,16 @@ class SacBaseAgent(ABC):
         self.episode_reward += reward
         self.episode_length += 1
 
-        # if we complete without reward, then this is a result of early termination. To counter this, we should add the
-        # Q value of that state to the reward function.
-        if done and reward != 100:
-            reward += self.discount_rate * self.actor_critic.get_max_value_estimate(next_state)
-
+        # if we complete without reward, then this is a result of early termination. To counter this, ignore the done
+        # such that we bootstrap normally.
         # ignore the done signal if it comes from an artificial time horizon --> ie it comes from an artificial
         # ending rather than being a result of the agent's state
+        if done and reward <= 0:
+            done = False
+
+        # if done and reward > 90:
+        #     print("hello")
+
         self.replay_buffer.store(state, action, reward, next_state, done)
 
     def end_trajectory(self, test=False):
