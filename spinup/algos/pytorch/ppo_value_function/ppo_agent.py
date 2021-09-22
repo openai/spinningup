@@ -458,7 +458,7 @@ class PPOQAgent(PPOAgent):
 
 if __name__ == '__main__':
     import argparse
-    import python.constants as constants
+    import python.path_manager as constants
     from python.runners.env_reader import read_map
 
     parser = argparse.ArgumentParser()

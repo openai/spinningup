@@ -14,7 +14,7 @@ import torch.nn.functional as F
 from spinup.utils.minigrid_utils import make_simple_env
 from spinup.utils.run_utils import setup_logger_kwargs
 from torch.optim import Adam
-import python.constants as constants
+import python.path_manager as constants
 
 # local stuff
 import spinup.algos.pytorch.sac.core as core

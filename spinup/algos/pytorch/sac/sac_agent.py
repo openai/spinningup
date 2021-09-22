@@ -23,7 +23,7 @@ import spinup.algos.pytorch.sac.core as core
 from spinup.utils.logx import EpochLogger
 from spinup.utils.run_utils import setup_logger_kwargs
 from spinup.utils.buffers import RandomisedSacBuffer
-import python.constants as constants
+import python.path_manager as constants
 
 SEED = constants.Random.SEED
 
@@ -501,7 +501,7 @@ class DiscreteSacAgent(SacBaseAgent):
         # do Bellman backup for Q functions
         with torch.no_grad():
             # use the target network to get the actions given the next state
-            next_actions, next_action_probs, next_log_action_probs = self.target_actor_critic.pi(next_states)
+            next_actions, next_action_probs, next_log_action_probs = self.actor_critic.pi(next_states)
 
             # target q-values use the next states and next actions
             target_q1 = self.target_actor_critic.q1(next_states)
