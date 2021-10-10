@@ -23,9 +23,12 @@ import spinup.algos.pytorch.sac.core as core
 from spinup.utils.logx import EpochLogger
 from spinup.utils.run_utils import setup_logger_kwargs
 from spinup.utils.buffers import RandomisedSacBuffer
-import python.path_manager as constants
+import python.path_manager as path_manager
+from python.runners.env_reader import read_map
 
-SEED = constants.Random.SEED
+sacPathManager = path_manager.Sac()
+
+SEED = path_manager.Random.SEED
 
 
 class SacBaseAgent(ABC):
@@ -49,7 +52,7 @@ class SacBaseAgent(ABC):
             batch_size=100,
             polyak=0.995,
             policy_update_delay=2,
-            alpha=0.2,
+            alpha=0.02,
             experiment_name='sac-base-class',
             agent_name='rg'
     ) -> None:
@@ -85,7 +88,7 @@ class SacBaseAgent(ABC):
 
         # store details to track performance
         self.episode_reward = 0
-        self.episode_length = 1
+        self.episode_length = 0
         self.epoch_number = 0
         # a count dict to track how much the agent has visited a state during training
         self.test_state_visitation_dict = defaultdict(int)
@@ -155,7 +158,7 @@ class SacBaseAgent(ABC):
 
     def add_experience(self, state, action, reward, next_state, done):
         # add to state visitation map
-        self.train_state_visitation_dict[str(state)] += 1
+        self.train_state_visitation_dict[str(tuple(map(int, state)))] += 1
         # if the reward gets passed in as a dict, then extract the reward using the agent name
         if type(reward) == dict:
             reward = reward[self.name]
@@ -181,7 +184,7 @@ class SacBaseAgent(ABC):
         else:
             self.logger.store(EpRet=self.episode_reward, EpLen=self.episode_length)
         self.episode_reward = 0
-        self.episode_length = 1
+        self.episode_length = 0
 
     def learn(self, time_step):
         # We only want to update the model after a certain number of experiences have been collected.
@@ -237,30 +240,31 @@ class SacBaseAgent(ABC):
             env = deepcopy(env)
         for j in range(self.num_test_episodes):
             state = env.reset()
-            self.test_state_visitation_dict[str(state)] += 1
+            self.test_state_visitation_dict[str(tuple(map(int, state)))] += 1
             done = False
-            while not done:
+            while not (done or (self.episode_length == self.max_ep_len)):
                 # Act deterministically because we are being tested
                 action = self.get_action(state, deterministic=True)
                 next_state, reward, done, _ = env.step(action)
                 # add to the state visitation dict for the map
-                self.test_state_visitation_dict[str(state)] += 1
+                self.test_state_visitation_dict[str(tuple(map(int, state)))] += 1
                 if type(reward) == dict:
                     reward = reward[self.name]
                 self.episode_reward += reward
                 self.episode_length += 1
                 state = next_state
-            self.test_state_visitation_dict[str(state)] += 1
+            self.test_state_visitation_dict[str(tuple(map(int, state)))] += 1
             self.end_trajectory(test=True)
 
     def train(self, train_env, test_env=None, test_env_key=None):
         total_steps = self.steps_per_epoch * self.num_epochs
         start_time = time.time()
         state = train_env.reset()
-        self.train_state_visitation_dict[str(state)] += 1
+        self.train_state_visitation_dict[str(tuple(map(int, state)))] += 1
 
         # collect experiences and update every epoch
         for t in range(total_steps):
+            # train_env.render()
 
             # at the start, randomly sample actions from a uniform distribution for better exploration
             # only afterwards use the learned policy...
@@ -270,13 +274,14 @@ class SacBaseAgent(ABC):
                 action = train_env.action_space.sample()
 
             next_state, reward, done, _ = train_env.step(action)
+            # done = False if self.episode_length == self.max_ep_len else done
             self.add_experience(state, action, reward, next_state, done)
             state = next_state
 
             # end of trajectory
             if done or self.episode_length == self.max_ep_len:
                 self.end_trajectory()
-                self.train_state_visitation_dict[str(state)] += 1
+                self.train_state_visitation_dict[str(tuple(map(int, state)))] += 1
                 state = train_env.reset()
 
             # Update the model
@@ -288,7 +293,7 @@ class SacBaseAgent(ABC):
     def interval_train(self, train_env, test_env=None, test_env_key=None, num_steps=100000):
         start_time = time.time()
         state = train_env.reset()
-        self.train_state_visitation_dict[str(state)] += 1
+        self.train_state_visitation_dict[str(tuple(map(int, state)))] += 1
 
         # collect experiences and update every epoch
         for _ in range(num_steps):
@@ -307,7 +312,7 @@ class SacBaseAgent(ABC):
             # end of trajectory
             if done or self.episode_length == self.max_ep_len:
                 self.end_trajectory()
-                self.train_state_visitation_dict[str(state)] += 1
+                self.train_state_visitation_dict[str(tuple(map(int, state)))] += 1
                 state = train_env.reset()
 
             # Update the model
@@ -330,9 +335,11 @@ class SacBaseAgent(ABC):
             self.logger.save_state_visitation_dict(self.train_state_visitation_dict,
                                                    'train_state_visitation_dict.json')
 
-    @abstractmethod
     def get_value_estimate(self, state, action):
-        raise NotImplementedError
+        return self.actor_critic.get_value_estimate(state, action)
+
+    def get_max_value_estimate(self, state):
+        return self.actor_critic.get_max_value_estimate(state)
 
     @abstractmethod
     def compute_loss_q(self, data):
@@ -346,23 +353,23 @@ class SacBaseAgent(ABC):
     def get_action(self, state, deterministic=False):
         raise NotImplementedError
 
-    @abstractmethod
-    def get_max_value_estimate(self, state):
-        raise NotImplementedError
-
 
 class ContinuousSacAgent(SacBaseAgent):
     def __init__(self, state_space, action_space, hidden_dimension=64, num_hidden_layers=2, discount_rate=0.99,
                  pi_lr=1e-3, critic_lr=1e-3, update_every=50, update_after=1000, max_ep_len=1000, seed=42,
                  steps_per_epoch=4000, start_steps=10000, num_test_episodes=10, num_epochs=100, replay_size=int(1e6),
-                 save_freq=1, batch_size=100, polyak=0.995, alpha=0.2, experiment_name='continuous-sac-class-test',
-                 agent_name='rg') -> None:
-        super().__init__(state_space, action_space, discount_rate, pi_lr, critic_lr, update_every, update_after,
-                         max_ep_len, seed, steps_per_epoch, start_steps, num_test_episodes, num_epochs, replay_size,
-                         save_freq, batch_size, polyak, alpha, experiment_name, agent_name)
+                 save_freq=1, batch_size=100, polyak=0.995, policy_update_delay=1, alpha=0.2,
+                 experiment_name='continuous-sac-class-test', agent_name='rg') -> None:
+        super().__init__(state_space=state_space, action_space=action_space, discount_rate=discount_rate, pi_lr=pi_lr,
+                         critic_lr=critic_lr, update_every=update_every, update_after=update_after,
+                         max_ep_len=max_ep_len, seed=seed, steps_per_epoch=steps_per_epoch, start_steps=start_steps,
+                         num_test_episodes=num_test_episodes, num_epochs=num_epochs, replay_size=replay_size,
+                         save_freq=save_freq, batch_size=batch_size, polyak=polyak,
+                         policy_update_delay=policy_update_delay, alpha=alpha, experiment_name=experiment_name,
+                         agent_name=agent_name)
         self.action_dim = action_space.shape
         # we need this to clamp the actions... Assume all actions have the same bound, otherwise we need to deal with each action bound separately
-        self.action_limit = action_space.high[0]
+        self.action_limit = action_space.high
 
         # create the standard actor-critic network
         self.actor_critic = core.MLPActorCritic(self.state_space, self.action_space,
@@ -389,6 +396,8 @@ class ContinuousSacAgent(SacBaseAgent):
         # make optimisers for the actor and the critic
         self.pi_optimiser = Adam(self.actor_critic.pi.parameters(), lr=self.pi_lr)
         self.q_optimiser = Adam(self.q_params, lr=self.vf_lr)
+        self.pi_lr_schedule = ExponentialLR(optimizer=self.pi_optimiser, gamma=1)
+        self.q_lr_schedule = ExponentialLR(optimizer=self.q_optimiser, gamma=1)
 
         # set up model saving
         self.logger.setup_pytorch_saver(self.actor_critic)
@@ -500,7 +509,7 @@ class DiscreteSacAgent(SacBaseAgent):
 
         # do Bellman backup for Q functions
         with torch.no_grad():
-            # use the target network to get the actions given the next state
+            # Target actions come from *current* policy
             next_actions, next_action_probs, next_log_action_probs = self.actor_critic.pi(next_states)
 
             # target q-values use the next states and next actions
@@ -564,21 +573,55 @@ class DiscreteSacAgent(SacBaseAgent):
         action = self.actor_critic.act(torch.as_tensor(state, dtype=torch.float32), deterministic=deterministic)
         return int(action)
 
-    def get_value_estimate(self, state, action):
-        return self.actor_critic.get_value_estimate(state, action)
-
-    def get_max_value_estimate(self, state):
-        return self.actor_critic.get_max_value_estimate(state)
-
 
 if __name__ == '__main__':
-    # LUNAR_LANDING_CONTINUOUS = "LunarLanderContinuous-v2"
-    # train_env_continuous = gym.make(LUNAR_LANDING_CONTINUOUS)
-    # test_env_continuous = gym.make(LUNAR_LANDING_CONTINUOUS)
-    # continuous_agent = ContinuousSacAgent(train_env_continuous.observation_space, train_env_continuous.action_space)
-    # continuous_agent.train(train_env_continuous, test_env_continuous)
+    env_number = 1
+    train_env, map_name = read_map(env_number, random_start=False, terminate_at_any_goal=True, discrete=False)
+    test_env = deepcopy(train_env)
+    continuous_agent = ContinuousSacAgent(state_space=test_env.observation_space,
+                                          action_space=test_env.action_space,
+                                          agent_name='fg1',
+                                          experiment_name=f'continuous-pretrained-sac-{map_name}{env_number}',
+                                          start_steps=10000,
+                                          max_ep_len=49 ** 2,
+                                          steps_per_epoch=4000,
+                                          num_epochs=100,
+                                          seed=42,
+                                          alpha=0.01,
+                                          polyak=0.995,
+                                          hidden_dimension=64,
+                                          critic_lr=1e-3,
+                                          pi_lr=1e-3)
+    continuous_agent.train(train_env=train_env, test_env=test_env)
 
-    train_env = make_simple_env(constants.EnvKeys.MINI_GRID_SIMPLE_16, SEED)
-    test_env = make_simple_env(constants.EnvKeys.MINI_GRID_SIMPLE_16, SEED)
-    agent = DiscreteSacAgent(train_env.observation_space, train_env.action_space, agent_name='rg')
-    agent.train(train_env, test_env)
+    # env, map_name = read_map(-1, random_start=False, terminate_at_any_goal=True, discrete=False)
+    #
+    # state = env.reset()
+    # dt1 = []
+    # dt2 = []
+    # agent = torch.load(sacPathManager.get_path(agent_type='sac', map_name=map_name, agent_name='rg', discrete=False))
+    #
+    # accum_reward = 0
+    # for t in range(1000):
+    #     env.render()
+    #
+    #     start = time.time()
+    #     state = torch.tensor(state, dtype=torch.float32)
+    #     action = agent.act(state, deterministic=True)
+    #     end = time.time()
+    #
+    #     dt1.append(end - start)
+    #
+    #     start = time.time()
+    #     state, reward, done, info = env.step(action)
+    #     accum_reward += reward['fg1']
+    #     print("accum reward:", accum_reward)
+    #     end = time.time()
+    #     dt2.append(end - start)
+    #
+    #     if done:
+    #         print("Episode finished after {} timesteps".format(t + 1))
+    #         break
+    #
+    # print(f"accumulated reward: {accum_reward}")
+    # print(sum(dt1) / len(dt1), sum(dt2) / len(dt2))

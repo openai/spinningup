@@ -137,7 +137,9 @@ class SquashedGaussianMLPActor(nn.Module):
         self.net = mlp([obs_dim] + list(hidden_sizes), activation, activation)
         self.mu_layer = nn.Linear(hidden_sizes[-1], act_dim)
         self.log_std_layer = nn.Linear(hidden_sizes[-1], act_dim)
-        self.act_limit = act_limit
+        # self.act_limit = act_limit
+        # ensure that action limit is set distinctly for each action in the action-space
+        self.act_limit = torch.as_tensor(act_limit, dtype=torch.float32)
 
     def forward(self, obs, deterministic=False, with_logprob=True):
         net_out = self.net(obs)
@@ -201,3 +203,30 @@ class MLPActorCritic(nn.Module):
         with torch.no_grad():
             a, _ = self.pi(obs, deterministic, False)
             return a.numpy()
+
+    def get_value_estimate(self, obs, action):
+        # ensure that the observation and action are tensors
+        obs = torch.as_tensor(obs, dtype=torch.float32)
+        action = torch.as_tensor(action, dtype=torch.float32)
+
+        with torch.no_grad():
+            q1_val = self.q1(obs, action).detach().numpy()
+
+        return q1_val
+
+    def get_max_value_estimate(self, obs):
+        # ensure that the observation is a tensors
+        obs = torch.as_tensor(obs, dtype=torch.float32)
+
+        with torch.no_grad():
+            # get the best action via the agents policy network
+            best_action, _ = self.pi(obs, deterministic=True, with_logprob=False)
+
+            # use the 'best action' to get an estimate of the max q value
+            max_q_val = self.q1(obs, best_action).detach().numpy()
+
+        return max_q_val
+
+    def select_action(self, obs, test=True):
+        action = self.act(obs, test)
+        return action
