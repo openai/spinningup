@@ -6,6 +6,7 @@ from gym_minigrid.envs.deceptive import DeceptiveEnv
 from python.minigrid_env_utils import SimpleObsWrapper
 from python.runners.env_reader import read_map, read_grid_size
 from copy import deepcopy
+
 SEED = constants.Random.SEED
 
 # ENV = config['simple_16']['env']
@@ -19,7 +20,8 @@ AGENT_NAMES2 = ['rg', 'fg1', 'fg2', 'fg3', 'fg4']
 
 ARGS = [(1, AGENT_NAMES1)]
 
-def run_simple(agent_key = 'rg'):
+
+def run_simple(agent_key='rg'):
     map = SimpleObsWrapper(DeceptiveEnv.load_from_file(
         fp=f'/Users/alanlewis/PycharmProjects/DeceptiveReinforcementLearning/maps/drl/empty.map',
         optcost=1,
@@ -62,9 +64,9 @@ def run_subagent(num_env, agent_key):
                              agent_name=agent_key,
                              experiment_name=f'pretrained-sac-{map_name}{num_env}',
                              update_after=1000,
-                             start_steps=80000,
-                             max_ep_len=grid_size**2,
-                             steps_per_epoch=20000,
+                             start_steps=20000,
+                             max_ep_len=49 ** 2,
+                             steps_per_epoch=10000,
                              batch_size=100,
                              num_epochs=100,
                              policy_update_delay=1,
@@ -78,7 +80,7 @@ def run_subagent(num_env, agent_key):
 
 
 def run_subagents_parallel():
-    for arg in [(25, AGENT_NAMES1)]:
+    for arg in [(33, AGENT_NAMES1), (34, AGENT_NAMES1), (35, AGENT_NAMES1)]:
         map_number = arg[0]
         agent_names = arg[1]
         pool = mp.Pool(len(agent_names))
