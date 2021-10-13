@@ -1,24 +1,12 @@
-from minigrid_env_utils import make_simple_env
 from spinningup.spinup.algos.pytorch.sac.sac_agent import DiscreteSacAgent
 import multiprocessing as mp
-import python.path_manager as constants
 from gym_minigrid.envs.deceptive import DeceptiveEnv
 from python.minigrid_env_utils import SimpleObsWrapper
 from python.runners.env_reader import read_map, read_grid_size
 from copy import deepcopy
 
-SEED = constants.Random.SEED
-
-# ENV = config['simple_16']['env']
-# SUBAGENTS = config['simple_16']['all_models']['value_iteration']
-# AGENT_NAMES = config['simple_16']['all_model_names']
-
 AGENT_NAMES1 = ['rg', 'fg1', 'fg2']
 AGENT_NAMES2 = ['rg', 'fg1', 'fg2', 'fg3', 'fg4']
-
-# ARGS = [(13, AGENT_NAMES2), (14, AGENT_NAMES2), (15, AGENT_NAMES2), (16, AGENT_NAMES2)]
-
-ARGS = [(1, AGENT_NAMES1)]
 
 
 def run_simple(agent_key='rg'):
@@ -73,6 +61,7 @@ def run_subagent(num_env, agent_key):
                              seed=42,
                              alpha=0.2,
                              polyak=0.995,
+                             discount_rate=0.975,
                              hidden_dimension=64,
                              critic_lr=1e-3,
                              pi_lr=1e-3)
@@ -80,7 +69,7 @@ def run_subagent(num_env, agent_key):
 
 
 def run_subagents_parallel():
-    for arg in [(33, AGENT_NAMES1), (34, AGENT_NAMES1), (35, AGENT_NAMES1)]:
+    for arg in [(25, AGENT_NAMES1)]:
         map_number = arg[0]
         agent_names = arg[1]
         pool = mp.Pool(len(agent_names))

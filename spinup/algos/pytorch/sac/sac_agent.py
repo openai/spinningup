@@ -36,7 +36,7 @@ class SacBaseAgent(ABC):
             self,
             state_space,
             action_space,
-            discount_rate=0.99,
+            discount_rate=0.975,
             pi_lr=1e-3,
             critic_lr=1e-3,
             update_every=50,
@@ -45,7 +45,7 @@ class SacBaseAgent(ABC):
             seed=42,
             steps_per_epoch=4000,
             start_steps=10000,
-            num_test_episodes=10,
+            num_test_episodes=4,
             num_epochs=100,
             replay_size=int(1e6),
             save_freq=1,
@@ -242,6 +242,7 @@ class SacBaseAgent(ABC):
             state = env.reset()
             self.test_state_visitation_dict[str(tuple(map(int, state)))] += 1
             done = False
+            self.episode_length = 0
             while not (done or (self.episode_length == self.max_ep_len)):
                 # Act deterministically because we are being tested
                 action = self.get_action(state, deterministic=True)
@@ -456,7 +457,7 @@ class ContinuousSacAgent(SacBaseAgent):
 
 class DiscreteSacAgent(SacBaseAgent):
 
-    def __init__(self, state_space, action_space, hidden_dimension=64, num_hidden_layers=2, discount_rate=0.99,
+    def __init__(self, state_space, action_space, hidden_dimension=64, num_hidden_layers=2, discount_rate=0.975,
                  pi_lr=1e-3, critic_lr=1e-3, update_every=50, update_after=1000, max_ep_len=1000, seed=42,
                  steps_per_epoch=4000, start_steps=10000, num_test_episodes=10, num_epochs=100, replay_size=int(1e6),
                  save_freq=1, batch_size=100, polyak=0.995, policy_update_delay=2, alpha=0.2, experiment_name='ignore',
