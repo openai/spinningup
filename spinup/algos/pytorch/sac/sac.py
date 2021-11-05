@@ -7,6 +7,7 @@ import gym
 import time
 import spinup.algos.pytorch.sac.core as core
 from spinup.utils.logx import EpochLogger
+from python.runners.env_reader import read_map
 
 
 class ReplayBuffer:
@@ -83,7 +84,7 @@ def sac(env_fn, actor_critic=core.MLPActorCritic, ac_kwargs=dict(), seed=1,
             ===========  ================  ======================================
             ``a``        (batch, act_dim)  | Tensor containing actions from policy
                                            | given observations.
-            ``logp_pi``  (batch,)          | Tensor containing log probabilities of
+            ``logp_pi``  (batch,)          | Tensor containing log deceptive_values of
                                            | actions in ``a``. Importantly: gradients
                                            | should be able to flow back into ``a``.
             ===========  ================  ======================================
@@ -149,29 +150,9 @@ def sac(env_fn, actor_critic=core.MLPActorCritic, ac_kwargs=dict(), seed=1,
     torch.manual_seed(seed)
     np.random.seed(seed)
 
-    env = StateBasedMDPNavigation2DEnv(initial_position=np.array([1.0, 1.0]),
-                                       destination=np.array([600.0, 400.0]),
-                                       max_observation_range=1000.0,
-                                       destination_tolerance_range=20.0,
-                                       max_x=680.0,
-                                       min_x=0.0,
-                                       max_y=480.0,
-                                       min_y=0.0,
-                                       randomised_start=False,
-                                       add_self_position_to_observation=False,
-                                       add_goal_position_to_observation=True)
+    env, env_name = read_map(number=9, random_start=False, terminate_at_any_goal=False, goal_name='rg', discrete=False)
+    test_env = deepcopy(env)
 
-    test_env = StateBasedMDPNavigation2DEnv(initial_position=np.array([1.0, 1.0]),
-                                            destination=np.array([600.0, 400.0]),
-                                            max_observation_range=1000.0,
-                                            destination_tolerance_range=20.0,
-                                            max_x=680.0,
-                                            min_x=0.0,
-                                            max_y=480.0,
-                                            min_y=0.0,
-                                            randomised_start=False,
-                                            add_self_position_to_observation=False,
-                                            add_goal_position_to_observation=True)
     obs_dim = env.observation_space.shape
     act_dim = 2
 
@@ -305,7 +286,7 @@ def sac(env_fn, actor_critic=core.MLPActorCritic, ac_kwargs=dict(), seed=1,
 
     # Main loop: collect experience in env and update/log each epoch
     for t in range(total_steps):
-        # env.render()
+        env.render()
 
         # Until start_steps have elapsed, randomly sample actions
         # from a uniform distribution for better exploration. Afterwards, 
@@ -317,7 +298,7 @@ def sac(env_fn, actor_critic=core.MLPActorCritic, ac_kwargs=dict(), seed=1,
 
         # Step the env
         o2, r, d, _ = env.step(a)
-        ep_ret += r
+        ep_ret += r['rg']
         ep_len += 1
 
         # Ignore the "done" signal if it comes from hitting the time

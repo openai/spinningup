@@ -47,7 +47,7 @@ class AGACBaseAgent(ABC):
             polyak=0.995,
             alpha=0.2,  # entropy coefficient
             beta=1.0,  # deceptiveness coefficient
-            tau=1.0,  # temperature term to soften q-differences and therefore get a better spread of probabilities
+            tau=1.0,  # temperature term to soften q-differences and therefore get a better spread of deceptive_values
             deception_type='entropy',
             experiment_name='agac-base-class',
             agent_name='rg'
@@ -69,7 +69,7 @@ class AGACBaseAgent(ABC):
         self.discount_rate = discount_rate
         self.alpha = alpha  # This is the entropy regularisation coefficient
         self.beta = beta  # This is the deceptiveness coefficient
-        self.tau = tau  # temperature term to soften q-differences and therefore get a better spread of probabilities
+        self.tau = tau  # temperature term to soften q-differences and therefore get a better spread of deceptive_values
         self.pi_lr = pi_lr
         self.vf_lr = critic_lr
         self.polyak = polyak  # for updating the target model
@@ -168,7 +168,7 @@ class AGACBaseAgent(ABC):
         self.episode_reward += reward
         self.episode_length += 1
 
-        # use the adversary model to generate probabilities and give the relevant deceptiveness measure
+        # use the adversary model to generate deceptive_values and give the relevant deceptiveness measure
         self.adversary.update(state, action)
         if self.deception_type == 'entropy':
             deceptiveness = self.adversary.entropy_of_probabilities()
@@ -258,7 +258,7 @@ class AGACBaseAgent(ABC):
                 # act deterministically because this is a test
                 action = self.get_action(state, deterministic=True)
 
-                # get your real goal probabilities since we have our state-action pair
+                # get your real goal deceptive_values since we have our state-action pair
                 self.adversary.update(state=state, action=action)
                 if self.deception_type == 'entropy':
                     deceptiveness = self.adversary.entropy_of_probabilities()
@@ -364,7 +364,7 @@ class DiscreteAGACAgent(AGACBaseAgent):
         self.lr_decay_rate = lr_decay_rate
 
         # define a max q difference queue length to controls the size of the trajectory to consider when determining
-        # probabilities.
+        # deceptive_values.
         self.q_difference_queue_length = q_difference_queue_length
 
         # create the standard actor-critic network

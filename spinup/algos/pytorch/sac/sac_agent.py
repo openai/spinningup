@@ -328,7 +328,6 @@ class SacBaseAgent(ABC):
         return train_time
 
     def save_state(self, epoch_number, train_env):
-        # TODO: you should probably draw this out such that is only needs to know to save, not when to save
         if (epoch_number % self.save_freq == 0) or epoch_number == self.num_epochs:
             self.logger.save_state({'env': train_env}, None)
             self.logger.save_state_visitation_dict(self.test_state_visitation_dict,
@@ -575,54 +574,97 @@ class DiscreteSacAgent(SacBaseAgent):
         return int(action)
 
 
-if __name__ == '__main__':
-    env_number = 1
-    train_env, map_name = read_map(env_number, random_start=False, terminate_at_any_goal=True, discrete=False)
-    test_env = deepcopy(train_env)
-    continuous_agent = ContinuousSacAgent(state_space=test_env.observation_space,
-                                          action_space=test_env.action_space,
-                                          agent_name='fg1',
-                                          experiment_name=f'continuous-pretrained-sac-{map_name}{env_number}',
-                                          start_steps=10000,
-                                          max_ep_len=49 ** 2,
-                                          steps_per_epoch=4000,
-                                          num_epochs=100,
-                                          seed=42,
-                                          alpha=0.01,
-                                          polyak=0.995,
-                                          hidden_dimension=64,
-                                          critic_lr=1e-3,
-                                          pi_lr=1e-3)
-    continuous_agent.train(train_env=train_env, test_env=test_env)
+class SacFactory:
+    @staticmethod
+    def create(state_space, action_space, subagent_name, experiment_name, discount_rate, discrete=True, num_epochs=100,
+               pi_lr=1e-3, critic_lr=1e-3):
+        if discrete:
+            return DiscreteSacAgent(state_space=state_space,
+                                    action_space=action_space,
+                                    agent_name=subagent_name,
+                                    experiment_name=experiment_name,
+                                    num_epochs=num_epochs,
+                                    critic_lr=critic_lr,
+                                    pi_lr=pi_lr,
+                                    discount_rate=discount_rate,
+                                    start_steps=40000,
+                                    max_ep_len=49 ** 2,
+                                    steps_per_epoch=10000,
+                                    policy_update_delay=1,
+                                    seed=42,
+                                    alpha=0.2,
+                                    polyak=0.995,
+                                    hidden_dimension=64)
+        else:
+            return ContinuousSacAgent(state_space=state_space,
+                                      action_space=action_space,
+                                      agent_name=subagent_name,
+                                      experiment_name=experiment_name,
+                                      num_epochs=num_epochs,
+                                      critic_lr=critic_lr,
+                                      pi_lr=pi_lr,
+                                      discount_rate=discount_rate,
+                                      start_steps=10000,
+                                      max_ep_len=49 ** 2,
+                                      steps_per_epoch=4000,
+                                      seed=42,
+                                      alpha=0.1    ,
+                                      polyak=0.995,
+                                      hidden_dimension=64)
 
-    # env, map_name = read_map(-1, random_start=False, terminate_at_any_goal=True, discrete=False)
-    #
-    # state = env.reset()
-    # dt1 = []
-    # dt2 = []
-    # agent = torch.load(sacPathManager.get_path(agent_type='sac', map_name=map_name, agent_name='rg', discrete=False))
-    #
-    # accum_reward = 0
-    # for t in range(1000):
-    #     env.render()
-    #
-    #     start = time.time()
-    #     state = torch.tensor(state, dtype=torch.float32)
-    #     action = agent.act(state, deterministic=True)
-    #     end = time.time()
-    #
-    #     dt1.append(end - start)
-    #
-    #     start = time.time()
-    #     state, reward, done, info = env.step(action)
-    #     accum_reward += reward['fg1']
-    #     print("accum reward:", accum_reward)
-    #     end = time.time()
-    #     dt2.append(end - start)
-    #
-    #     if done:
-    #         print("Episode finished after {} timesteps".format(t + 1))
-    #         break
-    #
-    # print(f"accumulated reward: {accum_reward}")
-    # print(sum(dt1) / len(dt1), sum(dt2) / len(dt2))
+
+if __name__ == '__main__':
+    env_number = 7
+    # train_env, map_name = read_map(env_number, random_start=False, terminate_at_any_goal=True, discrete=False)
+    # test_env = deepcopy(train_env)
+    # continuous_agent = ContinuousSacAgent(state_space=test_env.observation_space,
+    #                                       action_space=test_env.action_space,
+    #                                       agent_name='rg',
+    #                                       experiment_name=f'continuous-pretrained-sac-{map_name}{env_number}',
+    #                                       start_steps=20000,
+    #                                       max_ep_len=49 ** 2,
+    #                                       steps_per_epoch=4000,
+    #                                       num_epochs=100,
+    #                                       # discount_rate=0.975,
+    #                                       seed=42,
+    #                                       alpha=0.2,
+    #                                       polyak=0.995,
+    #                                       hidden_dimension=64,
+    #                                       critic_lr=1e-3,
+    #                                       pi_lr=1e-3)
+    # continuous_agent.train(train_env=train_env, test_env=test_env)
+
+    env, map_name = read_map(env_number, random_start=False, terminate_at_any_goal=False, discrete=False,
+                             goal_name='fg4')
+
+    state = env.reset()
+    dt1 = []
+    dt2 = []
+    agent = torch.load(
+        sacPathManager.get_path(agent_type='sac', map_name=f'{map_name}{env_number}', agent_name='fg4', discrete=False)
+    )
+
+    accum_reward = 0
+    for t in range(1000):
+        env.render()
+
+        start = time.time()
+        state = torch.tensor(state, dtype=torch.float32)
+        action = agent.act(state, deterministic=True)
+        end = time.time()
+
+        dt1.append(end - start)
+
+        start = time.time()
+        state, reward, done, info = env.step(action)
+        accum_reward += reward['fg1']
+        print("accum reward:", accum_reward)
+        end = time.time()
+        dt2.append(end - start)
+
+        if done:
+            print("Episode finished after {} timesteps".format(t + 1))
+            break
+
+    print(f"accumulated reward: {accum_reward}")
+    print(sum(dt1) / len(dt1), sum(dt2) / len(dt2))
