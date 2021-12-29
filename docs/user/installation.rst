@@ -11,9 +11,9 @@ Spinning Up is currently only supported on Linux and OSX. It may be possible to 
 
 .. admonition:: You Should Know
 
-    Many examples and benchmarks in Spinning Up refer to RL environments that use the `MuJoCo`_ physics engine. MuJoCo is a proprietary software that requires a license, which is free to trial and free for students, but otherwise is not free. As a result, installing it is optional, but because of its importance to the research community---it is the de facto standard for benchmarking deep RL algorithms in continuous control---it is preferred. 
+    Many examples and benchmarks in Spinning Up refer to RL environments that use the `MuJoCo`_ physics engine. MuJoCo is a software `made freely available by DeepMind`_.
 
-    Don't worry if you decide not to install MuJoCo, though. You can definitely get started in RL by running RL algorithms on the `Classic Control`_ and `Box2d`_ environments in Gym, which are totally free to use.
+    Don't worry if you decide not to install MuJoCo, though. You can definitely get started in RL by running RL algorithms on the `Classic Control`_ and `Box2d`_ environments in Gym, which are also totally free to use.
 
 .. [#] It looks like at least one person has figured out `a workaround for running on Windows`_. If you try another way and succeed, please let us know how you did it!
 
@@ -21,6 +21,7 @@ Spinning Up is currently only supported on Linux and OSX. It may be possible to 
 .. _`Box2d`: https://gym.openai.com/envs/#box2d
 .. _`MuJoCo`: http://www.mujoco.org/index.html
 .. _`a workaround for running on Windows`: https://github.com/openai/spinningup/issues/23
+.. _`made freely available by DeepMind`: https://deepmind.com/blog/announcements/mujoco
 
 Installing Python
 =================
@@ -120,7 +121,7 @@ First, go to the `mujoco-py`_ github page. Follow the installation instructions 
 
 .. admonition:: You Should Know
 
-    In order to use the MuJoCo simulator, you will need to get a `MuJoCo license`_. Free 30-day licenses are available to anyone, and free 1-year licenses are available to full-time students.
+    In order to use the MuJoCo simulator versions 2.0 or lower, you will need to get a (free) `MuJoCo license`_.
 
 Once you have installed MuJoCo, install the corresponding Gym environments with
 
