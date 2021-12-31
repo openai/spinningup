@@ -87,7 +87,7 @@ Examples of Q-learning methods include
 .. _`equivalent`: https://arxiv.org/abs/1704.06440
 
 What to Learn in Model-Based RL
--------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Unlike model-free RL, there aren't a small number of easy-to-define clusters of methods for model-based RL: there are many orthogonal ways of using models. We'll give a few examples, but the list is far from exhaustive. In each case, the model may either be given or learned. 
 
