@@ -91,7 +91,7 @@ This is an expectation, which means that we can estimate it with a sample mean. 
 
 .. math::
 
-    \hat{g} = \frac{1}{|\mathcal{D}|} \sum_{\tau \in \mathcal{D}} \sum_{t=0}^{T} \nabla_{\theta} \log \pi_{\theta}(a_t |s_t) R(\tau),
+    \hat{g} = \frac{1}{|\mathcal{D*T}|} \sum_{\tau \in \mathcal{D}} \sum_{t=0}^{T} \nabla_{\theta} \log \pi_{\theta}(a_t |s_t) R(\tau),
 
 where :math:`|\mathcal{D}|` is the number of trajectories in :math:`\mathcal{D}` (here, :math:`N`).
 
