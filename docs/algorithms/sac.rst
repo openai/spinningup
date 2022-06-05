@@ -153,7 +153,7 @@ The way we optimize the policy makes use of the **reparameterization trick**, in
 
 .. math::
 
-    \tilde{a}_{\theta}(s, \xi) = \tanh\left( \mu_{\theta}(s) + \sigma_{\theta}(s) \odot \xi \right), \;\;\;\;\; \xi \sim \mathcal{N}(0, I).
+    \pi_{\theta}(\tilde{a}_{\theta}(s,\xi)|s)} = \tanh\left( \mu_{\theta}(s) + \sigma_{\theta}(s) \odot \xi \right), \;\;\;\;\; \xi \sim \mathcal{N}(0, I).
 
 .. admonition:: You Should Know
 
