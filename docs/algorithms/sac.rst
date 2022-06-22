@@ -39,7 +39,7 @@ Let :math:`x` be a random variable with probability mass or density function :ma
 
 .. math::
 
-    H(P) = \underE{x \sim P}{-\log P(x)}.
+    H(P) = \underE{x \sim P}{- P(x) \log P(x)}.
 
 In entropy-regularized reinforcement learning, the agent gets a bonus reward at each time step proportional to the entropy of the policy at that timestep. This changes `the RL problem`_ to:
 
