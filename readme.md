@@ -1,6 +1,6 @@
 **Status:** Maintenance (expect bug fixes and minor updates)
 
-Welcome to Spinning Up in Deep RL! 
+Welcome to Spinning Up in Deep RL! gogoggo!
 ==================================
 
 This is an educational resource produced by OpenAI that makes it easier to learn about deep reinforcement learning (deep RL).
