@@ -1,3 +1,13 @@
+# Spinning Up fork with a simple setup
+This is the fork of the [openai/spinningup](https://github.com/openai/spinningup) repo which aims to simplify dependencies and relax version constraints in setup.py, so the spinningup package can be more easily used as a dependency on other projects.
+
+Crucially, please note that tensorflow has been removed as default dependency, and modules dependent on TF are simply not loaded if tensorflow is not available in the environment (unless imported explicitly by the user).
+
+The rest of this readme.md comes from the original repo:
+
+====
+
+
 **Status:** Maintenance (expect bug fixes and minor updates)
 
 Welcome to Spinning Up in Deep RL! 

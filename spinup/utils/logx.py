@@ -9,7 +9,13 @@ import json
 import joblib
 import shutil
 import numpy as np
-import tensorflow as tf
+import logging
+
+try:
+    import tensorflow as tf
+except ModuleNotFoundError:
+    pass
+
 import torch
 import os.path as osp, time, atexit, os
 import warnings
