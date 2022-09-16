@@ -338,9 +338,8 @@ is called the **reward-to-go** from that point, and this policy gradient express
 
     **But how is this better?** A key problem with policy gradients is how many sample trajectories are needed to get a low-variance sample estimate for them. The formula we started with included terms for reinforcing actions proportional to past rewards, all of which had zero mean, but nonzero variance: as a result, they would just add noise to sample estimates of the policy gradient. By removing them, we reduce the number of sample trajectories needed.
 
-An (optional) proof of this claim can be found `here`_, and it ultimately depends on the EGLP lemma.
+An (optional) proof of this claim can be found `here <../spinningup/extra_pg_proof1.html>`_, and it ultimately depends on the EGLP lemma.
 
-.. _`here`: ../spinningup/extra_pg_proof1.html
 
 Implementing Reward-to-Go Policy Gradient
 =========================================
