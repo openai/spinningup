@@ -1,6 +1,6 @@
-**Status:** Maintenance (expect bug fixes and minor updates)
-
-Welcome to Spinning Up in Deep RL! 
+This is a modification of the original [spinningup.openai.com](https://spinningup.openai.com) repo with more recent version of python (3.7, 3.8) and dev container added. The purpose of this forked repo is twofold:
+ 1. Because the original repo use python 3.6, which is no longer supported by Vscode debugger, we need to use a more recent version of python. Printing things around is ok but quite painful to learn how the algorithms work.
+ 2. Developing inside a container has tremendous benefits as the environment is easily, and almost certainly reproducible on all types of machines. 
 ==================================
 
 This is an educational resource produced by OpenAI that makes it easier to learn about deep reinforcement learning (deep RL).
