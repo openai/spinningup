@@ -4,9 +4,9 @@ This is a modification of the original [spinningup.openai.com](https://spinningu
  1. Because the original repo use python 3.6, which is no longer supported by Vscode debugger, we need to use a more recent version of python. Printing things around is ok but quite painful to learn how the algorithms work.
  2. Developing inside a container has tremendous benefits as the environment is easily, and almost certainly reproducible on all types of machines. 
  
- 
+[Below is the original readme by spinningup] 
 ==================================
-[Below is the original readme by spinningup]
+
 This is an educational resource produced by OpenAI that makes it easier to learn about deep reinforcement learning (deep RL).
 
 For the unfamiliar: [reinforcement learning](https://en.wikipedia.org/wiki/Reinforcement_learning) (RL) is a machine learning approach for teaching agents how to solve tasks by trial and error. Deep RL refers to the combination of RL with [deep learning](http://ufldl.stanford.edu/tutorial/).
