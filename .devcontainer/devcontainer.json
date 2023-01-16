@@ -1,7 +1,7 @@
 // For format details, see https://aka.ms/devcontainer.json. For config options, see the
 // README at: https://github.com/devcontainers/templates/tree/main/src/docker-existing-dockerfile
 {
-	"name": "Existing Dockerfile",
+	"name": "spinningup",
 	"build": {
 		// Sets the run context to one level up instead of the .devcontainer folder.
 		"context": "..",
@@ -11,8 +11,24 @@
 	"features": {
 		"ghcr.io/devcontainers/features/git:1": {},
 		"ghcr.io/devcontainers/features/github-cli:1": {}
-	}
-
+	}, 
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"ms-python.python",
+				"ms-python.vscode-pylance",
+				"ms-vsliveshare.vsliveshare-pack",
+				"njpwerner.autodocstring",
+				"GitHub.copilot",
+				"donjayamanne.githistory",
+				"janisdd.vscode-edit-csv",
+				"KevinRose.vsc-python-indent",
+				"aaron-bond.better-comments",
+				"njqdev.vscode-python-typehint",
+				"ms-azuretools.vscode-docker"
+			]
+		}
+	},
 	// Features to add to the dev container. More info: https://containers.dev/features.
 	// "features": {},
 
@@ -26,5 +42,6 @@
 	// "customizations": {},
 
 	// Uncomment to connect as an existing user other than the container default. More info: https://aka.ms/dev-containers-non-root.
-	// "remoteUser": "devcontainer"
+	"remoteUser": "container"
+	
 }
