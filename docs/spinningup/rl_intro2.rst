@@ -100,7 +100,7 @@ Unlike model-free RL, there aren't a small number of easy-to-define clusters of 
 * The `ExIt`_ algorithm uses this approach to train deep neural networks to play Hex.
 * `AlphaZero`_ is another example of this approach.
 
-**Data Augmentation for Model-Free Methods.** Use a model-free RL algorithm to train a policy or Q-function, but either 1) augment real experiences with fictitious ones in updating the agent, or 2) use *only* fictitous experience for updating the agent. 
+**Data Augmentation for Model-Free Methods.** Use a model-free RL algorithm to train a policy or Q-function, but either 1) augment real experiences with fictitious ones in updating the agent, or 2) use *only* fictitious experience for updating the agent. 
 
 * See `MBVE`_ for an example of augmenting real experiences with fictitious ones.
 * See `World Models`_ for an example of using purely fictitious experience to train the agent, which they call "training in the dream."
