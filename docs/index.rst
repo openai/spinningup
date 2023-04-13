@@ -6,7 +6,7 @@
 Welcome to Spinning Up in Deep RL!
 ==================================
 
-.. image:: images/spinning-up-in-rl.png
+.. image:: images/spinning-up-in-rl.nagli
 
 .. toctree::
    :maxdepth: 2
