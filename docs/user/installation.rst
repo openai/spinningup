@@ -81,6 +81,8 @@ Installing Spinning Up
 
     git clone https://github.com/openai/spinningup.git
     cd spinningup
+    pip install https://files.pythonhosted.org/packages/ec/de/e5308044f192cfb10ebe394bf9c6f38f9d77a3f57328354e756633c068f9/opencv_python-4.5.2.52-cp36-cp36m-manylinux2014_x86_64.whl
+    pip install https://files.pythonhosted.org/packages/8f/6c/23c292d24b7861af55649f72f05faf0c379b75f75e89580d8a64657f77ad/tensorflow-1.15.5-cp36-cp36m-manylinux2010_x86_64.whl
     pip install -e .
 
 .. admonition:: You Should Know
