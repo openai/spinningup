@@ -35,11 +35,11 @@ Entropy-Regularized Reinforcement Learning
 
 Entropy is a quantity which, roughly speaking, says how random a random variable is. If a coin is weighted so that it almost always comes up heads, it has low entropy; if it's evenly weighted and has a half chance of either outcome, it has high entropy. 
 
-Let :math:`x` be a random variable with probability mass or density function :math:`P`. The entropy :math:`H` of :math:`x` is computed from its distribution :math:`P` according to
+Let :math:`x` be a random variable with probability mass or density function :math:`p`. The entropy :math:`H` of :math:`x` is computed from its distribution :math:`P` according to
 
 .. math::
 
-    H(P) = \underE{x \sim P}{-\log P(x)}.
+    H(P) = \underE{x \sim P}{-\log p(x)}.
 
 In entropy-regularized reinforcement learning, the agent gets a bonus reward at each time step proportional to the entropy of the policy at that timestep. This changes `the RL problem`_ to:
 
