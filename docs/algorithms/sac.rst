@@ -159,7 +159,7 @@ The way we optimize the policy makes use of the **reparameterization trick**, in
 
     This policy has two key differences from the policies we use in the other policy optimization algorithms:
 
-    **1. The squashing function.** The :math:`\tanh` in the SAC policy ensures that actions are bounded to a finite range. This is absent in the VPG, TRPO, and PPO policies. It also changes the distribution: before the :math:`\tanh` the SAC policy is a factored Gaussian like the other algorithms' policies, but after the :math:`\tanh` it is not. (You can still compute the log-probabilities of actions in closed form, though: see the paper appendix for details.)
+    **1. The squashing function.** The :math:`\tanh` in the SAC policy ensures that actions are bounded to a finite range. This is absent in the VPG, TRPO, and PPO policies. It also changes the distribution: before the :math:`\tanh` the SAC policy is a factored Gaussian like the other algorithms' policies, but after the :math:`\tanh` it is not. (You can still compute the log-probabilities of actions in closed form, although: see the paper appendix for details.)
 
     **2. The way standard deviations are parameterized.** In VPG, TRPO, and PPO, we represent the log std devs with state-independent parameter vectors. In SAC, we represent the log std devs as outputs from the neural network, meaning that they depend on state in a complex way. SAC with state-independent log std devs, in our experience, did not work. (Can you think of why? Or better yet: run an experiment to verify?)
 
