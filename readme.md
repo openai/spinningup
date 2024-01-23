@@ -2,14 +2,14 @@
 The original repository can be found [here](https://github.com/openai/spinningup)
 This fork is intended to be an up-to-date version of the original repository, with the following changes:
 
-The code has been updated to be compatible with Pytorch version 1.7.1 \\
-we updated readme files and other documentation to be more accessible for beginners \\
-we also provided a step-by-step guide for downloading and installing Spinningup on Windows(11) Without using a Linux subsystem. \\
-It removes the Windows community's barrier to diving into the Deep RL research platform. \\
+The code has been updated to be compatible with Pytorch version 1.7.1 <br>
+We updated readme files and other documentation to be more accessible for beginners. <br>
+We also provided a step-by-step guide for downloading and installing Spinningup on Windows(11) Without using a Linux subsystem. <br>
+It removes the Windows community's barrier to diving into the Deep RL research platform. <br>
 
-## Installation
+## Installation for Windows
 
-This is a step-by-step guide for running spinningup on Windows:
+This is a step-by-step guide for running spinning up on Windows:
 
 ## Download & Installation:
 **Step 1:** Download  and Install [ Anaconda ](https://www.anaconda.com/download) or [ Miniconda ](https://docs.conda.io/en/latest/miniconda.html) for Windows.
@@ -26,8 +26,10 @@ This is a step-by-step guide for running spinningup on Windows:
 
 **Step 4:**
 - Ensure that you have the "git" installed. If not, you can download it from [here](https://gitforwindows.org/)
-- Clone the "spinningup" repository using the command: `git clone https://github.com/openai/spinningup.git`
-- Once the cloning process is complete, navigate to the directory "Spinningup" and locate the "setup.py" file. Proceed to modify the Torch version to 1.7.1 within that file as shown below:
+- Clone the "spinningup" repository: 
+  - you can either use my forked version using the command: `git clone https://github.com/mj06879/spinningup_on_Windows11` <br>
+  - Or you can use the master branch using the command: `git clone https://github.com/openai/spinningup.git` <br>
+    In the case of the master branch, once the cloning process is complete, navigate to the directory "Spinningup" and locate the "setup.py" file. Proceed to modify the Torch version to 1.7.1 within that file as shown below:
 ![image](https://github.com/openai/spinningup/assets/78081958/642086a5-4264-47e6-b6ab-9ef931371ab4)
 
 **Step 5:**
