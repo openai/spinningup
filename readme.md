@@ -1,13 +1,11 @@
-**Status:** Maintenance (expect bug fixes and minor updates)
-
 ## This is a fork of the OpenAI Spinning Up in the Deep RL repository.
 The original repository can be found [here](https://github.com/openai/spinningup)
 This fork is intended to be an up-to-date version of the original repository, with the following changes:
 
-The code has been updated to be compatible with Pytorch version 1.7.1
-we updated readme files and other documentation to be more accessible for beginners
-we also provided a step-by-step guide for downloading and installing Spinningup on Windows(11) Without using a Linux subsystem.
-It removes the Windows community's barrier to diving into the Deep RL research platform. 
+The code has been updated to be compatible with Pytorch version 1.7.1 \\
+we updated readme files and other documentation to be more accessible for beginners \\
+we also provided a step-by-step guide for downloading and installing Spinningup on Windows(11) Without using a Linux subsystem. \\
+It removes the Windows community's barrier to diving into the Deep RL research platform. \\
 
 ## Installation
 
