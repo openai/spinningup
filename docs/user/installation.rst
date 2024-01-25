@@ -66,7 +66,7 @@ Ubuntu
 
 Mac OS X
 --------
-Installation of system packages on Mac requires Homebrew_. With Homebrew installed, run the follwing:
+Installation of system packages on Mac requires Homebrew_. With Homebrew installed, run the following:
 
 .. parsed-literal::
 
