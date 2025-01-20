@@ -3,8 +3,8 @@ import torch.nn as nn
 from torch.distributions.categorical import Categorical
 from torch.optim import Adam
 import numpy as np
-import gym
-from gym.spaces import Discrete, Box
+import gymnasium as gym
+from gymnasium.spaces import Discrete, Box
 
 def mlp(sizes, activation=nn.Tanh, output_activation=nn.Identity):
     # Build a feedforward neural network.
@@ -21,7 +21,7 @@ def reward_to_go(rews):
         rtgs[i] = rews[i] + (rtgs[i+1] if i+1 < n else 0)
     return rtgs
 
-def train(env_name='CartPole-v0', hidden_sizes=[32], lr=1e-2, 
+def train(env_name='CartPole-v1', hidden_sizes=[32], lr=1e-2, 
           epochs=50, batch_size=5000, render=False):
 
     # make environment, check spaces, get obs / act dims
@@ -64,7 +64,7 @@ def train(env_name='CartPole-v0', hidden_sizes=[32], lr=1e-2,
         batch_lens = []         # for measuring episode lengths
 
         # reset episode-specific variables
-        obs = env.reset()       # first obs comes from starting distribution
+        obs, info = env.reset()       # first obs comes from starting distribution
         done = False            # signal from environment that episode is over
         ep_rews = []            # list for rewards accrued throughout ep
 
@@ -83,11 +83,11 @@ def train(env_name='CartPole-v0', hidden_sizes=[32], lr=1e-2,
 
             # act in the environment
             act = get_action(torch.as_tensor(obs, dtype=torch.float32))
-            obs, rew, done, _ = env.step(act)
+            obs, reward, done, _, _ = env.step(act)
 
             # save action, reward
             batch_acts.append(act)
-            ep_rews.append(rew)
+            ep_rews.append(reward)
 
             if done:
                 # if episode is over, record info about episode
@@ -99,8 +99,8 @@ def train(env_name='CartPole-v0', hidden_sizes=[32], lr=1e-2,
                 batch_weights += list(reward_to_go(ep_rews))
 
                 # reset episode-specific variables
-                obs, done, ep_rews = env.reset(), False, []
-
+                obs, _   = env.reset()
+                done, ep_rews = False, []
                 # won't render again this epoch
                 finished_rendering_this_epoch = True
 
@@ -127,7 +127,7 @@ def train(env_name='CartPole-v0', hidden_sizes=[32], lr=1e-2,
 if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser()
-    parser.add_argument('--env_name', '--env', type=str, default='CartPole-v0')
+    parser.add_argument('--env_name', '--env', type=str, default='CartPole-v1')
     parser.add_argument('--render', action='store_true')
     parser.add_argument('--lr', type=float, default=1e-2)
     args = parser.parse_args()

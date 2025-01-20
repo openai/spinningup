@@ -1,7 +1,7 @@
 import numpy as np
 import torch
 from torch.optim import Adam
-import gym
+import gymnasium as gym
 import time
 import spinup.algos.pytorch.vpg.core as core
 from spinup.utils.logx import EpochLogger
@@ -15,8 +15,10 @@ class VPGBuffer:
     with the environment, and using Generalized Advantage Estimation (GAE-Lambda)
     for calculating the advantages of state-action pairs.
     """
-
-    def __init__(self, obs_dim, act_dim, size, gamma=0.99, lam=0.95):
+    # gamme: the dicount paramter that is used for advantage estimation
+    # lambda: again the control parameter used in Generalized Advantage Estimation
+    # cite Schulman et.al, 2016.
+    def __init__(self, obs_dim, act_dim, size, gamma=0.99, lam=0.95): 
         self.obs_buf = np.zeros(core.combined_shape(size, obs_dim), dtype=np.float32)
         self.act_buf = np.zeros(core.combined_shape(size, act_dim), dtype=np.float32)
         self.adv_buf = np.zeros(size, dtype=np.float32)
@@ -156,14 +158,15 @@ def vpg(env_fn, actor_critic=core.MLPActorCritic, ac_kwargs=dict(),  seed=0,
             number of policy updates) to perform.
 
         gamma (float): Discount factor. (Always between 0 and 1.)
-
+        *The next 2 params are very important in the sense that it shows how 2 models are trained simultaneosuly
+        *one for training the policy and another for obtaining the value function.
         pi_lr (float): Learning rate for policy optimizer.
 
         vf_lr (float): Learning rate for value function optimizer.
 
         train_v_iters (int): Number of gradient descent steps to take on 
             value function per epoch.
-
+        *GAE: Generalized Advantage Estimation
         lam (float): Lambda for GAE-Lambda. (Always between 0 and 1,
             close to 1.)
 
@@ -329,12 +332,12 @@ if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument('--env', type=str, default='HalfCheetah-v2')
-    parser.add_argument('--hid', type=int, default=64)
-    parser.add_argument('--l', type=int, default=2)
-    parser.add_argument('--gamma', type=float, default=0.99)
+    parser.add_argument('--hid', type=int, default=64) # This is essentially the hidden dimensions of the intermediate layer
+    parser.add_argument('--l', type=int, default=2) # This is the number of hidden layers
+    parser.add_argument('--gamma', type=float, default=0.99) #The discount factor
     parser.add_argument('--seed', '-s', type=int, default=0)
     parser.add_argument('--cpu', type=int, default=4)
-    parser.add_argument('--steps', type=int, default=4000)
+    parser.add_argument('--steps', type=int, default=4000) # This can be thought like the ones that are used to determine the episode length, the actual length can <= the one specified here
     parser.add_argument('--epochs', type=int, default=50)
     parser.add_argument('--exp_name', type=str, default='vpg')
     args = parser.parse_args()
