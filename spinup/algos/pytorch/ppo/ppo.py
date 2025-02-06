@@ -1,7 +1,7 @@
 import numpy as np
 import torch
 from torch.optim import Adam
-import gym
+import gymnasium
 import time
 import spinup.algos.pytorch.ppo.core as core
 from spinup.utils.logx import EpochLogger

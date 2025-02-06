@@ -1,7 +1,7 @@
 import numpy as np
 import tensorflow as tf
 import scipy.signal
-from gym.spaces import Box, Discrete
+from gymnasium.spaces import Box, Discrete
 
 EPS = 1e-8
 

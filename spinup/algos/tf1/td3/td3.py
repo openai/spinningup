@@ -1,6 +1,6 @@
 import numpy as np
 import tensorflow as tf
-import gym
+import gymnasium
 import time
 from spinup.algos.tf1.td3 import core
 from spinup.algos.tf1.td3.core import get_vars
