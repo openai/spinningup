@@ -87,11 +87,11 @@ Because the advantage is positive, the objective will increase if the action bec
 
 .. math::
     
-    L(s,a,\theta_k,\theta) = \max\left(
+    L(s,a,\theta_k,\theta) = \min\left(
     \frac{\pi_{\theta}(a|s)}{\pi_{\theta_k}(a|s)}, (1 - \epsilon)
     \right)  A^{\pi_{\theta_k}}(s,a).
 
-Because the advantage is negative, the objective will increase if the action becomes less likely---that is, if :math:`\pi_{\theta}(a|s)` decreases. But the max in this term puts a limit to how *much* the objective can increase. Once :math:`\pi_{\theta}(a|s) < (1-\epsilon) \pi_{\theta_k}(a|s)`, the max kicks in and this term hits a ceiling of :math:`(1-\epsilon) A^{\pi_{\theta_k}}(s,a)`. Thus, again: *the new policy does not benefit by going far away from the old policy*.
+Because the advantage is negative, the objective will increase if the action becomes less likely---that is, if :math:`\pi_{\theta}(a|s)` decreases. But the min in this term puts a limit to how *much* the objective can increase. Once :math:`\pi_{\theta}(a|s) < (1-\epsilon) \pi_{\theta_k}(a|s)`, the min kicks in and this term hits a ceiling of :math:`(1-\epsilon) A^{\pi_{\theta_k}}(s,a)`. Thus, again: *the new policy does not benefit by going far away from the old policy*.
 
 What we have seen so far is that clipping serves as a regularizer by removing incentives for the policy to change dramatically, and the hyperparameter :math:`\epsilon` corresponds to how far away the new policy can go from the old while still profiting the objective.
 
