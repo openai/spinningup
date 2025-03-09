@@ -31,7 +31,7 @@ Follow `the installation instructions`_ for Anaconda here. Download and install 
 
 .. parsed-literal::
 
-    conda create -n spinningup python=3.6
+    conda create -n spinningup python=3.6 -c conda-forge
 
 To use Python from the environment you just created, activate the environment with:
 
