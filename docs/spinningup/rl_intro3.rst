@@ -303,7 +303,7 @@ In this subsection, we will derive an intermediate result which is extensively u
         &= \int_x P_{\theta}(x) \nabla_{\theta} \log P_{\theta}(x) \\
         \therefore 0 &= \underE{x \sim P_{\theta}}{\nabla_{\theta} \log P_{\theta}(x)}.
 
-.. [1] The author of this article is not aware of this lemma being given a standard name anywhere in the literature. But given how often it comes up, it seems pretty worthwhile to give it some kind of name for ease of reference.
+.. [1] In statistics, this result is known as "the first Bartlett identity" or "the Bartlett identity of order one".
 
 Don't Let the Past Distract You
 ===============================
