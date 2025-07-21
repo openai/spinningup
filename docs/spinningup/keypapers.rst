@@ -270,7 +270,7 @@ b. Model is Given
 
 .. [#] `Generative Adversarial Imitation Learning <https://arxiv.org/abs/1606.03476>`_, Ho and Ermon, 2016. **Algorithm: GAIL.**
 
-.. [#] `DeepMimic: Example-Guided Deep Reinforcement Learning of Physics-Based Character Skills <https://xbpeng.github.io/projects/DeepMimic/2018_TOG_DeepMimic.pdf>`_, Peng et al, 2018. **Algorithm: DeepMimic.**
+.. [#] `DeepMimic: Example-Guided Deep Reinforcement Learning of Physics-Based Character Skills <https://arxiv.org/abs/1804.02717>`_, Peng et al, 2018. **Algorithm: DeepMimic.**
 
 .. [#] `Variational Discriminator Bottleneck: Improving Imitation Learning, Inverse RL, and GANs by Constraining Information Flow <https://arxiv.org/abs/1810.00821>`_, Peng et al, 2018. **Algorithm: VAIL.**
 
