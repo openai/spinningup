@@ -340,7 +340,6 @@ is called the **reward-to-go** from that point, and this policy gradient express
 
 An (optional) proof of this claim can be found `here`_, and it ultimately depends on the EGLP lemma.
 
-.. _`here`: ../spinningup/extra_pg_proof1.html
 
 Implementing Reward-to-Go Policy Gradient
 =========================================
@@ -472,6 +471,7 @@ In this chapter, we described the basic theory of policy gradient methods and co
 
 .. _`on-policy value function`: ../spinningup/rl_intro.html#value-functions
 .. _`advantage of an action`: ../spinningup/rl_intro.html#advantage-functions
+.. _`here`: ../spinningup/extra_pg_proof1.html
 .. _`this page`: ../spinningup/extra_pg_proof2.html
 .. _`Generalized Advantage Estimation`: https://arxiv.org/abs/1506.02438
 .. _`Vanilla Policy Gradient`: ../algorithms/vpg.html
