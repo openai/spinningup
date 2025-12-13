@@ -96,7 +96,7 @@ def train(env_name='CartPole-v0', hidden_sizes=[32], lr=1e-2,
                 batch_lens.append(ep_len)
 
                 # the weight for each logprob(a_t|s_t) is reward-to-go from t
-                batch_weights += list(reward_to_go(ep_rews))
+                batch_weights.extend(reward_to_go(ep_rews))
 
                 # reset episode-specific variables
                 obs, done, ep_rews = env.reset(), False, []
