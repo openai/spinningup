@@ -184,7 +184,7 @@ class Logger:
             fname = 'vars.pkl' if itr is None else 'vars%d.pkl'%itr
             try:
                 joblib.dump(state_dict, osp.join(self.output_dir, fname))
-            except:
+            except Exception:
                 self.log('Warning: could not pickle state_dict.', color='red')
             if hasattr(self, 'tf_saver_elements'):
                 self._tf_simple_save(itr)

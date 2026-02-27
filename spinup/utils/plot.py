@@ -76,7 +76,7 @@ def get_datasets(logdir, condition=None):
                 config = json.load(config_path)
                 if 'exp_name' in config:
                     exp_name = config['exp_name']
-            except:
+            except Exception:
                 print('No file named config.json')
             condition1 = condition or exp_name or 'exp'
             condition2 = condition1 + '-' + str(exp_idx)
@@ -88,7 +88,7 @@ def get_datasets(logdir, condition=None):
 
             try:
                 exp_data = pd.read_table(os.path.join(root,'progress.txt'))
-            except:
+            except Exception:
                 print('Could not read from %s'%os.path.join(root,'progress.txt'))
                 continue
             performance = 'AverageTestEpRet' if 'AverageTestEpRet' in exp_data else 'AverageEpRet'

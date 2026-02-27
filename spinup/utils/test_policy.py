@@ -58,7 +58,7 @@ def load_policy_and_env(fpath, itr='last', deterministic=False):
     try:
         state = joblib.load(osp.join(fpath, 'vars'+itr+'.pkl'))
         env = state['env']
-    except:
+    except Exception:
         env = None
 
     return env, get_action

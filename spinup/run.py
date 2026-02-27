@@ -68,7 +68,7 @@ def parse_and_execute_grid_search(cmd, args):
         # users to give functions as args).
         try:
             return eval(arg)
-        except:
+        except Exception:
             return arg
 
     # Make first pass through args to build base arg_dict. Anything
