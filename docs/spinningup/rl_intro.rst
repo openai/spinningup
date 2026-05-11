@@ -12,7 +12,7 @@ Welcome to our introduction to reinforcement learning! Here, we aim to acquaint 
 * a high-level explanation of what RL algorithms do (although we mostly avoid the question of *how* they do it),
 * and a little bit of the core math that underlies the algorithms.
 
-In a nutshell, RL is the study of agents and how they learn by trial and error. It formalizes the idea that rewarding or punishing an agent for its behavior makes it more likely to repeat or forego that behavior in the future. 
+In a nutshell, RL is the study of agents and how they learn by trial and error. It formalizes the idea that rewarding or punishing an agent for its behavior makes it more likely to repeat or forgo that behavior in the future. 
 
 
 What Can RL Do?
