@@ -30,3 +30,7 @@ If you reference or use Spinning Up in your research, please cite:
     year = {2018}
 }
 ```
+
+---
+
+*[Mukller](https://github.com/Mukller)*
