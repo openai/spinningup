@@ -126,7 +126,7 @@ Once you have installed MuJoCo, install the corresponding Gym environments with
 
 .. parsed-literal::
 
-    pip install gym[mujoco,robotics]
+    pip install 'gym[mujoco,robotics]'
 
 And then check that things are working by running PPO in the Walker2d-v2 environment with
 
